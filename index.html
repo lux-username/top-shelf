@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#e9d8be" />
+<meta name="description" content="A cozy grocery-sorting puzzle. No ads, no purchases, no lives — ever." />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Top Shelf" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<title>Top Shelf — Grocery Sort</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --cream:#f7efe1;
+    --cream-2:#efe2cd;
+    --paper:#fffaf1;
+    --wood:#bb854f;
+    --wood-dark:#9c6a3a;
+    --wood-edge:#82592f;
+    --slot:#f3e7d2;
+    --slot-edge:#d9c4a1;
+    --ink:#4a3a2a;
+    --ink-soft:#7a6a56;
+    --accent:#5a8f6e;     /* sage */
+    --accent-2:#c97f4a;   /* warm clay */
+    --good:#6fae84;
+    --warn:#d99a4e;
+    --bad:#cf7d6a;
+    --shadow:rgba(74,58,42,.18);
+    --tile-shadow:rgba(74,58,42,.22);
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; height:100%; }
+  body{
+    font-family:"Nunito",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 50% -10%, #fbf4e8 0%, var(--cream) 45%, var(--cream-2) 100%);
+    background-attachment:fixed;
+    overflow-x:hidden;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  #app{
+    max-width:560px;
+    margin:0 auto;
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    padding:max(10px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom));
+  }
+
+  /* ---------- header ---------- */
+  header{
+    display:flex; align-items:center; gap:10px;
+    padding:6px 2px 10px;
+  }
+  .brand{ display:flex; flex-direction:column; line-height:1; flex:1; min-width:0; }
+  .brand .name{
+    font-family:"Fraunces",serif; font-weight:700; font-size:1.5rem; letter-spacing:.2px;
+    color:var(--ink);
+  }
+  .brand .sub{ font-size:.78rem; color:var(--ink-soft); font-weight:700; margin-top:3px; letter-spacing:.3px; }
+  .iconbtn{
+    border:none; cursor:pointer; flex:none;
+    width:42px; height:42px; border-radius:13px;
+    background:var(--paper);
+    box-shadow:0 2px 0 var(--slot-edge), 0 4px 10px var(--shadow);
+    color:var(--ink); font-size:1.15rem; font-weight:800;
+    display:grid; place-items:center;
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .iconbtn:active{ transform:translateY(2px); box-shadow:0 0 0 var(--slot-edge),0 2px 6px var(--shadow); }
+
+  /* ---------- info row ---------- */
+  .blurb{
+    font-family:"Fraunces",serif; font-style:italic; font-weight:500;
+    color:var(--ink-soft); font-size:1rem; text-align:center;
+    min-height:1.3em; padding:0 8px 8px;
+  }
+  .timerwrap{ display:flex; align-items:center; gap:10px; padding:0 2px 10px; }
+  .timerbar{
+    flex:1; height:12px; border-radius:99px; overflow:hidden;
+    background:var(--cream-2);
+    box-shadow:inset 0 1px 3px rgba(74,58,42,.18);
+  }
+  .timerfill{
+    height:100%; width:100%;
+    background:linear-gradient(90deg,var(--good),#8cc4a0);
+    border-radius:99px;
+    transition:width .25s linear, background .4s ease;
+  }
+  .timerfill.warn{ background:linear-gradient(90deg,var(--warn),#e7b777); }
+  .timerfill.crit{ background:linear-gradient(90deg,var(--bad),#e29c8c); }
+  .timertxt{ font-weight:800; font-size:.82rem; color:var(--ink-soft); min-width:52px; text-align:right; font-variant-numeric:tabular-nums; }
+  .timertxt .inf{ font-size:1.2rem; line-height:1; }
+
+  /* ---------- board ---------- */
+  #board{
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column; justify-content:center; gap:var(--gap,12px);
+    padding:4px 0 8px;
+    touch-action:none;
+  }
+  .shelf{
+    position:relative;
+    display:flex; justify-content:center; align-items:center; gap:var(--gap,12px);
+    padding:10px 12px 14px;
+    border-radius:16px;
+    background:
+      linear-gradient(180deg,#caa06f 0%, var(--wood) 60%, var(--wood-dark) 100%);
+    box-shadow:
+      0 5px 0 var(--wood-edge),
+      0 9px 16px var(--shadow),
+      inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .shelf::after{ /* front lip of the plank */
+    content:""; position:absolute; left:6px; right:6px; bottom:-5px; height:6px;
+    border-radius:0 0 12px 12px; background:var(--wood-edge); opacity:.55;
+  }
+  .shelf.droppable{ outline:2px dashed rgba(255,255,255,.55); outline-offset:3px; }
+  .shelf.hover{
+    outline:3px solid #fff7e9; outline-offset:3px;
+    box-shadow:0 5px 0 var(--wood-edge),0 0 0 4px rgba(255,247,233,.35),0 12px 22px var(--shadow);
+  }
+  .shelf.cleared{ filter:saturate(.85) brightness(1.02); }
+
+  /* reserved shelf: a labeled "home" that only accepts its one grocery */
+  .shelf.reserved{
+    padding-top:24px;
+    background:
+      linear-gradient(180deg,#c79a64 0%, #b07c45 60%, #946233 100%);
+    box-shadow:
+      0 5px 0 #7a5026, 0 9px 16px var(--shadow),
+      inset 0 1px 0 rgba(255,255,255,.25), inset 0 0 0 2px rgba(255,247,233,.18);
+  }
+  .shelf .sign{
+    position:absolute; top:5px; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; gap:5px;
+    padding:2px 12px 3px; border-radius:0 0 11px 11px;
+    background:linear-gradient(180deg,#fdf3df,#f1e0c0);
+    box-shadow:0 2px 4px rgba(74,58,42,.3), inset 0 1px 0 rgba(255,255,255,.7);
+    font-size:.92rem; line-height:1; z-index:3;
+  }
+  .shelf .sign::before{
+    content:"only"; font-family:"Nunito"; font-weight:800; font-size:.62rem;
+    letter-spacing:.4px; color:var(--ink-soft); text-transform:uppercase;
+    order:2;
+  }
+
+  /* dispenser shelf: a take-only delivery pallet (cooler, bluish wood + crate tag) */
+  .shelf.dispenser{
+    padding-top:24px;
+    background:linear-gradient(180deg,#a98f74 0%, #8f7559 60%, #74604a 100%);
+    box-shadow:0 5px 0 #5c4a39, 0 9px 16px var(--shadow), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .shelf .sign.disp::before{ content:"unload"; }
+
+  /* shuttered shelf: a locked back room, stocked with groceries you can see
+     through the gate but can't reach until you've cleared N shelves. */
+  .shelf.locked{
+    background:linear-gradient(180deg,#8d8d92 0%, #76767c 100%);
+    box-shadow:0 5px 0 #54545a, 0 9px 16px var(--shadow);
+  }
+  .shelf .shutter{
+    position:absolute; inset:0; z-index:4; border-radius:16px;
+    background:
+      repeating-linear-gradient(180deg, rgba(150,150,156,.78) 0 6px, rgba(110,110,118,.82) 6px 12px);
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.3), inset 0 -3px 6px rgba(0,0,0,.2);
+    display:grid; place-items:center;
+  }
+  .shelf .shutter span{
+    font-family:"Nunito"; font-weight:800; font-size:.8rem; color:#3f3f45;
+    background:rgba(255,255,255,.92); padding:5px 12px; border-radius:99px;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+
+  .slot{
+    position:relative;
+    width:var(--slot,90px); height:var(--slot,90px); flex:none;
+    border-radius:13px;
+    background:
+      radial-gradient(120% 120% at 50% 18%, #fbf2e1, var(--slot) 70%);
+    box-shadow:inset 0 2px 6px rgba(130,89,47,.28), inset 0 -1px 0 rgba(255,255,255,.4);
+    display:grid; place-items:center;
+    overflow:visible;
+  }
+  /* a slot holding a hidden back item seats its front tile low so the
+     back-row item peeks out clearly at the top — visible but unmovable. */
+  .slot.has-back{ align-items:end; }
+  .slot.has-back .tile{ height:76%; }
+  /* hidden back-row item: greyed + dashed, identifiable but locked */
+  .back{
+    position:absolute; top:6%; left:50%; transform:translateX(-50%);
+    font-size:calc(var(--slot,90px) * .34); line-height:1; filter:grayscale(.7) opacity(.62);
+    pointer-events:none; z-index:1;
+    text-shadow:0 1px 2px rgba(0,0,0,.12);
+  }
+  .back::after{
+    content:""; position:absolute; inset:-3px -6px; border-radius:8px;
+    border:2px dashed rgba(122,106,86,.4);
+  }
+  .tile{
+    position:relative;
+    width:84%; height:84%;
+    border-radius:12px;
+    background:linear-gradient(180deg,#fffdf8,#fff4e3);
+    box-shadow:0 3px 0 #e7d4b3, 0 5px 10px var(--tile-shadow), inset 0 1px 0 rgba(255,255,255,.8);
+    display:grid; place-items:center;
+    font-size:calc(var(--slot,90px) * .46); line-height:1;
+    cursor:grab;
+    z-index:2;
+    transition:transform .12s cubic-bezier(.2,1.3,.5,1), box-shadow .1s ease;
+    animation:drop .26s cubic-bezier(.2,1.2,.4,1);
+  }
+  .tile:active{ cursor:grabbing; }
+  .tile.selected{
+    transform:translateY(-6px) scale(1.04);
+    box-shadow:0 7px 0 #e7d4b3, 0 10px 18px var(--tile-shadow), 0 0 0 3px var(--accent);
+  }
+  .tile.lift{ opacity:.28; transform:scale(.96); }
+  .tile.pop{ animation:pop .32s ease; }
+  /* wildcard: a mixed bag that fits any shelf — bold rainbow ring + glow so it
+     reads at a glance as "special / goes anywhere", with a gentle shimmer. */
+  .tile.wild{
+    background:
+      linear-gradient(180deg,#fffdf8,#fff4e3) padding-box,
+      conic-gradient(from 210deg, #ff8fab, #ffb347, #ffe66d, #8ce99a, #66d9e8, #b197fc, #ff8fab) border-box;
+    border:4px solid transparent;
+    box-shadow:
+      0 3px 0 #e7d4b3, 0 5px 12px var(--tile-shadow),
+      0 0 0 2px rgba(255,255,255,.85), 0 0 14px 2px rgba(177,151,252,.55);
+    animation:drop .26s cubic-bezier(.2,1.2,.4,1), wildglow 2.4s ease-in-out infinite;
+  }
+  @keyframes wildglow{
+    0%,100%{ box-shadow:0 3px 0 #e7d4b3, 0 5px 12px var(--tile-shadow), 0 0 0 2px rgba(255,255,255,.85), 0 0 12px 1px rgba(177,151,252,.45); }
+    50%{ box-shadow:0 3px 0 #e7d4b3, 0 5px 12px var(--tile-shadow), 0 0 0 2px rgba(255,255,255,.95), 0 0 20px 4px rgba(255,143,171,.6); }
+  }
+  .back.wild{ filter:grayscale(.3) opacity(.6); }
+  /* multipack: a shrink-wrapped 2-pack that moves as one unit */
+  .tile.pack{
+    background:linear-gradient(180deg,#fff7ec,#ffe9cf);
+    box-shadow:0 3px 0 #e7c79b, 0 5px 10px var(--tile-shadow), inset 0 1px 0 rgba(255,255,255,.8), 0 0 0 2px #e89b5a;
+  }
+  .tile.pack::before{                                   /* shrink-wrap band across the tile */
+    content:""; position:absolute; left:-2px; right:-2px; top:50%; transform:translateY(-50%);
+    height:26%; background:repeating-linear-gradient(90deg, rgba(232,155,90,.30) 0 5px, rgba(232,155,90,.12) 5px 10px);
+    border-top:1px solid rgba(232,155,90,.5); border-bottom:1px solid rgba(232,155,90,.5);
+    pointer-events:none;
+  }
+  .packtag{
+    position:absolute; top:-5px; right:-5px; font-size:calc(var(--slot,90px) * .26); line-height:1;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); pointer-events:none; font-style:normal; z-index:3;
+  }
+  .ghost.pack{ box-shadow:0 10px 22px rgba(74,58,42,.35), 0 0 0 3px #e89b5a; }
+  @keyframes drop{ from{ transform:translateY(-10px) scale(.9); opacity:0;} to{ transform:none; opacity:1;} }
+  @keyframes pop{ 0%{ transform:scale(.6); opacity:0;} 60%{ transform:scale(1.12);} 100%{ transform:none; opacity:1;} }
+
+  .ghost{
+    position:fixed; z-index:999; pointer-events:none;
+    width:calc(var(--slot,90px) * .9); height:calc(var(--slot,90px) * .9); border-radius:13px;
+    background:linear-gradient(180deg,#fffdf8,#fff4e3);
+    box-shadow:0 10px 22px rgba(74,58,42,.35), 0 0 0 3px var(--accent);
+    display:grid; place-items:center; font-size:calc(var(--slot,90px) * .46); line-height:1;
+    transform:translate(-50%,-50%) scale(1.06) rotate(-3deg);
+  }
+
+  /* ---------- footer hint ---------- */
+  .hintline{ text-align:center; color:var(--ink-soft); font-size:.8rem; font-weight:700; padding:2px 0 4px; min-height:1.2em; }
+
+  /* ---------- overlays ---------- */
+  .scrim{
+    position:fixed; inset:0; z-index:50;
+    background:rgba(60,46,30,.42);
+    backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .scrim.show{ display:flex; }
+  .card{
+    width:100%; max-width:380px;
+    background:var(--paper);
+    border-radius:22px;
+    padding:26px 24px;
+    box-shadow:0 18px 50px rgba(40,28,16,.4);
+    text-align:center;
+    animation:cardin .3s cubic-bezier(.2,1.1,.4,1);
+  }
+  @keyframes cardin{ from{ transform:translateY(14px) scale(.96); opacity:0;} to{ transform:none; opacity:1;} }
+  .card .emoji{ font-size:3rem; line-height:1; }
+  .card h2{ font-family:"Fraunces",serif; font-weight:700; font-size:1.6rem; margin:.5rem 0 .35rem; }
+  .card p{ color:var(--ink-soft); font-size:.98rem; line-height:1.45; margin:.2rem 0 1.1rem; }
+  .btn{
+    border:none; cursor:pointer; width:100%;
+    padding:14px 18px; border-radius:14px;
+    font-family:"Nunito"; font-weight:800; font-size:1.02rem;
+    color:#fff; background:linear-gradient(180deg,#69a37e,var(--accent));
+    box-shadow:0 4px 0 #487a5b, 0 8px 16px var(--shadow);
+    transition:transform .08s ease, box-shadow .08s ease;
+    margin-top:8px;
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #487a5b,0 4px 10px var(--shadow); }
+  .btn.ghostbtn{
+    color:var(--ink); background:var(--cream-2);
+    box-shadow:0 4px 0 var(--slot-edge),0 8px 14px var(--shadow);
+  }
+  .btn.ghostbtn:active{ box-shadow:0 1px 0 var(--slot-edge),0 3px 8px var(--shadow); }
+
+  /* ---------- menu sheet ---------- */
+  .sheet{
+    position:fixed; z-index:60; inset:0;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .sheet.show{ display:flex; }
+  .sheet .panel{
+    width:100%; max-width:560px;
+    background:var(--paper);
+    border-radius:24px 24px 0 0;
+    padding:18px 18px max(22px,env(safe-area-inset-bottom));
+    box-shadow:0 -10px 40px rgba(40,28,16,.35);
+    animation:sheetin .28s cubic-bezier(.2,1,.4,1);
+    max-height:86vh; overflow:auto;
+  }
+  @keyframes sheetin{ from{ transform:translateY(100%);} to{ transform:none;} }
+  .sheet .grab{ width:44px; height:5px; border-radius:99px; background:var(--slot-edge); margin:0 auto 14px; }
+  .sheet h3{ font-family:"Fraunces",serif; font-weight:700; margin:.2rem 0 .6rem; font-size:1.2rem; }
+  .row{
+    display:flex; align-items:center; gap:12px;
+    padding:12px 14px; border-radius:14px; background:var(--cream);
+    margin-bottom:10px;
+  }
+  .row .txt{ flex:1; }
+  .row .txt b{ display:block; font-size:1rem; }
+  .row .txt span{ font-size:.82rem; color:var(--ink-soft); }
+  .toggle{
+    width:54px; height:31px; border-radius:99px; border:none; cursor:pointer;
+    background:var(--slot-edge); position:relative; transition:background .18s ease; flex:none;
+  }
+  .toggle .knob{
+    position:absolute; top:3px; left:3px; width:25px; height:25px; border-radius:50%;
+    background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.25); transition:left .18s ease;
+  }
+  .toggle.on{ background:var(--good); }
+  .toggle.on .knob{ left:26px; }
+
+  .levelgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:2px 0 14px; }
+  .chaphead{
+    display:flex; align-items:baseline; gap:8px; margin:12px 2px 6px;
+  }
+  .chaphead b{ font-family:"Fraunces",serif; font-weight:700; font-size:1.02rem; color:var(--ink); }
+  .chaphead span{ font-size:.74rem; font-weight:700; color:var(--ink-soft); }
+  .chaphead.locked b{ color:var(--ink-soft); }
+  .lvl{
+    aspect-ratio:1/1; border:none; border-radius:12px; cursor:pointer;
+    font-family:"Nunito"; font-weight:800; font-size:1rem;
+    background:var(--cream); color:var(--ink);
+    box-shadow:0 2px 0 var(--slot-edge);
+    display:grid; place-items:center; position:relative;
+  }
+  .lvl.done{ background:linear-gradient(180deg,#7fb795,var(--accent)); color:#fff; box-shadow:0 2px 0 #487a5b; }
+  .lvl.current{ outline:3px solid var(--accent-2); outline-offset:1px; }
+  .lvl.locked{ background:var(--cream-2); color:var(--ink-soft); cursor:default; box-shadow:none; opacity:.55; font-weight:700; }
+  .lvl.locked .feat{ display:none; }
+  .lvl .feat{ position:absolute; top:1px; right:3px; font-size:.72rem; line-height:1; font-style:normal;
+              filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+  .feat-legend{ font-size:.82rem; color:var(--ink-soft); font-weight:700; line-height:1.6; margin:-2px 2px 12px; }
+
+  .menutext{ font-size:.82rem; color:var(--ink-soft); line-height:1.5; padding:4px 4px 2px; }
+  .menutext b{ color:var(--ink); }
+  .linkbtn{ background:none; border:none; color:var(--accent); font-weight:800; cursor:pointer; font-size:.85rem; padding:8px 0; font-family:"Nunito"; }
+</style>
+<script>
+  /* Register the service worker for offline play + installability. No-op on
+     file:// (service workers need http/https), so opening the file directly
+     still works — it just won't be installable until it's hosted. */
+  if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+</script>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="iconbtn" id="menuBtn" aria-label="Menu">☰</button>
+    <div class="brand">
+      <div class="name">Top Shelf</div>
+      <div class="sub" id="levelLabel">Level 1 · Grocery Sort</div>
+    </div>
+    <button class="iconbtn" id="resetBtn" aria-label="Reset this board" title="Reset board">↺</button>
+  </header>
+
+  <div class="blurb" id="blurb"></div>
+
+  <div class="timerwrap" id="timerwrap">
+    <div class="timerbar"><div class="timerfill" id="timerfill"></div></div>
+    <div class="timertxt" id="timertxt">0:00</div>
+  </div>
+
+  <div id="board"></div>
+  <div class="hintline" id="hint">Drag a grocery onto a shelf with room — match three to clear it.</div>
+</div>
+
+<!-- result card -->
+<div class="scrim" id="scrim">
+  <div class="card" id="card">
+    <div class="emoji" id="cardEmoji">🎉</div>
+    <h2 id="cardTitle">Nicely sorted!</h2>
+    <p id="cardBody"></p>
+    <button class="btn" id="cardPrimary">Next level</button>
+    <button class="btn ghostbtn" id="cardSecondary" style="display:none">Reset board</button>
+  </div>
+</div>
+
+<!-- menu sheet -->
+<div class="sheet" id="sheet">
+  <div class="panel">
+    <div class="grab"></div>
+    <div class="row">
+      <div class="txt"><b>Easy mode</b><span>Turn the timer off — sort at your own pace.</span></div>
+      <button class="toggle" id="easyToggle"><span class="knob"></span></button>
+    </div>
+    <h3>Levels</h3>
+    <div class="feat-legend">🪧 reserved shelf &nbsp; 🛍️ wildcard &nbsp; 📦 dispenser &nbsp; 🔒 shutter &nbsp; 🎀 multipack</div>
+    <div id="levelGrid"></div>
+    <div class="menutext">
+      <b>No ads. No purchases. No lives.</b> Ever. Unlimited retries, and every board
+      stays the same when you reset — so a good plan always pays off.
+    </div>
+    <button class="linkbtn" id="resetProgress">Reset all progress</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =======================================================================
+   Top Shelf: Grocery Sort
+   A single-file, build-free cozy shelf-sorting puzzle.
+
+   Design rules held sacred (see handoff):
+     • genuinely relaxing — generous timers, unlimited retries, gentle ramp
+     • no depleting resources, ever — no coins/lives/energy/boosters
+     • clarity over cleverness — 3-slot shelves, monochrome clears, drag-to-move
+
+   Board model:
+     board   = array of shelves
+     shelf   = [slot, slot, slot]                (always exactly 3 slots)
+     slot    = array of type-ids, index 0 = FRONT (visible & movable),
+               index 1.. = hidden back-row layers (greyed, deepest last)
+     A shelf "has room"   = some slot is empty.
+     A shelf "clears"     = all 3 slots non-empty AND their front items match.
+                            The 3 fronts are collected; back items advance.
+   ======================================================================= */
+
+/* ---------- deterministic RNG (boards stable across retries) ---------- */
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rand){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = (rand() * (i + 1)) | 0;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ---------- pure board helpers ----------
+   A shelf is an array of 3 slots; it may carry a static `.label` (a type-id)
+   making it a RESERVED shelf that only accepts/holds that one type. The label
+   travels with the shelf through cloning so every routine sees it. */
+/* Static per-shelf attributes that ride along through cloning:
+     .label       reserved shelf — accepts only this type
+     .dispenser   take-only delivery pallet — nothing can be placed onto it
+     .locked      shuttered shelf — closed right now (opens after N clears)
+     .lockedUntil clears needed before this shelf opens */
+const SHELF_ATTRS = ["label", "dispenser", "locked", "lockedUntil"];
+const cloneShelf = sh => { const n = sh.map(sl => sl.slice()); for(const k of SHELF_ATTRS) if(sh[k] != null) n[k] = sh[k]; return n; };
+const cloneBoard = b => b.map(cloneShelf);
+const hasItems   = b => b.some(sh => sh.some(sl => sl.length));
+const filledCount = sh => sh.reduce((n, sl) => n + (sl.length ? 1 : 0), 0);
+const shelfHasRoom = sh => sh.some(sl => sl.length === 0);
+const emptyShelfCount = b => b.filter(sh => sh.every(sl => sl.length === 0)).length;
+const emptyCount = sh => sh.reduce((n, sl) => n + (sl.length === 0 ? 1 : 0), 0);
+/* a shelf accepts `n` items of `type` if it has that many open slots, isn't a
+   take-only dispenser or closed shutter, and isn't reserved for another type. */
+const canAcceptN = (sh, type, n) =>
+  emptyCount(sh) >= n && !sh.dispenser && !sh.locked &&
+  (sh.label == null || sh.label === type || type === WILD);
+const canAccept = (sh, type) => canAcceptN(sh, type, 1);
+
+/* ---------- item values ----------
+   A slot item is normally a plain type-id. A MULTIPACK item is an object
+   { t, p } — type t, pack-group p — two of which (same p, same shelf) move as a
+   bound unit into two open slots at once. TYPE() reads the type either way. */
+const WILD = -1;
+const TYPE = x => (typeof x === "object" ? x.t : x);
+const isPack = x => typeof x === "object" && x !== null;
+
+/* WILD is a "mixed grocery bag" that stands in for any item — three fronts
+   clear when the non-wild ones all match (or they're all wild). */
+function frontsMatch(a, b, c){
+  const real = [a, b, c].map(TYPE).filter(t => t !== WILD);
+  return real.length === 0 || real.every(t => t === real[0]);
+}
+function shelfMonochrome(sh){
+  return sh[0].length && sh[1].length && sh[2].length &&
+         frontsMatch(sh[0][0], sh[1][0], sh[2][0]);
+}
+const hasMonochromeFull = b => b.some(shelfMonochrome);
+
+/* Collect every monochrome shelf, cascading as back rows advance. */
+function resolveClears(b){
+  let cleared = 0, changed = true;
+  while(changed){
+    changed = false;
+    for(const sh of b){
+      if(shelfMonochrome(sh)){
+        for(const sl of sh) sl.shift();
+        cleared++; changed = true;
+      }
+    }
+  }
+  return cleared;
+}
+
+/* Indices of the two slots holding shelf `i`'s multipack (or null). At most one
+   pack per shelf, since a pack fills two of the three slots. */
+function packSlots(sh){
+  const idx = [];
+  for(let s = 0; s < 3; s++) if(sh[s].length && isPack(sh[s][0])) idx.push(s);
+  return idx.length === 2 ? idx : null;
+}
+
+/* All legal moves. A single front item moves to any shelf that accepts it; a
+   multipack moves as a unit to any shelf with two open slots that accepts it. */
+function legalMoves(b){
+  const out = [];
+  for(let i = 0; i < b.length; i++){
+    if(b[i].locked) continue;                  // closed shutter: stock is inert until it opens
+    const pk = packSlots(b[i]);
+    for(let s = 0; s < 3; s++){
+      if(b[i][s].length === 0) continue;
+      if(pk && pk.includes(s)) continue;       // pack halves handled below, not as singles
+      const t = TYPE(b[i][s][0]);
+      for(let j = 0; j < b.length; j++){
+        if(j === i) continue;
+        if(canAccept(b[j], t)) out.push({ fs:i, ss:s, ts:j });
+      }
+    }
+    if(pk){
+      const t = TYPE(b[i][pk[0]][0]);
+      for(let j = 0; j < b.length; j++){
+        if(j === i) continue;
+        if(canAcceptN(b[j], t, 2)) out.push({ fs:i, ts:j, pack:true });
+      }
+    }
+  }
+  return out;
+}
+
+/* Apply a move to a fresh copy; resolve clears; return new board. Handles both
+   single-item moves and whole-pack moves (two items into two open slots). */
+function applyMove(b, mv){
+  const nb = cloneBoard(b);
+  if(mv.pack){
+    const ps = packSlots(nb[mv.fs]);
+    const carried = ps.map(s => nb[mv.fs][s].shift());
+    for(const item of carried){
+      const e = nb[mv.ts].findIndex(sl => sl.length === 0);
+      nb[mv.ts][e].push(item);
+    }
+  }else{
+    const t = nb[mv.fs][mv.ss].shift();
+    const e = nb[mv.ts].findIndex(sl => sl.length === 0);
+    nb[mv.ts][e].push(t);
+  }
+  resolveClears(nb);
+  return nb;
+}
+
+/* Canonical key: slot order within a shelf and shelf order are irrelevant, but
+   a shelf's reserved label, take-only nature, and shutter state are identity. */
+function canonical(b){
+  const cell = x => isPack(x) ? "P" + x.t : "" + x;     // packed items distinct from singles
+  const shelves = b.map(sh =>
+    (sh.label != null ? "L" + sh.label : "") + (sh.dispenser ? "D" : "") +
+    (sh.lockedUntil != null ? (sh.locked ? "K" : "k") : "") + ":" +
+    sh.map(sl => sl.map(cell).join(".")).sort().join("|"));
+  shelves.sort();
+  return shelves.join("/");
+}
+
+/* Bounded solver — iterative DFS with an explicit stack (so deep solution
+   lines can't overflow the call stack). Returns true the instant ANY winning
+   line is found, so solvable boards are cheap; only genuinely stuck boards pay
+   the full search. `exhausted` means we hit the node cap and can't claim.
+   Routes to the clears-aware solver when the board has a shuttered shelf. */
+function solve(board, cap, startCleared){
+  if(board.some(sh => sh.lockedUntil != null)) return solveShutter(board, cap, startCleared || 0);
+  const seen = new Set();           // mark-on-push: each distinct state enqueued once
+  let nodes = 0;
+  seen.add(canonical(board));
+  const stack = [board];
+  while(stack.length){
+    const b = stack.pop();
+    if(!hasItems(b)) return { solvable: true, exhausted: false };
+    if(++nodes > cap) return { solvable: false, exhausted: true };
+    for(const mv of legalMoves(b)){
+      const nb = applyMove(b, mv);
+      if(!hasItems(nb)) return { solvable: true, exhausted: false };
+      const k = canonical(nb);
+      if(seen.has(k)) continue;
+      seen.add(k);
+      stack.push(nb);
+    }
+  }
+  return { solvable: false, exhausted: false };   // fully explored → truly unsolvable
+}
+
+/* Clears-aware solver for shuttered levels. A closed shutter's stock is inert
+   (can't move from or onto it) until enough shelves have been cleared; the
+   search carries the running clear count so it must genuinely earn the unlock
+   using only the reachable groceries. */
+function solveShutter(board, cap, startCleared){
+  const maxT = Math.max(...board.map(sh => sh.lockedUntil || 0));
+  const relock = (b, c) => { for(const sh of b) if(sh.lockedUntil != null) sh.locked = c < sh.lockedUntil; };
+  const key = (b, c) => canonical(b) + "@" + Math.min(c, maxT);
+  const root = cloneBoard(board);
+  relock(root, startCleared);
+  const seen = new Set([key(root, startCleared)]);
+  let nodes = 0;
+  const stack = [[root, startCleared]];
+  while(stack.length){
+    const [b, c] = stack.pop();
+    if(!hasItems(b)) return { solvable: true, exhausted: false };
+    if(++nodes > cap) return { solvable: false, exhausted: true };
+    for(const mv of legalMoves(b)){
+      const nb = cloneBoard(b);
+      const t = nb[mv.fs][mv.ss].shift();
+      const ts = nb[mv.ts].findIndex(sl => sl.length === 0);
+      nb[mv.ts][ts].push(t);
+      const nc = c + resolveClears(nb);
+      relock(nb, nc);                            // open shutters whose threshold is now met
+      if(!hasItems(nb)) return { solvable: true, exhausted: false };
+      const k = key(nb, nc);
+      if(seen.has(k)) continue;
+      seen.add(k);
+      stack.push([nb, nc]);
+    }
+  }
+  return { solvable: false, exhausted: false };
+}
+
+/* =======================================================================
+   Level generation — shuffle BACKWARD from a solved state.
+   We only ever apply inverses of legal forward operations, so the forward
+   replay is guaranteed legal and winning. A bounded solver double-checks.
+   ======================================================================= */
+
+/* One inverse move = a legal forward move that does NOT create an
+   auto-clearing (monochrome-full) shelf. Packs toward fuller shelves so the
+   requested empty shelves survive as breathing room. */
+function inverseMove(board, rand){
+  const srcs = [];
+  for(let i = 0; i < board.length; i++)
+    for(let s = 0; s < 3; s++)
+      if(board[i][s].length) srcs.push([i, s]);
+  shuffle(srcs, rand);
+  for(const [si, ss] of srcs){
+    const t = board[si][ss][0];
+    const dests = [];
+    for(let j = 0; j < board.length; j++){
+      if(j === si) continue;
+      const e = board[j].findIndex(sl => sl.length === 0);
+      if(e >= 0) dests.push([j, e]);
+    }
+    if(!dests.length) continue;
+    dests.sort((a, b) => filledCount(board[b[0]]) - filledCount(board[a[0]]));
+    for(const [dj, de] of dests){
+      if(board[dj].label != null && board[dj].label !== t) continue;   // reserved for another type
+      board[si][ss].shift(); board[dj][de].push(t);
+      if(!hasMonochromeFull(board)) return true;
+      board[dj][de].pop(); board[si][ss].unshift(t);   // undo, try next dest
+    }
+  }
+  return false;
+}
+
+function tryBuild(K, emptyShelves, layers, extraClears, reserved, rand){
+  const maxDepth = layers ? 2 : 1;
+  const totalShelves = K + emptyShelves + (layers ? 1 : 0);
+
+  // The order clears will be "un-done" — every type at least once.
+  const types = [];
+  for(let t = 0; t < K; t++) types.push(t);
+  for(let e = 0; e < (layers ? extraClears : 0); e++) types.push((rand() * K) | 0);
+  shuffle(types, rand);
+
+  const board = Array.from({ length: totalShelves }, () => [[], [], []]);
+
+  // Reserve a few shelves, each labeled for a distinct type (its only tenant).
+  if(reserved > 0){
+    const colors = shuffle(Array.from({ length: K }, (_, t) => t), rand).slice(0, Math.min(reserved, K));
+    const idxs = shuffle(Array.from({ length: totalShelves }, (_, i) => i), rand);
+    colors.forEach((c, n) => { board[idxs[n]].label = c; });
+  }
+
+  for(const t of types){
+    // inverse-clear: a shelf that can take one more layer and isn't reserved
+    // for some OTHER type (a reserved shelf only ever holds its own color).
+    const cand = [];
+    for(let i = 0; i < board.length; i++)
+      if(board[i].every(sl => sl.length < maxDepth) &&
+         (board[i].label == null || board[i].label === t)) cand.push(i);
+    if(!cand.length) return null;
+    const sh = cand[(rand() * cand.length) | 0];
+    for(const sl of board[sh]) sl.unshift(t);          // now monochrome-full
+    // immediately scatter so it isn't left auto-clearing
+    const scatter = 3 + ((rand() * 4) | 0);
+    for(let m = 0; m < scatter; m++) if(!inverseMove(board, rand)) break;
+  }
+
+  // extra scramble for depth of routing
+  const extra = 6 + ((rand() * 9) | 0);
+  for(let m = 0; m < extra; m++) inverseMove(board, rand);
+
+  // never hand the player a board that clears itself on frame one
+  for(let g = 0; g < 24 && hasMonochromeFull(board); g++) inverseMove(board, rand);
+  if(hasMonochromeFull(board)) return null;
+  return board;
+}
+
+/* Build, validate, and fall back to gentler params if needed. */
+function generateBoard(def, levelIndex){
+  const r = def.reserved || 0;
+  const ladders = [
+    { K: def.kinds,     empty: def.empty,     layers: def.layers, extra: def.extra, reserved: r },
+    { K: def.kinds,     empty: def.empty + 1, layers: def.layers, extra: def.extra, reserved: r },
+    { K: def.kinds,     empty: def.empty + 1, layers: def.layers, extra: def.extra, reserved: Math.max(0, r - 1) },
+    { K: def.kinds,     empty: def.empty + 1, layers: false,      extra: 0,         reserved: 0 },
+    { K: Math.max(3, def.kinds - 1), empty: def.empty + 1, layers: false, extra: 0, reserved: 0 },
+  ];
+  for(const cfg of ladders){
+    for(let attempt = 0; attempt < 60; attempt++){
+      const seed = (levelIndex + 1) * 1_000_003 + attempt * 7919 + (cfg.layers ? 11 : 0);
+      const rand = mulberry32(seed);
+      const board = tryBuild(cfg.K, cfg.empty, cfg.layers, cfg.extra, cfg.reserved, rand);
+      if(!board) continue;
+      if(emptyShelfCount(board) < 1) continue;             // must be playable
+      if(legalMoves(board).length === 0) continue;
+      if(emptyShelfCount(board) < cfg.empty && cfg.empty <= def.empty && attempt < 40) continue; // respect breathing room
+      const v = solve(board, 250_000);
+      if(v.solvable) return board;                          // solvable → found fast
+      // unsolvable or exhausted: construction was off this time, reseed
+    }
+  }
+  // Should never happen; degrade to a trivially solvable starter.
+  return tryBuild(3, 3, false, 0, 0, mulberry32(levelIndex + 1)) ||
+         [[[0],[0],[]], [[0],[],[]], [[],[],[]]];
+}
+
+/* ---------- per-level emoji assignment ----------
+   Each chapter (department) owns its own grocery palette, so a level's look
+   tells you which aisle you're in. Stable per level index, lightly varied. */
+function paletteFor(levelIndex, n){
+  const dept = DEPTS[Math.min(DEPTS.length - 1, Math.floor(levelIndex / 10))];
+  return shuffle(dept.pal.slice(), mulberry32((levelIndex + 1) * 99991)).slice(0, Math.max(n, 3));
+}
+
+/* WILDCARDS: turn a few items into "mixed bags" (WILD). A wildcard stands in
+   for any item, so this can only make a solvable board easier — never unsolvable.
+   We avoid converting an item if doing so would auto-clear a shelf on frame one. */
+function injectWildcards(board, count, rand){
+  const spots = [];
+  board.forEach((sh, i) => sh.forEach((sl, s) => sl.forEach((t, d) => {
+    if(t !== WILD) spots.push([i, s, d, d === 0 ? 0 : 1]);    // prefer front items (visible & usable)
+  })));
+  spots.sort((a, b) => a[3] - b[3] || rand() - 0.5);
+  let made = 0;
+  for(const [i, s, d] of spots){
+    if(made >= count) break;
+    const prev = board[i][s][d];
+    board[i][s][d] = WILD;
+    if(hasMonochromeFull(board)){ board[i][s][d] = prev; continue; }   // would auto-clear
+    made++;
+  }
+  return made;
+}
+
+/* DISPENSER: mark one stocked shelf as take-only. That removes it as a buffer,
+   so we solver-gate each candidate and keep the first that stays winnable
+   (trying several shelves/seeds), falling back to no dispenser if none fit. */
+function buildDispenserLevel(def, levelIndex){
+  for(let attempt = 0; attempt < 40; attempt++){
+    const board = generateBoard(def, levelIndex + attempt * 1000);
+    const cands = board.map((_, idx) => idx)
+      .filter(idx => board[idx].label == null && board[idx].some(sl => sl.length) && !shelfMonochrome(board[idx]));
+    shuffle(cands, mulberry32(levelIndex * 131 + attempt + 1));
+    for(const idx of cands.slice(0, 4)){
+      board[idx].dispenser = true;
+      if(legalMoves(board).length > 0 && solve(board, 250000).solvable)
+        return { board, emojis: paletteFor(levelIndex, def.kinds) };
+      delete board[idx].dispenser;
+    }
+  }
+  return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+}
+
+/* SHUTTER: designate a STOCKED shelf as a locked back room — its groceries are
+   inert until you clear N shelves on the floor. That makes early play genuinely
+   tighter (a shelf's worth of items + space is unavailable) and the opening
+   meaningful: it hands you more to sort, not just empty space. Solver-gated so
+   the N clears are actually achievable without the locked stock. */
+function buildShutterLevel(def, levelIndex){
+  const target = def.shutterAfter || 2;
+  let fallback = null;                                   // a lower-threshold option, if the target won't fit
+  for(let attempt = 0; attempt < 40; attempt++){
+    const board = generateBoard(def, levelIndex + attempt * 1000);
+    const cands = board.map((_, idx) => idx)
+      .filter(idx => board[idx].label == null && !board[idx].dispenser &&
+                     filledCount(board[idx]) >= 2 && !shelfMonochrome(board[idx]));
+    shuffle(cands, mulberry32(levelIndex * 733 + attempt + 1));
+    for(const idx of cands.slice(0, 4)){
+      for(let N = target; N >= 1; N--){
+        board[idx].lockedUntil = N;
+        board[idx].locked = true;
+        const ok = legalMoves(board).length > 0 && solve(board, 300000, 0).solvable;
+        if(ok && N === target) return { board, emojis: paletteFor(levelIndex, def.kinds) };
+        if(ok && !fallback)    fallback = { board: cloneBoard(board), emojis: paletteFor(levelIndex, def.kinds) };
+        delete board[idx].lockedUntil;
+        delete board[idx].locked;
+      }
+    }
+    if(fallback && attempt >= 12) return fallback;       // gave the target threshold a fair shot
+  }
+  return fallback || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+}
+
+/* MULTIPACK: bind pairs of same-type items (sitting together on a shelf) into
+   shrink-wrapped 2-packs that must move as a unit. Binding only restricts moves,
+   so we solver-gate and keep the first board that stays winnable. Flat levels
+   only (packs + hidden back rows would be a tangle), with roomy boards so a pack
+   always has two open slots to move into. */
+function buildMultipackLevel(def, levelIndex){
+  const want = def.packs || 1;
+  for(let attempt = 0; attempt < 60; attempt++){
+    const board = generateBoard(def, levelIndex + attempt * 1000);
+    // shelves that hold two singles of the same type → a bindable pair
+    const order = shuffle(board.map((_, i) => i), mulberry32(levelIndex * 911 + attempt + 1));
+    let pid = 1;
+    for(const i of order){
+      if(pid > want) break;
+      const byType = {};
+      for(let s = 0; s < 3; s++){
+        const sl = board[i][s];
+        if(sl.length === 1 && !isPack(sl[0])) (byType[sl[0]] ||= []).push(s);
+      }
+      const pair = Object.values(byType).find(ss => ss.length >= 2);
+      if(!pair) continue;
+      const t = board[i][pair[0]][0];
+      board[i][pair[0]][0] = { t, p: pid };
+      board[i][pair[1]][0] = { t, p: pid };
+      pid++;
+    }
+    if(pid - 1 < want) continue;                          // didn't find enough pairs this seed
+    if(!hasMonochromeFull(board) && legalMoves(board).length > 0 && solve(board, 300000).solvable)
+      return { board, emojis: paletteFor(levelIndex, def.kinds) };
+  }
+  return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+}
+
+/* Single entry point: produce {board, emojis} for a level. Routes by feature. */
+function buildLevel(def, levelIndex){
+  if(def.feature === "wildcard"){
+    // No solve-gate here, by design. A wildcard stands in for ANY item, so every
+    // legal move that solved the base board is still legal and still clears with
+    // a wild in the mix — converting items to WILD can only make a board MORE
+    // solvable, never less. The base board is already solver-verified inside
+    // generateBoard, so the result is solvable by construction. (Gating wildcard
+    // boards is also pathologically slow — they explode the solver's state space —
+    // which is why the soft-deadlock check is skipped on wildcard levels too.)
+    // injectWildcards already reverts any conversion that would auto-clear.
+    const board = generateBoard(def, levelIndex);
+    injectWildcards(board, def.wildcards || 2, mulberry32((levelIndex + 1) * 5077));
+    return { board, emojis: paletteFor(levelIndex, def.kinds) };
+  }
+  if(def.feature === "dispenser") return buildDispenserLevel(def, levelIndex);
+  if(def.feature === "shutter")   return buildShutterLevel(def, levelIndex);
+  if(def.feature === "multipack") return buildMultipackLevel(def, levelIndex);
+  return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+}
+
+/* =======================================================================
+   Levels — the 100-level arc: a shop's day across 10 departments.
+   Each chapter owns a department (its own palette + voice) and introduces ONE
+   new wrinkle in isolation before developing it, twisting it, and ending on a
+   set-piece. A breather lands every ~7th level. Difficulty rises in a sawtooth
+   that peaks around level ~90, then winds down to a calm finale at 100.
+   See top-shelf-level-design.md for the research behind this structure.
+   ======================================================================= */
+
+/* Departments: name + grocery palette. Chapter c == Math.floor(levelIndex/10).
+   Palettes are chosen so the items in one aisle read distinctly at a glance. */
+const DEPTS = [
+  { name: "Opening Up",       pal: ["🍎","🍌","🍇","🍊","🥝","🍑","🍉"] },
+  { name: "The Back Shelves", pal: ["🍞","🥫","🍝","🫙","🍯","🥜","🍪","🧂"] },
+  { name: "Reserved Homes",   pal: ["🥛","🧀","🧈","🥚","🍦","🍨","🍮"] },
+  { name: "The Loading Dock", pal: ["🧃","🥤","🍾","🧉","🧊","🥡","🫙"] },
+  { name: "Deep Storage",     pal: ["🧊","🥟","🍕","🌭","🍔","🍟","🍙"] },
+  { name: "Mixed Bags",       pal: ["🥐","🥖","🥯","🧁","🍰","🍩","🥨"] },
+  { name: "The Cold Room",    pal: ["🥩","🍗","🐟","🦐","🥓","🦀","🧊"] },
+  { name: "The Bulk Aisle",   pal: ["🥜","🌰","🫘","🍿","🍬","🍫","🍭"] },
+  { name: "Rush Hour",        pal: ["🍎","🥕","🍞","🥛","🧀","🍌","🍅","🥦"] },
+  { name: "Closing Time",     pal: ["🍵","🍪","🥧","🍮","🫖","🍯","🍰"] },
+];
+
+/* Compact level constructor: L(kinds, empty, overrides). A level def carries the
+   difficulty knobs (kinds / empty / layers / extra back-row clears / reserved
+   count), an optional feature, and a one-line blurb. */
+const L = (kinds, empty, o = {}) =>
+  ({ kinds, empty, layers: false, extra: 0, reserved: 0, ...o });
+
+/* Generous timer: thinking room scales with the work; gimmick levels get a bit
+   more. Easy mode turns the clock off entirely. */
+const mkTime = d => {
+  const items = (d.kinds + (d.layers ? d.extra : 0)) * 3;
+  let t = items * 12;
+  if (d.feature) t += 60;
+  return Math.min(480, Math.max(150, Math.round(t)));
+};
+
+/* ---- Chapter 1 · Opening Up — learn the one verb. Flat, roomy, no gimmicks. */
+const CH1 = [
+  L(3, 2, { blurb: "A quiet morning at the corner store." }),
+  L(3, 2, { blurb: "Drag a grocery to a shelf with room." }),
+  L(4, 2, { blurb: "Three of a kind, side by side." }),
+  L(4, 2, { blurb: "Everything in its right place." }),
+  L(4, 1, { blurb: "A little less room to work with." }),
+  L(5, 2, { blurb: "Five groceries, plenty of shelf." }),
+  L(3, 2, { role: "breather", blurb: "Easy does it — a quick tidy." }),
+  L(4, 1, { blurb: "Make room, then make matches." }),
+  L(5, 1, { blurb: "Snug shelves. Plan your route." }),
+  L(5, 1, { role: "setpiece", blurb: "Open and stocked — sort it clean." }),
+];
+
+/* ---- Chapter 2 · The Back Shelves — introduce hidden back rows. */
+const CH2 = [
+  L(3, 2, { layers: true, extra: 1, role: "intro", blurb: "Some items hide a grocery behind them." },),
+  L(4, 2, { layers: true, extra: 1, blurb: "Clear the front to reveal the back." }),
+  L(4, 2, { layers: true, extra: 1, blurb: "Peek behind before you commit." }),
+  L(4, 1, { layers: true, extra: 1, blurb: "Hidden stock, tighter shelves." }),
+  L(5, 2, { layers: true, extra: 1, blurb: "Five kinds, a few tucked away." }),
+  L(4, 2, { layers: true, extra: 1, blurb: "What's behind that one?" }),
+  L(3, 2, { layers: true, extra: 1, role: "breather", blurb: "A gentle reshuffle." }),
+  L(5, 1, { layers: true, extra: 1, blurb: "Reveal, then route." }),
+  L(5, 1, { layers: true, extra: 2, blurb: "Two-deep in places. Mind the order." }),
+  L(5, 1, { layers: true, extra: 2, role: "setpiece", blurb: "Deep stock, neat shelves." }),
+];
+
+/* ---- Chapter 3 · Reserved Homes — a sign means only its grocery goes there. */
+const CH3 = [
+  L(3, 2, { reserved: 1, feature: "reserved", role: "intro", blurb: "A shelf with a sign takes only its grocery." }),
+  L(4, 2, { reserved: 1, feature: "reserved", blurb: "Read the sign, route around it." }),
+  L(4, 2, { reserved: 2, feature: "reserved", blurb: "Two reserved homes now." }),
+  L(4, 1, { reserved: 1, feature: "reserved", layers: true, extra: 1, blurb: "A sign, and stock hidden behind." }),
+  L(5, 2, { reserved: 2, feature: "reserved", blurb: "Mind both signs." }),
+  L(5, 1, { reserved: 2, feature: "reserved", layers: true, extra: 1, blurb: "Reserved and tight — think ahead." }),
+  L(3, 2, { reserved: 1, feature: "reserved", role: "breather", blurb: "One sign, lots of room." }),
+  L(5, 1, { reserved: 2, feature: "reserved", layers: true, extra: 1, blurb: "Signs everywhere, scratch space scarce." }),
+  L(6, 1, { reserved: 3, feature: "reserved", layers: true, extra: 1, blurb: "Three reserved homes. Route carefully." }),
+  L(6, 1, { reserved: 3, feature: "reserved", layers: true, extra: 1, role: "setpiece", blurb: "Every shelf has a job. Sort to plan." }),
+];
+
+/* ---- Chapter 4 · The Loading Dock — take-only delivery pallets. */
+const CH4 = [
+  L(3, 2, { feature: "dispenser", role: "intro", blurb: "The 📦 pallet only unloads — never stack onto it." }),
+  L(4, 2, { feature: "dispenser", blurb: "Empty the pallet; it won't take any back." }),
+  L(4, 2, { feature: "dispenser", layers: true, extra: 1, blurb: "Unload, and watch the hidden stock." }),
+  L(4, 1, { feature: "dispenser", blurb: "Less room, one pallet to clear." }),
+  L(5, 2, { feature: "dispenser", layers: true, extra: 1, blurb: "Deliveries keep coming." }),
+  L(5, 1, { feature: "dispenser", reserved: 1, blurb: "A pallet and a reserved home together." }),
+  L(3, 2, { feature: "dispenser", role: "breather", blurb: "One pallet, easy floor." }),
+  L(5, 1, { feature: "dispenser", layers: true, extra: 1, blurb: "Tight dock, hidden crates." }),
+  L(6, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 1, blurb: "Pallet, sign, and back rows." }),
+  L(6, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 1, role: "setpiece", blurb: "Clear the dock before it backs up." }),
+];
+
+/* ---- Chapter 5 · Deep Storage — no new gimmick; deep back rows + pressure. */
+const CH5 = [
+  L(4, 2, { layers: true, extra: 2, role: "intro", blurb: "Stacked two-deep. Uncover with care." }),
+  L(5, 1, { layers: true, extra: 2, blurb: "Tight aisles, deep shelves." }),
+  L(5, 1, { layers: true, extra: 2, blurb: "Reveal the right one first." }),
+  L(5, 1, { layers: true, extra: 2, reserved: 1, blurb: "A sign in the stacks." }),
+  L(6, 1, { layers: true, extra: 2, blurb: "Six kinds, two layers deep." }),
+  L(6, 1, { layers: true, extra: 2, blurb: "Patience in the back." }),
+  L(4, 2, { layers: true, extra: 1, role: "breather", blurb: "Shallow shelves, room to breathe." }),
+  L(6, 1, { layers: true, extra: 2, blurb: "No scratch space to spare." }),
+  L(6, 1, { layers: true, extra: 2, reserved: 1, blurb: "Deep, tight, and labeled." }),
+  L(6, 1, { layers: true, extra: 2, reserved: 1, role: "setpiece", blurb: "The deepest corner of the store." }),
+];
+
+/* ---- Chapter 6 · Mixed Bags — wildcards (flat only, and kept to kinds<=5 with
+   tight space: wildcards explode the solver, and roomy/high-kind boards push
+   on-demand generation past a second. Tight wildcard boards stay snappy). */
+const CH6 = [
+  L(3, 2, { feature: "wildcard", wildcards: 1, role: "intro", blurb: "A mixed bag 🛍️ completes any shelf." }),
+  L(4, 2, { feature: "wildcard", wildcards: 1, blurb: "Save the bag for a shelf that needs it." }),
+  L(4, 2, { feature: "wildcard", wildcards: 2, blurb: "Two bags to place wisely." }),
+  L(4, 1, { feature: "wildcard", wildcards: 1, blurb: "One bag, tighter shelves." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Bags fit anywhere — spend them well." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Plan each bag's home." }),
+  L(3, 2, { feature: "wildcard", wildcards: 1, role: "breather", blurb: "An easy bag to place." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Two wilds, snug shelves." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Five kinds, two mixed bags." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, role: "setpiece", blurb: "Two bags, tight floor — make them count." }),
+];
+
+/* ---- Chapter 7 · The Cold Room — shuttered back room, opens after N clears. */
+const CH7 = [
+  L(3, 2, { feature: "shutter", shutterAfter: 2, role: "intro", blurb: "Stock's locked behind the shutter — clear the floor to reach it." }),
+  L(4, 2, { feature: "shutter", shutterAfter: 2, blurb: "Two clears and the gate opens." }),
+  L(4, 2, { feature: "shutter", shutterAfter: 2, layers: true, extra: 1, blurb: "Cold stock, hidden behind front items." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Earn the key with less room." }),
+  L(5, 2, { feature: "shutter", shutterAfter: 2, layers: true, extra: 1, blurb: "Groceries wait behind the gate." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 3, blurb: "Three clears to open this one." }),
+  L(3, 2, { feature: "shutter", shutterAfter: 2, role: "breather", blurb: "A small back room, easy floor." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 1, blurb: "Tight, cold, and locked." }),
+  L(6, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, layers: true, extra: 1, blurb: "A sign and a shutter to manage." }),
+  L(6, 1, { feature: "shutter", shutterAfter: 3, layers: true, extra: 1, role: "setpiece", blurb: "Clear three, then stock the cold room." }),
+];
+
+/* ---- Chapter 8 · The Bulk Aisle — multipacks move as a unit (flat only). */
+const CH8 = [
+  L(3, 2, { feature: "multipack", packs: 1, role: "intro", blurb: "A shrink-wrapped 2-pack 🎀 moves together — give it two open slots." }),
+  L(4, 2, { feature: "multipack", packs: 1, blurb: "Keep two slots free for the pack." }),
+  L(4, 2, { feature: "multipack", packs: 2, blurb: "Two multipacks now." }),
+  L(5, 2, { feature: "multipack", packs: 1, blurb: "One pack among five kinds." }),
+  L(5, 2, { feature: "multipack", packs: 2, blurb: "Shuffle the packs with care." }),
+  L(6, 2, { feature: "multipack", packs: 2, blurb: "Two packs, more to sort around." }),
+  L(3, 2, { feature: "multipack", packs: 1, role: "breather", blurb: "An easy pack to rehome." }),
+  L(6, 2, { feature: "multipack", packs: 2, blurb: "Mind the open slots." }),
+  L(6, 2, { feature: "multipack", packs: 3, blurb: "Three packs in the aisle." }),
+  L(6, 2, { feature: "multipack", packs: 3, role: "setpiece", blurb: "Bulk day — keep the packs moving." }),
+];
+
+/* ---- Chapter 9 · Rush Hour — everything you've learned, combined. Peaks ~90. */
+const CH9 = [
+  L(5, 2, { reserved: 2, feature: "reserved", layers: true, extra: 1, role: "intro", blurb: "Rush hour. Signs and hidden stock again." }),
+  L(5, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 1, blurb: "A pallet and two signs at once." }),
+  L(6, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, layers: true, extra: 1, blurb: "Locked stock and a labeled home." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Two bags in the crush." }),
+  L(6, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 1, blurb: "Clear the dock under pressure." }),
+  L(6, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Deep stock behind the gate." }),
+  L(4, 2, { feature: "multipack", packs: 1, role: "breather", blurb: "One quiet pack before the push." }),
+  L(6, 1, { reserved: 3, feature: "reserved", layers: true, extra: 2, blurb: "Three signs, two layers, no room." }),
+  L(6, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 2, blurb: "The busiest corner of the floor." }),
+  L(6, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, layers: true, extra: 2, role: "setpiece", blurb: "Peak rush — everything at once." }),
+];
+
+/* ---- Chapter 10 · Closing Time — wind down to a calm finale. */
+const CH10 = [
+  L(6, 1, { layers: true, extra: 1, blurb: "The crowd thins. Catch your breath." }),
+  L(5, 1, { reserved: 1, feature: "reserved", layers: true, extra: 1, blurb: "A last few signs to honor." }),
+  L(5, 2, { layers: true, extra: 1, blurb: "Room opening back up." }),
+  L(5, 2, { blurb: "Lights still warm, shelves settling." }),
+  L(4, 2, { layers: true, extra: 1, blurb: "Tidying the last aisles." }),
+  L(4, 2, { blurb: "Almost there. No rush at all." }),
+  L(4, 2, { role: "breather", blurb: "A slow, easy pass." }),
+  L(3, 2, { blurb: "Quiet shelves, quiet mind." }),
+  L(3, 2, { blurb: "One last tidy before the door." }),
+  L(3, 3, { role: "finale", blurb: "Closing time — leave it neat." }),
+];
+
+const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH9, CH10)
+  .map((d, i) => ({ ...d, time: mkTime(d), chapter: Math.floor(i / 10) }));
+
+/* =======================================================================
+   Persistence (localStorage only — nothing depleting lives here)
+   ======================================================================= */
+const SAVE_KEY = "topshelf.save.v1";
+function loadSave(){
+  try{
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if(s && typeof s === "object")
+      return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, easy: !!s.easy };
+  }catch(e){}
+  return { unlocked: 1, current: 0, easy: false };
+}
+function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
+let save = loadSave();
+
+/* =======================================================================
+   Game state + DOM wiring
+   ======================================================================= */
+const boardEl   = document.getElementById("board");
+const blurbEl   = document.getElementById("blurb");
+const levelLabel= document.getElementById("levelLabel");
+const hintEl    = document.getElementById("hint");
+const timerWrap = document.getElementById("timerwrap");
+const timerFill = document.getElementById("timerfill");
+const timerTxt  = document.getElementById("timertxt");
+
+const G = {
+  index: 0,
+  def: null,
+  board: null,
+  emojis: [],       // type-id -> emoji for this level
+  remaining: 0,     // seconds
+  total: 0,
+  selected: null,   // {fs,ss} for tap-to-move
+  drag: null,       // active drag descriptor
+  over: false,      // overlay/menu blocking play
+  ended: false,     // level resolved (won/dead) — board frozen
+  moveToken: 0,     // bumped each move, used to cancel stale async checks
+  cleared: 0,       // total shelves cleared this level (drives shutter opening)
+};
+
+/* Open any shuttered shelf whose clear threshold has now been reached. */
+function updateShutters(){
+  for(const sh of G.board)
+    if(sh.lockedUntil != null) sh.locked = G.cleared < sh.lockedUntil;
+}
+
+/* ---------- level lifecycle ---------- */
+function startLevel(i){
+  G.index = i;
+  G.def = LEVELS[i];
+  const built = buildLevel(G.def, i);   // returns board + emojis
+  G.board = built.board;
+  G.emojis = built.emojis;
+  G.selected = null;
+  G.ended = false;
+  G.cleared = 0;
+  G.total = G.def.time;
+  G.remaining = G.def.time;
+  updateShutters();
+
+  save.current = i;
+  persist();
+
+  const dept = DEPTS[Math.min(DEPTS.length - 1, G.def.chapter)];
+  levelLabel.textContent = `Level ${i + 1} · ${dept.name}`;
+  blurbEl.textContent = G.def.blurb;
+  hintEl.textContent = "Drag a grocery onto a shelf with room — match three to clear it.";
+  render();
+  updateTimerUI();
+  startTimer();                  // (re)start the clock — stopped by the previous level's end card
+}
+
+function resetBoard(){ startLevel(G.index); }          // same seed → identical board
+
+/* Size every shelf so the whole board fits the screen without scrolling —
+   slots are the smaller of what width and height allow, so 8-shelf levels
+   shrink to fit a phone. Recomputed on level change and on resize. */
+function fitBoard(){
+  if(!G.board) return;
+  const n = G.board.length;
+  const numReserved = G.board.filter(sh => sh.label != null).length;
+  const gap = n >= 7 ? 8 : 12;
+  const top = boardEl.getBoundingClientRect().top;
+  const reserve = (hintEl.offsetHeight || 18) + 22;           // hint line + bottom safe area
+  const boardPadV = 12;                                       // #board top+bottom padding
+  // every shelf reserves 24px vertical padding; reserved shelves add 14px more
+  // for their sign tab. Account for that or boards with signs overflow.
+  const padSum = n * 24 + numReserved * 14;
+  const availH = Math.max(200, window.innerHeight - top - reserve - boardPadV);
+  const slotFromH = (availH - gap * (n - 1) - padSum) / n;
+  const slotFromW = (boardEl.clientWidth - 24 - gap * 2) / 3; // shelf side padding + 2 gaps
+  const slot = Math.max(38, Math.min(slotFromW, slotFromH, 150));
+  const root = document.documentElement.style;
+  root.setProperty("--slot", slot + "px");
+  root.setProperty("--gap", gap + "px");
+}
+window.addEventListener("resize", fitBoard);
+window.addEventListener("orientationchange", () => setTimeout(fitBoard, 120));
+
+/* ---------- rendering ---------- */
+function render(){
+  boardEl.innerHTML = "";
+  G.board.forEach((shelf, si) => {
+    const shEl = document.createElement("div");
+    shEl.className = "shelf"
+      + (shelf.label != null ? " reserved" : "")
+      + (shelf.dispenser ? " dispenser" : "")
+      + (shelf.locked ? " locked" : "");
+    shEl.dataset.shelf = si;
+    if(shelf.label != null){                            // reserved-shelf sign
+      const sign = document.createElement("div");
+      sign.className = "sign";
+      sign.textContent = G.emojis[shelf.label];
+      shEl.appendChild(sign);
+    }
+    if(shelf.dispenser){                                // take-only delivery pallet
+      const sign = document.createElement("div");
+      sign.className = "sign disp";
+      sign.textContent = "📦";
+      shEl.appendChild(sign);
+    }
+    if(shelf.locked){                                   // closed roller shutter
+      const need = (shelf.lockedUntil || 0) - G.cleared;
+      const sh2 = document.createElement("div");
+      sh2.className = "shutter";
+      sh2.innerHTML = `<span>🔒 opens in ${Math.max(0, need)} clear${need === 1 ? "" : "s"}</span>`;
+      shEl.appendChild(sh2);
+    }
+    shelf.forEach((slot, sl) => {
+      const slotEl = document.createElement("div");
+      slotEl.className = "slot" + (slot.length > 1 ? " has-back" : "");
+      if(slot.length > 1){                              // hidden back-row item
+        const back = document.createElement("div");
+        back.className = "back" + (slot[1] === WILD ? " wild" : "");
+        back.textContent = slot[1] === WILD ? "🛍️" : G.emojis[TYPE(slot[1])];
+        slotEl.appendChild(back);
+      }
+      if(slot.length){
+        const front = slot[0];
+        const tile = document.createElement("div");
+        tile.className = "tile" + (front === WILD ? " wild" : "") + (isPack(front) ? " pack" : "");
+        tile.textContent = front === WILD ? "🛍️" : G.emojis[TYPE(front)];
+        tile.dataset.shelf = si;
+        tile.dataset.slot = sl;
+        if(isPack(front)){ const tag = document.createElement("i"); tag.className = "packtag"; tag.textContent = "🎀"; tile.appendChild(tag); }
+        const sel = G.selected;
+        if(sel && sel.fs === si && (sel.ss === sl || (sel.pack && packSlots(shelf) && packSlots(shelf).includes(sl))))
+          tile.classList.add("selected");
+        slotEl.appendChild(tile);
+      }
+      shEl.appendChild(slotEl);
+    });
+    boardEl.appendChild(shEl);
+  });
+  fitBoard();
+}
+
+/* ---------- the one verb: move front(from) → shelf(to) ---------- */
+/* Apply a validated move descriptor, then resolve win / deadlock / shutters. */
+function commitMove(mv){
+  const before = G.board.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0), 0);
+  G.board = applyMove(G.board, mv);
+  const after = G.board.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0), 0);
+  G.cleared += (before - after) / 3;          // each cleared shelf removes 3 items
+  updateShutters();                           // open any shelf whose threshold is met
+  G.selected = null;
+  G.moveToken++;
+  render();
+
+  if(!hasItems(G.board)){ finishWin(); return true; }                 // win
+  if(legalMoves(G.board).length === 0){ finishDead("hard"); return true; }  // hard deadlock
+
+  // soft deadlock: moves exist but no win reachable. Run off the critical path;
+  // only a definitive "unsolvable" (fully explored, not capped) ends the level.
+  // Skipped on wildcard levels: their state space explodes the solver (a 60k-node
+  // search would freeze this single-threaded check for seconds), and a wildcard
+  // board stays solvable by construction, so soft-locks there are vanishingly
+  // rare — hard-deadlock detection and the timer still cover the player.
+  if(G.def.feature !== "wildcard"){
+    const token = G.moveToken;
+    setTimeout(() => {
+      if(G.ended || token !== G.moveToken) return;
+      const v = solve(G.board, 60_000, G.cleared);        // pass progress so shutters unlock correctly
+      if(G.ended || token !== G.moveToken) return;
+      if(!v.solvable && !v.exhausted) finishDead("soft");
+    }, 30);
+  }
+  return true;
+}
+
+/* Move one front item to another shelf. Packed items move via doPackMove. */
+function doMove(fs, ss, ts){
+  if(G.ended || fs === ts) return false;
+  if(!G.board[fs][ss].length || isPack(G.board[fs][ss][0])) return false;
+  if(!canAccept(G.board[ts], TYPE(G.board[fs][ss][0]))) return false;
+  return commitMove({ fs, ss, ts });
+}
+
+/* Move shelf fs's multipack as a unit to shelf ts (needs two open slots). */
+function doPackMove(fs, ts){
+  if(G.ended || fs === ts) return false;
+  const ps = packSlots(G.board[fs]);
+  if(!ps) return false;
+  if(!canAcceptN(G.board[ts], TYPE(G.board[fs][ps[0]][0]), 2)) return false;
+  return commitMove({ fs, ts, pack: true });
+}
+
+/* ---------- win / fail flows ---------- */
+function finishWin(){
+  G.ended = true;
+  stopTimer();
+  const last = G.index >= LEVELS.length - 1;
+  if(!last) save.unlocked = Math.max(save.unlocked, G.index + 2);
+  persist();
+  showCard({
+    emoji: last ? "🏆" : "🎉",
+    title: last ? "All shelves stocked!" : "Nicely sorted!",
+    body: last
+      ? "You've cleared every level. Thanks for keeping the store tidy — come back and re-sort any time."
+      : "Every shelf is monochrome. The store looks lovely.",
+    primary: last ? "Play again" : "Next level",
+    onPrimary: () => { hideCard(); startLevel(last ? 0 : G.index + 1); },
+    secondary: "Replay this level",
+    onSecondary: () => { hideCard(); resetBoard(); },
+  });
+}
+
+function finishDead(kind){
+  G.ended = true;
+  stopTimer();
+  if(kind === "hard"){
+    showCard({
+      emoji: "🧩",
+      title: "No moves left",
+      body: "The board can't be solved from here — every shelf is blocked. No penalty; the same board is waiting whenever you'd like another go.",
+      primary: "Reset board",
+      onPrimary: () => { hideCard(); resetBoard(); },
+    });
+  }else{
+    showCard({
+      emoji: "🤔",
+      title: "Stuck — but not your fault",
+      body: "There are still moves, but none of them lead to a win from here. Reset to take a fresh run at the same board.",
+      primary: "Reset board",
+      onPrimary: () => { hideCard(); resetBoard(); },
+    });
+  }
+}
+
+function finishTimeUp(){
+  G.ended = true;
+  stopTimer();
+  showCard({
+    emoji: "⏳",
+    title: "Time's up",
+    body: "No worries — nothing lost. The same board is right here for another try. (Prefer no clock? Turn on Easy mode in the menu.)",
+    primary: "Try again",
+    onPrimary: () => { hideCard(); resetBoard(); },
+  });
+}
+
+/* ---------- timer ---------- */
+let timerHandle = null, lastTick = 0;
+function tickTimer(now){
+  if(G.over || G.ended || save.easy){ lastTick = now; timerHandle = requestAnimationFrame(tickTimer); return; }
+  if(!lastTick) lastTick = now;
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
+  G.remaining = Math.max(0, G.remaining - dt);
+  updateTimerUI();
+  if(G.remaining <= 0){ finishTimeUp(); return; }
+  timerHandle = requestAnimationFrame(tickTimer);
+}
+function startTimer(){
+  stopTimer();
+  lastTick = 0;
+  timerHandle = requestAnimationFrame(tickTimer);
+}
+function stopTimer(){ if(timerHandle){ cancelAnimationFrame(timerHandle); timerHandle = null; } }
+
+function updateTimerUI(){
+  if(save.easy){
+    timerWrap.style.opacity = ".7";
+    timerFill.style.width = "100%";
+    timerFill.className = "timerfill";
+    timerTxt.innerHTML = '<span class="inf">∞</span>';
+    return;
+  }
+  timerWrap.style.opacity = "1";
+  const frac = G.total ? G.remaining / G.total : 0;
+  timerFill.style.width = (frac * 100).toFixed(1) + "%";
+  timerFill.className = "timerfill" + (frac < 0.15 ? " crit" : frac < 0.35 ? " warn" : "");
+  const s = Math.ceil(G.remaining);
+  timerTxt.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+
+/* =======================================================================
+   Input — drag-and-drop (pointer events: touch + mouse) with a movement
+   deadband, plus tap-to-select as an accessibility fallback.
+   ======================================================================= */
+const DEADBAND = 8;       // px before a press becomes a drag (kills fat-finger drags)
+
+boardEl.addEventListener("pointerdown", onPointerDown);
+
+function tileAt(target){ return target.closest && target.closest(".tile"); }
+function shelfIndexFromPoint(x, y){
+  const el = document.elementFromPoint(x, y);
+  const sh = el && el.closest && el.closest(".shelf");
+  return sh ? +sh.dataset.shelf : -1;
+}
+
+/* can shelf `idx` receive the currently-dragged item? (a pack needs two slots) */
+function dragAccepts(d, idx){
+  return idx !== d.fs && (d.isPack ? canAcceptN(G.board[idx], d.type, 2) : canAccept(G.board[idx], d.type));
+}
+/* route the current tap-selection onto shelf ts (pack or single) */
+function moveSelectedTo(ts){
+  const sel = G.selected;
+  if(!sel) return false;
+  return sel.pack ? doPackMove(sel.fs, ts) : doMove(sel.fs, sel.ss, ts);
+}
+
+function onPointerDown(e){
+  if(G.ended || G.over) return;
+  const tile = tileAt(e.target);
+  // tap on empty shelf area while something is selected → move there
+  if(!tile){
+    if(G.selected){
+      const ts = shelfIndexFromPoint(e.clientX, e.clientY);
+      if(ts >= 0) moveSelectedTo(ts);
+    }
+    return;
+  }
+  const fs = +tile.dataset.shelf, ss = +tile.dataset.slot;
+  const front = G.board[fs][ss][0];
+  G.drag = {
+    fs, ss, tile, isPack: isPack(front), type: TYPE(front),
+    startX: e.clientX, startY: e.clientY,
+    moved: false, ghost: null, hover: -1,
+    pointerId: e.pointerId,
+  };
+  window.addEventListener("pointermove", onPointerMove, { passive: false });
+  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointercancel", onPointerUp);
+}
+
+function onPointerMove(e){
+  const d = G.drag; if(!d) return;
+  const dx = e.clientX - d.startX, dy = e.clientY - d.startY;
+  if(!d.moved){
+    if(Math.hypot(dx, dy) < DEADBAND) return;          // still a tap
+    d.moved = true;
+    beginDragVisual(d, e);
+  }
+  e.preventDefault();
+  d.ghost.style.left = e.clientX + "px";
+  d.ghost.style.top  = e.clientY + "px";
+  const ts = shelfIndexFromPoint(e.clientX, e.clientY);
+  if(ts !== d.hover){
+    d.hover = ts;
+    [...boardEl.querySelectorAll(".shelf")].forEach(sh =>
+      sh.classList.toggle("hover", +sh.dataset.shelf === ts && dragAccepts(d, ts)));
+  }
+}
+
+function beginDragVisual(d, e){
+  // lift the grabbed item (both halves, for a pack)
+  if(d.isPack){
+    const ps = packSlots(G.board[d.fs]) || [];
+    ps.forEach(s => { const t = boardEl.querySelector(`.tile[data-shelf="${d.fs}"][data-slot="${s}"]`); if(t) t.classList.add("lift"); });
+  }else{
+    d.tile.classList.add("lift");
+  }
+  const ghost = document.createElement("div");
+  ghost.className = "ghost" + (d.isPack ? " pack" : "") + (d.type === WILD ? " wild" : "");
+  ghost.textContent = d.tile.textContent;
+  if(d.isPack){ const tag = document.createElement("i"); tag.className = "packtag"; tag.textContent = "🎀"; ghost.appendChild(tag); }
+  ghost.style.left = e.clientX + "px";
+  ghost.style.top  = e.clientY + "px";
+  document.body.appendChild(ghost);
+  d.ghost = ghost;
+  // highlight every shelf that can receive the item
+  [...boardEl.querySelectorAll(".shelf")].forEach(sh => {
+    if(dragAccepts(d, +sh.dataset.shelf)) sh.classList.add("droppable");
+  });
+}
+
+function onPointerUp(e){
+  const d = G.drag; if(!d) return;
+  window.removeEventListener("pointermove", onPointerMove);
+  window.removeEventListener("pointerup", onPointerUp);
+  window.removeEventListener("pointercancel", onPointerUp);
+  G.drag = null;
+
+  if(d.moved){
+    if(d.ghost) d.ghost.remove();
+    [...boardEl.querySelectorAll(".shelf")].forEach(sh => sh.classList.remove("droppable","hover"));
+    const ts = shelfIndexFromPoint(e.clientX, e.clientY);
+    if(ts >= 0 && dragAccepts(d, ts)){
+      d.isPack ? doPackMove(d.fs, ts) : doMove(d.fs, d.ss, ts);
+    }else{
+      render();                                         // snap back (restores lifted tiles)
+    }
+  }else{
+    handleTap(d.fs, d.ss);                              // it was a tap
+  }
+}
+
+/* tap-to-select fallback (handles packs: tapping either half selects the pack) */
+function handleTap(fs, ss){
+  const isP = isPack(G.board[fs][ss][0]);
+  const sel = G.selected;
+  const sameAsSelected = sel && sel.fs === fs && (sel.pack ? isP : sel.ss === ss);
+  if(sameAsSelected){
+    G.selected = null;                                  // tap again to deselect
+  }else if(sel && fs !== sel.fs && moveSelectedTo(fs)){
+    return;                                             // moved onto tapped item's shelf (re-rendered)
+  }else{
+    G.selected = { fs, ss, pack: isP };                 // select (or reselect)
+  }
+  render();
+}
+
+/* =======================================================================
+   Menu, cards, toggles
+   ======================================================================= */
+const scrim = document.getElementById("scrim");
+const cardEmoji = document.getElementById("cardEmoji");
+const cardTitle = document.getElementById("cardTitle");
+const cardBody  = document.getElementById("cardBody");
+const cardPrimary = document.getElementById("cardPrimary");
+const cardSecondary = document.getElementById("cardSecondary");
+
+function showCard({ emoji, title, body, primary, onPrimary, secondary, onSecondary }){
+  G.over = true;
+  cardEmoji.textContent = emoji;
+  cardTitle.textContent = title;
+  cardBody.textContent = body;
+  cardPrimary.textContent = primary;
+  cardPrimary.onclick = onPrimary;
+  if(secondary){
+    cardSecondary.style.display = "";
+    cardSecondary.textContent = secondary;
+    cardSecondary.onclick = onSecondary;
+  }else{
+    cardSecondary.style.display = "none";
+  }
+  scrim.classList.add("show");
+}
+function hideCard(){ scrim.classList.remove("show"); G.over = false; }
+
+const sheet = document.getElementById("sheet");
+const easyToggle = document.getElementById("easyToggle");
+const levelGrid = document.getElementById("levelGrid");
+
+function openMenu(){
+  G.over = true;
+  easyToggle.classList.toggle("on", save.easy);
+  buildLevelGrid();
+  sheet.classList.add("show");
+}
+function closeMenu(){ sheet.classList.remove("show"); G.over = false; }
+
+function featBadge(def){
+  return def.feature && def.feature.indexOf("reserved") === 0 ? "🪧"
+       : def.feature === "wildcard"  ? "🛍️"
+       : def.feature === "dispenser" ? "📦"
+       : def.feature === "shutter"   ? "🔒"
+       : def.feature === "multipack" ? "🎀" : "";
+}
+
+/* Level picker, grouped by department. Levels unlock as you finish them: a level
+   is playable once reached (i + 1 <= unlocked); later levels show a lock. */
+function buildLevelGrid(){
+  levelGrid.innerHTML = "";
+  DEPTS.forEach((dept, c) => {
+    const start = c * 10;
+    const chapterReached = start + 1 <= save.unlocked;     // any level in this chapter open?
+    const head = document.createElement("div");
+    head.className = "chaphead" + (chapterReached ? "" : " locked");
+    head.innerHTML = `<b>${chapterReached ? dept.name : "🔒 " + dept.name}</b><span>${start + 1}–${start + 10}</span>`;
+    levelGrid.appendChild(head);
+
+    const grid = document.createElement("div");
+    grid.className = "levelgrid";
+    for(let n = 0; n < 10; n++){
+      const i = start + n;
+      const def = LEVELS[i];
+      const reached = i + 1 <= save.unlocked;              // playable (current or replay)
+      const done = i + 1 < save.unlocked;
+      const b = document.createElement("button");
+      b.className = "lvl" + (done ? " done" : "") + (i === G.index ? " current" : "") + (reached ? "" : " locked");
+      const badge = featBadge(def);
+      if(reached){
+        b.innerHTML = `<span>${i + 1}</span>` + (badge ? `<i class="feat">${badge}</i>` : "");
+        b.onclick = () => { closeMenu(); if(scrim.classList.contains("show")) hideCard(); startLevel(i); };
+      }else{
+        b.innerHTML = `<span>${i + 1}</span>`;            // greyed, not playable yet
+        b.disabled = true;
+      }
+      grid.appendChild(b);
+    }
+    levelGrid.appendChild(grid);
+  });
+}
+
+document.getElementById("menuBtn").onclick = openMenu;
+document.getElementById("resetBtn").onclick = () => { if(!G.over) resetBoard(); };
+sheet.addEventListener("click", e => { if(e.target === sheet) closeMenu(); });
+
+easyToggle.onclick = () => {
+  save.easy = !save.easy;
+  easyToggle.classList.toggle("on", save.easy);
+  persist();
+  updateTimerUI();
+};
+
+document.getElementById("resetProgress").onclick = () => {
+  save = { unlocked: 1, current: 0, easy: save.easy };
+  persist();
+  closeMenu();
+  startLevel(0);
+};
+
+/* pause the clock when the tab is hidden */
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden){ G._wasHidden = true; }
+});
+
+/* =======================================================================
+   Boot
+   ======================================================================= */
+const firstLevel = Math.min(save.current, save.unlocked - 1, LEVELS.length - 1);
+startLevel(Math.max(0, firstLevel));   // startLevel starts the timer + fits the board
+</script>
+</body>
+</html>

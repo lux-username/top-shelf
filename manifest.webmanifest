@@ -1,0 +1,17 @@
+{
+  "name": "Top Shelf: Grocery Sort",
+  "short_name": "Top Shelf",
+  "description": "A cozy grocery-sorting puzzle. No ads, no purchases, no lives — ever.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7efe1",
+  "theme_color": "#e9d8be",
+  "categories": ["games", "puzzle"],
+  "icons": [
+    { "src": "icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ]
+}
