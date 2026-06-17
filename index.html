@@ -376,6 +376,37 @@
   .menutext{ font-size:.82rem; color:var(--ink-soft); line-height:1.5; padding:4px 4px 2px; }
   .menutext b{ color:var(--ink); }
   .linkbtn{ background:none; border:none; color:var(--accent); font-weight:800; cursor:pointer; font-size:.85rem; padding:8px 0; font-family:"Nunito"; }
+
+  /* shared "Add" action button (menu row + install banner) */
+  .act{
+    flex:none; border:none; cursor:pointer;
+    padding:9px 15px; border-radius:11px; font-family:"Nunito"; font-weight:800; font-size:.9rem;
+    color:#fff; background:linear-gradient(180deg,#69a37e,var(--accent));
+    box-shadow:0 3px 0 #487a5b; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .act:active{ transform:translateY(2px); box-shadow:0 1px 0 #487a5b; }
+
+  /* install / add-to-home-screen banner */
+  .installbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:46;
+    display:none; justify-content:center;
+    padding:0 12px max(12px,env(safe-area-inset-bottom));
+    pointer-events:none;
+  }
+  .installbar.show{ display:flex; animation:cardin .3s cubic-bezier(.2,1.1,.4,1); }
+  .installbar .inner{
+    pointer-events:auto; width:100%; max-width:520px;
+    display:flex; align-items:center; gap:11px;
+    background:var(--paper); border-radius:16px; padding:11px 11px 11px 15px; margin-bottom:8px;
+    box-shadow:0 8px 28px rgba(40,28,16,.32), inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .installbar .ico{ font-size:1.55rem; line-height:1; flex:none; }
+  .installbar .txt{ flex:1; min-width:0; font-size:.86rem; line-height:1.25; color:var(--ink); font-weight:800; }
+  .installbar .txt span{ display:block; font-weight:600; color:var(--ink-soft); font-size:.77rem; margin-top:2px; }
+  .installbar .x{
+    flex:none; border:none; cursor:pointer; background:none; color:var(--ink-soft);
+    font-size:1.25rem; font-weight:800; padding:2px 6px; line-height:1;
+  }
 </style>
 <script>
   /* Register the service worker for offline play + installability. No-op on
@@ -427,6 +458,10 @@
       <div class="txt"><b>Easy mode</b><span>Turn the timer off — sort at your own pace.</span></div>
       <button class="toggle" id="easyToggle"><span class="knob"></span></button>
     </div>
+    <div class="row" id="installRow" style="display:none">
+      <div class="txt"><b>Add to Home Screen</b><span>Install it like an app — fullscreen &amp; offline.</span></div>
+      <button class="act" id="installRowBtn">Add</button>
+    </div>
     <h3>Levels</h3>
     <div class="feat-legend">🪧 reserved shelf &nbsp; 🛍️ wildcard &nbsp; 📦 dispenser &nbsp; 🔒 shutter &nbsp; 🎀 multipack</div>
     <div id="levelGrid"></div>
@@ -435,6 +470,16 @@
       stays the same when you reset — so a good plan always pays off.
     </div>
     <button class="linkbtn" id="resetProgress">Reset all progress</button>
+  </div>
+</div>
+
+<!-- install / add-to-home-screen helper (auto-hides once installed) -->
+<div class="installbar" id="installbar">
+  <div class="inner">
+    <div class="ico">🛒</div>
+    <div class="txt" id="installTxt">Add Top Shelf to your home screen<span>Play it like an app — works offline.</span></div>
+    <button class="act" id="installAct">Add</button>
+    <button class="x" id="installX" aria-label="Not now">×</button>
   </div>
 </div>
 
@@ -1546,6 +1591,8 @@ const levelGrid = document.getElementById("levelGrid");
 function openMenu(){
   G.over = true;
   easyToggle.classList.toggle("on", save.easy);
+  if(typeof installRow !== "undefined" && installRow)
+    installRow.style.display = installAvailable() ? "" : "none";
   buildLevelGrid();
   sheet.classList.add("show");
 }
@@ -1618,10 +1665,73 @@ document.addEventListener("visibilitychange", () => {
 });
 
 /* =======================================================================
+   "Add to Home Screen" helper — a one-tap install shortcut.
+   On Chrome/Android/desktop we capture the native beforeinstallprompt and fire
+   it on tap. On iOS Safari (which has no programmatic install) we show the short
+   manual steps instead. Everything auto-hides once the app is installed.
+   ======================================================================= */
+const installBar  = document.getElementById("installbar");
+const installTxt  = document.getElementById("installTxt");
+const installAct  = document.getElementById("installAct");
+const installRow  = document.getElementById("installRow");
+const INSTALL_DISMISS = "topshelf.install.dismissed";
+let deferredInstall = null;
+
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const installAvailable = () => !isStandalone() && (!!deferredInstall || isIOS);
+
+window.addEventListener("beforeinstallprompt", e => {   // Chrome/Edge/Android
+  e.preventDefault();
+  deferredInstall = e;
+  refreshInstallUI();
+});
+window.addEventListener("appinstalled", () => {         // installed → never nag again
+  deferredInstall = null;
+  installBar.classList.remove("show");
+  if(installRow) installRow.style.display = "none";
+});
+
+function refreshInstallUI(){
+  if(installRow) installRow.style.display = installAvailable() ? "" : "none";
+  // auto-offer the banner once (until installed or dismissed), but never over an overlay
+  if(installAvailable() && !localStorage.getItem(INSTALL_DISMISS) && !G.over) showInstallBar();
+}
+function showInstallBar(){
+  if(!installAvailable()) return;
+  if(deferredInstall){                                   // native one-tap install
+    installTxt.innerHTML = 'Add Top Shelf to your home screen<span>Play it like an app — works offline.</span>';
+    installAct.style.display = "";
+  }else{                                                 // iOS: manual steps
+    installTxt.innerHTML = 'Add Top Shelf to your Home Screen<span>Tap the Share button, then “Add to Home Screen”.</span>';
+    installAct.style.display = "none";
+  }
+  installBar.classList.add("show");
+}
+async function triggerInstall(){
+  if(deferredInstall){
+    deferredInstall.prompt();
+    try{ await deferredInstall.userChoice; }catch(e){}
+    deferredInstall = null;
+    installBar.classList.remove("show");
+    refreshInstallUI();
+  }else{
+    showInstallBar();                                    // iOS: surface the steps
+  }
+}
+installAct.onclick = triggerInstall;
+document.getElementById("installX").onclick = () => {
+  installBar.classList.remove("show");
+  try{ localStorage.setItem(INSTALL_DISMISS, "1"); }catch(e){}
+};
+document.getElementById("installRowBtn").onclick = () => { closeMenu(); triggerInstall(); };
+
+/* =======================================================================
    Boot
    ======================================================================= */
 const firstLevel = Math.min(save.current, save.unlocked - 1, LEVELS.length - 1);
 startLevel(Math.max(0, firstLevel));   // startLevel starts the timer + fits the board
+refreshInstallUI();                    // offer install if eligible (iOS path fires here; Android via event)
 </script>
 </body>
 </html>
