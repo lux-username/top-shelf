@@ -68,7 +68,18 @@
     font-family:"Fraunces",serif; font-weight:700; font-size:1.5rem; letter-spacing:.2px;
     color:var(--ink);
   }
-  .brand .sub{ font-size:.78rem; color:var(--ink-soft); font-weight:700; margin-top:3px; letter-spacing:.3px; }
+  .brand .sub{ font-size:.78rem; color:var(--ink-soft); font-weight:700; margin-top:3px; letter-spacing:.3px;
+               white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .installbtn{
+    flex:none; border:none; cursor:pointer;
+    height:42px; padding:0 13px; border-radius:13px;
+    font-family:"Nunito"; font-weight:800; font-size:.86rem; white-space:nowrap;
+    color:#fff; background:linear-gradient(180deg,#69a37e,var(--accent));
+    box-shadow:0 2px 0 #487a5b, 0 4px 10px var(--shadow);
+    display:inline-flex; align-items:center; gap:4px;
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .installbtn:active{ transform:translateY(2px); box-shadow:0 0 0 #487a5b, 0 2px 6px var(--shadow); }
   .iconbtn{
     border:none; cursor:pointer; flex:none;
     width:42px; height:42px; border-radius:13px;
@@ -425,6 +436,7 @@
       <div class="name">Top Shelf</div>
       <div class="sub" id="levelLabel">Level 1 · Grocery Sort</div>
     </div>
+    <button class="installbtn" id="installBtn" aria-label="Add to Home Screen" title="Add to Home Screen">📲 Install</button>
     <button class="iconbtn" id="resetBtn" aria-label="Reset this board" title="Reset board">↺</button>
   </header>
 
@@ -1674,6 +1686,7 @@ const installBar  = document.getElementById("installbar");
 const installTxt  = document.getElementById("installTxt");
 const installAct  = document.getElementById("installAct");
 const installRow  = document.getElementById("installRow");
+const installBtn  = document.getElementById("installBtn");
 const INSTALL_DISMISS = "topshelf.install.dismissed";
 let deferredInstall = null;
 
@@ -1690,20 +1703,28 @@ window.addEventListener("appinstalled", () => {         // installed → never n
   deferredInstall = null;
   installBar.classList.remove("show");
   if(installRow) installRow.style.display = "none";
+  if(installBtn) installBtn.style.display = "none";
 });
 
 function refreshInstallUI(){
+  // header Install button: always offered until the app is actually installed
+  if(installBtn) installBtn.style.display = isStandalone() ? "none" : "";
   if(installRow) installRow.style.display = installAvailable() ? "" : "none";
   // auto-offer the banner once (until installed or dismissed), but never over an overlay
   if(installAvailable() && !localStorage.getItem(INSTALL_DISMISS) && !G.over) showInstallBar();
 }
+/* Show the install banner with the right message for this browser. Three cases:
+   a native one-tap prompt is ready (Chrome/Android), iOS Safari's manual steps,
+   or any other browser (explain how). Always shows when called from the button. */
 function showInstallBar(){
-  if(!installAvailable()) return;
   if(deferredInstall){                                   // native one-tap install
     installTxt.innerHTML = 'Add Top Shelf to your home screen<span>Play it like an app — works offline.</span>';
     installAct.style.display = "";
-  }else{                                                 // iOS: manual steps
+  }else if(isIOS){                                        // iOS Safari: manual steps
     installTxt.innerHTML = 'Add Top Shelf to your Home Screen<span>Tap the Share button, then “Add to Home Screen”.</span>';
+    installAct.style.display = "none";
+  }else{                                                  // other browsers: how-to
+    installTxt.innerHTML = 'Install Top Shelf<span>In Chrome or Edge, use the install icon in the address bar. On a phone, open this link and choose “Add to Home Screen”.</span>';
     installAct.style.display = "none";
   }
   installBar.classList.add("show");
@@ -1720,6 +1741,7 @@ async function triggerInstall(){
   }
 }
 installAct.onclick = triggerInstall;
+installBtn.onclick = () => { if(deferredInstall) triggerInstall(); else showInstallBar(); };
 document.getElementById("installX").onclick = () => {
   installBar.classList.remove("show");
   try{ localStorage.setItem(INSTALL_DISMISS, "1"); }catch(e){}
