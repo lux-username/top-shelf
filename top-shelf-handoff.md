@@ -4,7 +4,7 @@
 
 A relaxing shelf-sorting puzzle game for iPhone (or web). Built as a gift — no ads, no in-app purchases, no lives system, ever. The whole point of this project is the *honest* version of a genre that's normally stuffed with monetization dark patterns.
 
-A working HTML prototype exists (`top-shelf.html`, single file, no build step). This document describes the design, the prototype's current state, and what's left to do.
+A working HTML prototype exists (`index.html`, single file, no build step). This document describes the design, the prototype's current state, and what's left to do.
 
 ## Reference & origin
 
@@ -59,7 +59,7 @@ The 6 levels escalate roughly: 3 types / 2 empty / no layers → 6 types / 1 emp
 
 ## Current prototype state
 
-`top-shelf.html` is a single self-contained file. No build, no dependencies beyond two Google Fonts. Open in any browser.
+`index.html` is a single self-contained file. No build, no dependencies beyond two Google Fonts. Open in any browser.
 
 Implemented:
 - Core mechanic, drag-and-drop (pointer events, works for touch + mouse) and tap-select fallback.

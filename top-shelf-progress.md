@@ -2,7 +2,7 @@
 
 **Read `top-shelf-handoff.md` first** for the original design intent, anti-design rules, and the three sacred principles. This document is the *current state* after several build sessions and supersedes the "Current prototype state / Open work" sections of that original doc.
 
-The whole game lives in one file: **`top-shelf.html`** (~1490 lines, single self-contained file, no build step, no dependencies beyond two Google Fonts). Open it in any browser.
+The whole game lives in one file: **`index.html`** (~1490 lines, single self-contained file, no build step, no dependencies beyond two Google Fonts). Open it in any browser.
 
 ---
 
@@ -18,10 +18,10 @@ The whole game lives in one file: **`top-shelf.html`** (~1490 lines, single self
 
 ## How to run / test
 
-- **Play:** open `top-shelf.html`, or `python3 -m http.server` + browse to it. (Tester always kills the server after, so none runs by default.)
+- **Play:** open `index.html`, or `python3 -m http.server` + browse to it. (Tester always kills the server after, so none runs by default.)
 - **Headless logic validation (used constantly this session):** extract the script body and `eval` it in Node, then exercise the pure functions:
   ```js
-  const html = require('fs').readFileSync('top-shelf.html','utf8');
+  const html = require('fs').readFileSync('index.html','utf8');
   const s = html.indexOf('"use strict";');
   const e = html.indexOf('/* =======================================================================\n   Persistence');
   eval(html.slice(s,e) + `<your test code that uses LEVELS, buildLevel, solve, etc.>`);
@@ -69,7 +69,7 @@ A shelf **clears** when all 3 slots are filled and their fronts match (`frontsMa
 
 ---
 
-## Code map (`top-shelf.html`, single `<script>`)
+## Code map (`index.html`, single `<script>`)
 
 - **RNG:** `mulberry32(seed)`, `shuffle` — deterministic; boards stable across retries.
 - **Board helpers:** `cloneShelf`/`cloneBoard` (copy `SHELF_ATTRS`), `hasItems`, `filledCount`, `shelfHasRoom`, `emptyCount`, `emptyShelfCount`, `canAccept`/`canAcceptN`, `TYPE`/`isPack`, `frontsMatch`, `shelfMonochrome`, `hasMonochromeFull`, `resolveClears`.
@@ -167,7 +167,14 @@ per-level gimmick icon.
 - **App Store path** (Capacitor wrapper + Apple Developer account + re-check name availability) if it goes beyond a hosted web link. The hosted-PWA / add-to-home-screen path works **now**.
 - Optional **endless/daily** mode (soft-deadlock detection exists, so it's safe to add).
 
+### Distribution decision (this session)
+- **Shipping as a free, hosted PWA — not a paid App Store app.** Rationale discussed with the user: the paid mobile model is a poor commercial bet in this crowded genre with no marketing, and the game's anti-monetization principles remove every F2P lever. Selling on the App Store would also force an art upgrade (emoji are Apple's copyrighted font — fine to render in-app, but not licensable for a paid product's store listing/icon/marketing) and the $99/yr Apple Developer fee.
+- **Free-hosting path chosen:** the game is just static files (`index.html` + manifest + `sw.js` + icons), deployable on any free static host (Netlify Drop / Cloudflare Pages / GitHub Pages). Users open the link in Safari → Add to Home Screen → installed, fullscreen, offline. See `README.md` for exact steps. The repo is `git init`'d and ready to push.
+- **Emoji art retained** (no upgrade for now) — correct for a free link-shared PWA; the licensing/quality concerns only applied to the paid-App-Store path. If art is ever revisited, an AI-generator comparison research pass was scoped but stopped (re-run it then — pricing/terms will be fresher).
+- **Cheap upgrade if a store listing is ever wanted:** Google Play is a one-time $25 (vs Apple's $99/yr); the web app wraps via TWA/Bevy/Capacitor.
+
 ### Maintenance notes
+- The game file was renamed `top-shelf.html` → **`index.html`** (so the bare hosting URL loads it). `sw.js`, `manifest.webmanifest`, and `tests/harness.js` were updated to match.
 - `tests/harness.js` evals the engine slice and times `buildLevel`+`solve` for every level: `node tests/harness.js [loLevel] [hiLevel]` (1-based, prints per level). Run it after any change to level defs or generation to confirm all boards stay solvable and fast. Bump `CACHE` in `sw.js` whenever you change the HTML/assets, or the service worker will serve a stale cached copy (this bit during dev — cache-first hides edits until the cache version changes).
 
 ---
