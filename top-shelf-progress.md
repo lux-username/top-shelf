@@ -8,11 +8,17 @@ The whole game lives in one file: **`index.html`** (~1490 lines, single self-con
 
 ## TL;DR for the next session
 
-- The game is **complete and shippable**: the full **100-level progression arc** is built (replacing the old 47-level demo build), plus **progression locks** and **PWA packaging** (installable + offline). Core mechanic + back-rows + **five gimmicks**, a bounded solver, on-demand generation, localStorage persistence, responsive phone layout, drag + tap input.
-- The **100 levels are a curated 10-chapter arc** (a shop's day; one department per chapter). Built per the research in [`top-shelf-level-design.md`](top-shelf-level-design.md): each chapter introduces ONE wrinkle in isolation, develops/twists it, breather every ~7th, set-piece at chapter ends, sawtooth difficulty peaking ~L90, calm wind-down to a serene finale at L100 ("Closing time — leave it neat.").
-- Every one of the 100 levels is **machine-verified solvable and fast to generate** (worst-case ~360ms one-time at level load; see `tests/harness.js`). Boards are **stable across retries** (seeded by level index).
-- The user **playtested and approved the full gimmick set** (in the earlier 47-level build).
-- **What's left is mostly non-code:** real grocery art (still emoji), drag-feel tuning on actual iPhone hardware, and an optional endless/daily mode. See "Next steps".
+- **The game is LIVE** as a free hosted PWA: **https://lux-username.github.io/top-shelf/** (repo `github.com/lux-username/top-shelf`, GitHub Pages from `main`). Installable (Add to Home Screen / a one-tap "📲 Install" button) and fully offline. Decided **against** the paid App Store route — see "Distribution decision".
+- **100-level curated arc** across 10 departments (one mechanic introduced per chapter; sawtooth difficulty; calm finale). Every level **machine-verified solvable** and **deterministic per level index** (stable across retries). Boards are **built once per session then cached** (`buildLevelCached`) — replays/resets are instant.
+- **Big changes shipped THIS session (all live):**
+  1. **Sealed-layers mechanic** REPLACED the old back-rows — a buried row surfaces only when its shelf is matched-and-cleared (no excavating by shuffling fronts). New engine + `genLayered` generation + render + curve. **The "Board/data model" and "mechanics" sections below are updated for this; ignore any lingering "front+back stack" phrasing.**
+  2. **Difficulty overhaul** — a greedy "needs-planning" floor rejects trivially-easy boards (~91% now require planning); difficulty comes from tight space + depth + constraints, NOT shelf count; boards capped **≤6 shelves** for readable tiles.
+  3. **Juice + sound** — clear bursts + "Combo ×N" + synthesized Web-Audio SFX and optional ambient music (menu toggles).
+  4. **Bigger icons**, **PWA install helper**, **in-memory board cache**.
+- **Currently in PLAYTEST mode** (`const PLAYTEST = true`, just above `buildLevelGrid`): all 100 levels freely selectable, no progression locks. **Set `PLAYTEST = false` to ship** with unlock-as-you-finish (that code is intact, just bypassed).
+- **User playtested the current build and approved it** ("I have playtested and it looks good").
+- **What's left is mostly non-code:** real grocery art (still emoji), iPhone drag-feel tuning, optional feature+depth combos (sealed-layers v2), optional endless/daily mode.
+- **Read before adding "engagement" features:** [`top-shelf-level-design.md`](top-shelf-level-design.md) and [`top-shelf-engagement-ethics.md`](top-shelf-engagement-ethics.md).
 
 ---
 
@@ -35,9 +41,13 @@ The whole game lives in one file: **`index.html`** (~1490 lines, single self-con
 
 ```
 board   = array of shelves
-shelf   = [slot, slot, slot]   (always exactly 3 slots)
+shelf   = [slot, slot, slot]   (the ACTIVE layer; always exactly 3 slots)
           + optional static attributes (see below), preserved through cloning
-slot    = array of items, index 0 = FRONT (visible, movable), 1.. = hidden back-row layers
+slot    = array of items, now 0 OR 1 item — the active front.
+          (Old multi-item per-slot back-row stacks are GONE; depth lives in
+           shelf.buried — see "Sealed-layers mechanic".)
+shelf.buried = array of full rows [t,t,t]; buried[0] rises next when the shelf
+               clears. Absent/empty on flat shelves.
 item    = a plain type-id (int)         normal grocery
         | WILD (= -1)                   wildcard "mixed bag"
         | { t, p }                      a multipack half: type t, pack-group id p
@@ -45,13 +55,14 @@ item    = a plain type-id (int)         normal grocery
 
 **Read an item's type with `TYPE(x)`** (handles all three forms) and detect packs with `isPack(x)`. Never compare raw items — always `TYPE()`.
 
-**Per-shelf attributes** (in `SHELF_ATTRS`, copied by `cloneShelf`):
+**Per-shelf attributes** (in `SHELF_ATTRS`, copied by `cloneShelf`; `.buried` is deep-cloned):
 - `.label` (type-id) — **reserved shelf**, accepts only that type.
 - `.dispenser` (bool) — **take-only pallet**, never accepts anything.
 - `.locked` (bool) — **shutter currently closed**; its stock is inert (can't move from/onto).
 - `.lockedUntil` (int) — clears needed before the shutter opens.
+- `.buried` (rows) — **sealed back layers** beneath the active layer (sealed-layers mechanic).
 
-A shelf **clears** when all 3 slots are filled and their fronts match (`frontsMatch`, WILD-aware). Clearing removes the 3 fronts; back-row items advance; cascades resolve (`resolveClears`). **Cleared shelves stay in place as empty shelves** (never removed) — a core design rule.
+A shelf **clears** when all 3 active slots are filled and their fronts match (`frontsMatch`, WILD-aware). Clearing removes the 3 fronts; **if the active layer is now empty and a buried row waits, that whole row rises** to become the new active layer (may itself match → cascade); `resolveClears` loops. **Cleared shelves stay in place as empty shelves** (never removed) — a core design rule.
 
 ---
 
@@ -60,7 +71,7 @@ A shelf **clears** when all 3 slots are filled and their fronts match (`frontsMa
 | Gimmick | Marker | Rule | Notes |
 |---|---|---|---|
 | Core sort | — | drag a front item to a shelf with room; 3 matching fronts clear | the whole game |
-| Back-rows | greyed item peeking | a slot holds front + 1 hidden item, revealed when front leaves | "layers" levels |
+| Sealed layers | greyed peek + "+N" badge | active row over `depth-1` buried full rows; a buried row rises ONLY when the shelf is matched-and-cleared (can't excavate by moving fronts) | replaced old back-rows; CH2 (d2), CH5 (d3); `genLayered` |
 | Reserved 🪧 | "X ONLY" sign | shelf accepts only its labeled type | `.label`; difficulty via count + tightness |
 | Wildcard 🛍️ | rainbow tile | completes any monochrome shelf | **flat levels only** (see gotcha) |
 | Dispenser 📦 | "UNLOAD" tag, cool tint | take-only; never accepts | shrinks working space over time |
@@ -75,14 +86,19 @@ A shelf **clears** when all 3 slots are filled and their fronts match (`frontsMa
 - **Board helpers:** `cloneShelf`/`cloneBoard` (copy `SHELF_ATTRS`), `hasItems`, `filledCount`, `shelfHasRoom`, `emptyCount`, `emptyShelfCount`, `canAccept`/`canAcceptN`, `TYPE`/`isPack`, `frontsMatch`, `shelfMonochrome`, `hasMonochromeFull`, `resolveClears`.
 - **Moves:** `packSlots(sh)` (the two slots of a shelf's pack, or null), `legalMoves(b)` (singles + pack moves; skips locked shelves as source), `applyMove(b, mv)` (single or `{pack:true}`).
 - **Solver:** `canonical(b)` (encodes items + label/dispenser/shutter-state/pack so states aren't conflated), `solve(board, cap, startCleared)` — iterative DFS, mark-on-push, node cap; returns `{solvable, exhausted}`. **Routes to `solveShutter`** when any `.lockedUntil` shelf exists (carries a running clear count so it must *earn* the unlock with reachable items). `exhausted` = hit the cap, no claim.
-- **Generation (backward shuffle from solved):** `tryBuild` (inverse-clears + inverse-moves, respects reserved labels), `generateBoard` (fallback ladder that relaxes params, **solver-gated**), feature builders `injectWildcards`, `buildDispenserLevel`, `buildShutterLevel`, `buildMultipackLevel`, and the router `buildLevel(def, i)` → `{board, emojis}`. `paletteFor` assigns a stable, level-varied emoji set.
-- **Levels:** `PALETTE`, `BLURBS`, `levelDef(i)` (base curve), `LEVELS` array, then an **injection block** (overrides base levels 4/8/13 with reserved) and **append blocks** (reserved-hard, wildcard, dispenser, shutter, multipack demos).
-- **Persistence:** `localStorage['topshelf.save.v1']` = `{unlocked, current, easy}`.
+- **Difficulty floor:** `greedySolvable(board)` — a myopic player sim; generation **rejects greedy-solvable (trivial) boards** so every shipped board needs planning (~91% hard). Buried-aware.
+- **Generation:**
+  - FLAT levels (core + all feature levels): `tryBuild` (inverse-clears + inverse-moves) → `generateBoard` (fallback ladder that drops constraints/types — **never adds empty shelves** past the 6-shelf cap — solver-gated + greedy-gated). Flat = active slots 0–1 = the new model with no `.buried`, so this still works unchanged.
+  - **SEALED-LAYERS levels:** `genLayered(def, i)` = random-fill + solver-gate + greedy-gate (validated in `tests/proto-layers.js`). Used for **plain layered levels only** (`def.layers && !feature && !reserved`); cap **K≤4**.
+  - Feature builders `injectWildcards`, `buildDispenserLevel`, `buildShutterLevel`, `buildMultipackLevel` (all flat in the current curve); router `buildLevel(def, i)` → `{board, emojis}`. `paletteFor` keys a stable emoji set off the chapter.
+- **Levels (data-first):** `DEPTS` (10 departments: name + palette), `L(kinds, empty, opts)` constructor, `mkTime`, ten chapter arrays `CH1…CH10` (10 defs each) concatenated into `LEVELS` (each gets `easy` from role intro/breather/finale, `time`, `chapter`). **No more `levelDef`/`PALETTE`/`BLURBS`/append-blocks — that was the old 47-level build.** Def fields: `kinds, empty, layers, depth(2|3), reserved, feature, wildcards, packs, shutterAfter, role, blurb`.
+- **Persistence:** `localStorage['topshelf.save.v1']` = `{unlocked, current, easy, sfx, music}`.
 - **Game state `G`:** `{index, def, board, emojis, remaining, total, selected, drag, over, ended, moveToken, cleared}`. `G.cleared` drives shutter opening.
-- **Lifecycle/UI:** `startLevel`, `resetBoard` (same seed → identical board), `fitBoard` (sizes slots so the whole board fits the viewport — accounts for reserved/shutter shelves being taller), `render`, `updateShutters`, `commitMove` (shared post-move resolve), `doMove` (single), `doPackMove` (pack), win/fail (`finishWin`, `finishDead('hard'|'soft')`, `finishTimeUp`), `showCard`/`hideCard`.
+- **Lifecycle/UI:** `startLevel`, **`buildLevelCached`** (build-once-per-session + clone-on-use), `resetBoard` (same seed → identical board), `fitBoard` (sizes slots to fit; min 44px), `render` (active tile + greyed `.buried[0]` peek + `.depthtag`), `updateShutters`, `commitMove`, `doMove`/`doPackMove`, juice (`juiceClears`/`burstShelf`/`showCombo`), win/fail (`finishWin`, `finishDead('hard'|'soft')`, `finishTimeUp`), `showCard`/`hideCard`.
+- **Sound:** `SFX` module (Web Audio, synthesized — no asset files): pickup/place/invalid/clear-chime/win + optional ambient `music`; gated by `save.sfx`/`save.music`; unlocks on first gesture.
 - **Timer:** rAF loop; Easy mode = ∞ (global toggle, persisted); pauses on overlay/hidden tab.
-- **Input:** pointer drag with 8px deadband + tap-to-select fallback; pack-aware via `dragAccepts`, `moveSelectedTo`. Soft-deadlock check runs **async** (`setTimeout`, cap 60k) so it never blocks move feedback and never false-positives.
-- **Menu:** free level selector (every level tappable — playtest scaffolding), feature badges + legend, Easy toggle, reset progress.
+- **Input:** pointer drag with 8px deadband + tap-to-select fallback. Soft-deadlock check is async (`setTimeout`, cap 60k) and **skipped on wildcard AND layered levels** (solver too heavy there; build-time gate + hard-deadlock + timer cover them).
+- **Menu:** level selector grouped by department; **`PLAYTEST` flag** (currently `true` = all levels open; `false` = progression locks). Easy / Sound effects / Music toggles, install row, reset progress. Header has a "📲 Install" button.
 
 ---
 
@@ -114,10 +130,17 @@ multipack builders all call `generateBoard(def)`, which already honors `def.rese
 `def.layers` — so e.g. "dispenser + 2 reserved + back rows" is just a def. **Wildcard and
 multipack stay flat** (layers would explode/tangle the solver).
 
-**Progression locks** (shipping, replaced the playtest free-nav): a level is playable once
-reached (`i+1 <= save.unlocked`); later levels show greyed, disabled numbers. The menu groups
-the picker by department with a `🔒` on not-yet-reached chapters. `featBadge()` adds the
-per-level gimmick icon.
+> **NOTE — the chapter table above shows the ORIGINAL plan. The sealed-layers redo changed
+> several chapters:** CH2 Back Shelves & CH5 Deep Storage are now the **sealed-layers** mechanic
+> (depth 2 / depth 3, plain); CH9 Rush Hour alternates plain-deep with flat-feature levels;
+> all feature chapters (3,4,6,7,8) are **flat** (features don't combine with depth in v1). See
+> the "Sealed-layers mechanic" section for the authoritative current layout.
+
+**Level selector:** grouped by department; `featBadge()` adds the per-level gimmick icon.
+**`PLAYTEST` flag** (a `const` just above `buildLevelGrid`) controls locks: **currently `true`**
+= every level freely selectable (no locks); set **`false` to ship** with unlock-as-you-finish
+(level playable once `i+1 <= save.unlocked`, later levels greyed/disabled, `🔒` on locked
+chapters). The lock code is intact, just bypassed by the flag.
 
 ---
 
@@ -139,7 +162,8 @@ per-level gimmick icon.
 
 ## Playtest status (user-confirmed)
 
-- Core game + all five gimmicks: **playtested, approved.** ("I'm happy with the gimmicks.")
+- **Current build (100-level arc + sealed layers + difficulty overhaul + juice/sound): playtested, approved.** ("I have playtested and it looks good.")
+- Core game + all five gimmicks (earlier 47-level build): **playtested, approved.** ("I'm happy with the gimmicks.")
 - Reserved: "alright" → added harder variants (37–39).
 - Wildcards: liked; border beefed up per feedback.
 - Dispenser: works.
@@ -169,7 +193,8 @@ per-level gimmick icon.
 
 ### Distribution decision (this session)
 - **Shipping as a free, hosted PWA — not a paid App Store app.** Rationale discussed with the user: the paid mobile model is a poor commercial bet in this crowded genre with no marketing, and the game's anti-monetization principles remove every F2P lever. Selling on the App Store would also force an art upgrade (emoji are Apple's copyrighted font — fine to render in-app, but not licensable for a paid product's store listing/icon/marketing) and the $99/yr Apple Developer fee.
-- **Free-hosting path chosen:** the game is just static files (`index.html` + manifest + `sw.js` + icons), deployable on any free static host (Netlify Drop / Cloudflare Pages / GitHub Pages). Users open the link in Safari → Add to Home Screen → installed, fullscreen, offline. See `README.md` for exact steps. The repo is `git init`'d and ready to push.
+- **DEPLOYED & LIVE on GitHub Pages:** **https://lux-username.github.io/top-shelf/** (repo `github.com/lux-username/top-shelf`, public, Pages serves `main` from root). The whole flow was driven from here: the user authenticated `gh` once (the binary is at `/tmp/gh`; git credential helper points at it); I create/push and check build status via `gh api repos/lux-username/top-shelf/pages/builds/latest`. Commits use the user's GitHub **noreply** email (privacy). **To deploy an update:** edit → `git commit` → `git push origin main` → bump `CACHE` in `sw.js` (currently **`topshelf-v8`**) or returning players get the stale cached copy → Pages rebuilds in ~35s. Returning players may need 1–2 reloads for the new SW to take over; fresh visitors get it immediately.
+- **PWA install helper:** a dismissible bottom banner + a permanent "📲 Install" header button + a menu row. One-tap native prompt on Chrome/Android (`beforeinstallprompt`); on iOS Safari (no programmatic install) it shows the Share → Add to Home Screen steps; on unsupported browsers a short how-to; auto-hides once installed.
 - **Emoji art retained** (no upgrade for now) — correct for a free link-shared PWA; the licensing/quality concerns only applied to the paid-App-Store path. If art is ever revisited, an AI-generator comparison research pass was scoped but stopped (re-run it then — pricing/terms will be fresher).
 - **Cheap upgrade if a store listing is ever wanted:** Google Play is a one-time $25 (vs Apple's $99/yr); the web app wraps via TWA/Bevy/Capacitor.
 
@@ -195,8 +220,13 @@ The hidden-layer mechanic was redesigned per user request. **Old:** a slot held 
 - [`top-shelf-engagement-ethics.md`](top-shelf-engagement-ethics.md) — **research-backed catalog of engagement/retention mechanics with an ethical verdict for each (engaging vs compulsive/dark-pattern), and the one actionable ethics test to apply to any new feature.** Use it to keep the game "sticky" through craft (mastery, autonomy, honest feedback) without crossing into compulsion. Names explicitly the two newly-considered-and-rejected mechanics: competition/leaderboards and penalty-bearing streaks.
 
 ### Maintenance notes
-- The game file was renamed `top-shelf.html` → **`index.html`** (so the bare hosting URL loads it). `sw.js`, `manifest.webmanifest`, and `tests/harness.js` were updated to match.
-- `tests/harness.js` evals the engine slice and times `buildLevel`+`solve` for every level: `node tests/harness.js [loLevel] [hiLevel]` (1-based, prints per level). Run it after any change to level defs or generation to confirm all boards stay solvable and fast. Bump `CACHE` in `sw.js` whenever you change the HTML/assets, or the service worker will serve a stale cached copy (this bit during dev — cache-first hides edits until the cache version changes).
+- Game file is **`index.html`** (was `top-shelf.html`). `sw.js`, `manifest.webmanifest`, `tests/harness.js` reference it.
+- **`tests/harness.js`** evals the engine slice and times `buildLevel`+`solve` for every level: `node tests/harness.js [lo] [hi]` (1-based). It reports solvable/greedy-easy/shelf-count/gen-time per level. **Run after any change to defs, generation, or the engine.** All 100 currently: solvable, **≤6 shelves**, greedy-hard except breathers/finale/intro.
+- **`tests/proto-layers.js`** — standalone prototype that validated the sealed-layers generation (keep as reference if revisiting that mechanic).
+- **`tests/gen-icon.js`** — regenerates the app icons (dependency-free PNG rasterizer).
+- **In-memory board cache** (`buildLevelCached` + `_boardCache`): boards build once per session, cloned per use. Clone is essential — `updateShutters` mutates `.locked` in place; sharing the cached board would corrupt replays (tested). If you precompute/bake boards later, preserve clone-on-use.
+- **SW cache** is at **`topshelf-v8`** — bump it on every HTML/asset change or returning players get the stale copy.
+- **Headless eval gotcha:** append test code to the *same* `eval` string as the engine slice (strict-mode `const`/`let` don't leak out of `eval`). Engine slice = from `"use strict";` to the `Persistence` comment.
 
 ---
 
