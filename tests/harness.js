@@ -42,14 +42,16 @@ const test = `
     const v = isWild ? solve(board, 60000, 0) : solve(board, 500000, 0);
     if (isWild && v.exhausted) { v.solvable = true; }   // provably solvable; cap just bit
     const solveMs = Date.now() - t1;
+    const greedyEasy = greedySolvable(board);
     const r = {
       i:i+1, feature:def.feature||"core", kinds:def.kinds, empty:def.empty,
       layers:!!def.layers, reserved:reservedN, disp:dispN, locked:lockedN,
       shelves, items, genMs, solveMs,
       solvable:v.solvable, exhausted:v.exhausted, legal: legalMoves(board).length,
+      greedyEasy,
     };
     results.push(r);
-    const ok = r.solvable ? "OK" : (r.exhausted ? "EXHAUSTED" : "UNSOLVABLE");
+    const ok = (r.solvable ? "OK" : (r.exhausted ? "EXHAUSTED" : "UNSOLVABLE")) + (greedyEasy ? " ·easy" : " ·HARD");
     __report__(
       String(r.i).padStart(3) + " " + (r.feature||"").padEnd(11) + " " +
       String(r.kinds).padStart(2) + " " + String(r.empty).padStart(2) + " " +
@@ -64,8 +66,12 @@ const test = `
   const totalGen = results.reduce((s,r)=>s+(r.genMs||0),0);
   const valid = results.filter(r=>!r.err);
   const maxShelves = valid.length ? Math.max(...valid.map(r=>r.shelves)) : 0;
+  const over6 = valid.filter(r=>r.shelves>6).length;
+  const over7 = valid.filter(r=>r.shelves>7).length;
+  const easyN = valid.filter(r=>r.greedyEasy).length;
+  const slowGen = valid.filter(r=>r.genMs>600).length;
   const slow = valid.filter(r=>r.solveMs>2000||r.genMs>3000).length;
-  __report__("\\n" + results.length + " levels | bad=" + bad + " | slow(>2s solve/>3s gen)=" + slow + " | maxShelves=" + maxShelves + " | totalGen=" + (totalGen/1000).toFixed(1) + "s");
+  __report__("\\n" + results.length + " levels | bad=" + bad + " | greedy-easy=" + easyN + " | shelves>6=" + over6 + " >7=" + over7 + " (max " + maxShelves + ") | genHits>600ms=" + slowGen + " | slow=" + slow + " | totalGen=" + (totalGen/1000).toFixed(1) + "s");
   globalThis.__BAD__ = bad;
 `;
 eval(ENGINE + test);

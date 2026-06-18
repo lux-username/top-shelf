@@ -211,7 +211,7 @@
   /* hidden back-row item: greyed + dashed, identifiable but locked */
   .back{
     position:absolute; top:6%; left:50%; transform:translateX(-50%);
-    font-size:calc(var(--slot,90px) * .34); line-height:1; filter:grayscale(.7) opacity(.62);
+    font-size:calc(var(--slot,90px) * .40); line-height:1; filter:grayscale(.7) opacity(.62);
     pointer-events:none; z-index:1;
     text-shadow:0 1px 2px rgba(0,0,0,.12);
   }
@@ -226,7 +226,7 @@
     background:linear-gradient(180deg,#fffdf8,#fff4e3);
     box-shadow:0 3px 0 #e7d4b3, 0 5px 10px var(--tile-shadow), inset 0 1px 0 rgba(255,255,255,.8);
     display:grid; place-items:center;
-    font-size:calc(var(--slot,90px) * .46); line-height:1;
+    font-size:calc(var(--slot,90px) * .54); line-height:1;
     cursor:grab;
     z-index:2;
     transition:transform .12s cubic-bezier(.2,1.3,.5,1), box-shadow .1s ease;
@@ -275,12 +275,45 @@
   @keyframes drop{ from{ transform:translateY(-10px) scale(.9); opacity:0;} to{ transform:none; opacity:1;} }
   @keyframes pop{ 0%{ transform:scale(.6); opacity:0;} 60%{ transform:scale(1.12);} 100%{ transform:none; opacity:1;} }
 
+  /* ---------- juice: clear bursts + combos ---------- */
+  .shelf.flash{ animation:shelfflash .5s ease; }
+  @keyframes shelfflash{
+    0%{ box-shadow:0 5px 0 var(--wood-edge), 0 9px 16px var(--shadow); }
+    28%{ box-shadow:0 5px 0 var(--wood-edge), 0 0 26px 7px rgba(255,233,160,.95), 0 0 0 4px rgba(255,247,225,.7); }
+    100%{ box-shadow:0 5px 0 var(--wood-edge), 0 9px 16px var(--shadow); }
+  }
+  .spark{
+    position:fixed; z-index:900; pointer-events:none; line-height:1;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));
+    animation:sparkfly .62s ease-out forwards;
+  }
+  @keyframes sparkfly{
+    0%{ transform:translate(-50%,-50%) scale(.3); opacity:0; }
+    25%{ opacity:1; }
+    100%{ transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15); opacity:0; }
+  }
+  .combo{
+    position:fixed; left:50%; top:36%; z-index:950; pointer-events:none;
+    font-family:"Fraunces",serif; font-weight:700; font-size:1.4rem; color:#fff;
+    padding:8px 20px; border-radius:99px; white-space:nowrap;
+    background:linear-gradient(180deg,#f2a85d,#e0762f);
+    box-shadow:0 8px 22px rgba(120,70,20,.45), inset 0 1px 0 rgba(255,255,255,.4);
+    text-shadow:0 2px 6px rgba(120,60,10,.4);
+    animation:comboin .85s cubic-bezier(.2,1.3,.4,1) forwards;
+  }
+  @keyframes comboin{
+    0%{ transform:translate(-50%,-50%) scale(.5); opacity:0; }
+    20%{ transform:translate(-50%,-50%) scale(1.12); opacity:1; }
+    65%{ transform:translate(-50%,-58%) scale(1); opacity:1; }
+    100%{ transform:translate(-50%,-92%) scale(1); opacity:0; }
+  }
+
   .ghost{
     position:fixed; z-index:999; pointer-events:none;
     width:calc(var(--slot,90px) * .9); height:calc(var(--slot,90px) * .9); border-radius:13px;
     background:linear-gradient(180deg,#fffdf8,#fff4e3);
     box-shadow:0 10px 22px rgba(74,58,42,.35), 0 0 0 3px var(--accent);
-    display:grid; place-items:center; font-size:calc(var(--slot,90px) * .46); line-height:1;
+    display:grid; place-items:center; font-size:calc(var(--slot,90px) * .54); line-height:1;
     transform:translate(-50%,-50%) scale(1.06) rotate(-3deg);
   }
 
@@ -470,6 +503,14 @@
       <div class="txt"><b>Easy mode</b><span>Turn the timer off — sort at your own pace.</span></div>
       <button class="toggle" id="easyToggle"><span class="knob"></span></button>
     </div>
+    <div class="row">
+      <div class="txt"><b>Sound effects</b><span>Pops, chimes, and clear bursts.</span></div>
+      <button class="toggle" id="sfxToggle"><span class="knob"></span></button>
+    </div>
+    <div class="row">
+      <div class="txt"><b>Music</b><span>A gentle ambient loop while you sort.</span></div>
+      <button class="toggle" id="musicToggle"><span class="knob"></span></button>
+    </div>
     <div class="row" id="installRow" style="display:none">
       <div class="txt"><b>Add to Home Screen</b><span>Install it like an app — fullscreen &amp; offline.</span></div>
       <button class="act" id="installRowBtn">Add</button>
@@ -578,15 +619,17 @@ function shelfMonochrome(sh){
 }
 const hasMonochromeFull = b => b.some(shelfMonochrome);
 
-/* Collect every monochrome shelf, cascading as back rows advance. */
-function resolveClears(b){
+/* Collect every monochrome shelf, cascading as back rows advance. If `out` is
+   given, push each cleared shelf's index (UI uses this to animate clears). */
+function resolveClears(b, out){
   let cleared = 0, changed = true;
   while(changed){
     changed = false;
-    for(const sh of b){
-      if(shelfMonochrome(sh)){
-        for(const sl of sh) sl.shift();
+    for(let i = 0; i < b.length; i++){
+      if(shelfMonochrome(b[i])){
+        for(const sl of b[i]) sl.shift();
         cleared++; changed = true;
+        if(out) out.push(i);
       }
     }
   }
@@ -630,7 +673,7 @@ function legalMoves(b){
 
 /* Apply a move to a fresh copy; resolve clears; return new board. Handles both
    single-item moves and whole-pack moves (two items into two open slots). */
-function applyMove(b, mv){
+function applyMove(b, mv, clearedOut){
   const nb = cloneBoard(b);
   if(mv.pack){
     const ps = packSlots(nb[mv.fs]);
@@ -644,7 +687,7 @@ function applyMove(b, mv){
     const e = nb[mv.ts].findIndex(sl => sl.length === 0);
     nb[mv.ts][e].push(t);
   }
-  resolveClears(nb);
+  resolveClears(nb, clearedOut);
   return nb;
 }
 
@@ -756,8 +799,8 @@ function inverseMove(board, rand){
   return false;
 }
 
-function tryBuild(K, emptyShelves, layers, extraClears, reserved, rand){
-  const maxDepth = layers ? 2 : 1;
+function tryBuild(K, emptyShelves, layers, extraClears, reserved, rand, depth){
+  const maxDepth = layers ? (depth || 2) : 1;          // hidden back-row depth (2 or 3)
   const totalShelves = K + emptyShelves + (layers ? 1 : 0);
 
   // The order clears will be "un-done" — every type at least once.
@@ -800,32 +843,85 @@ function tryBuild(K, emptyShelves, layers, extraClears, reserved, rand){
   return board;
 }
 
-/* Build, validate, and fall back to gentler params if needed. */
+/* DIFFICULTY FLOOR — a myopic "greedy" player. It always grabs an immediate
+   clear, else builds toward a match (front onto a shelf already holding that
+   type), else gives up. If greedy can finish a board, the board needs no
+   foresight — it's trivially easy (the "boring" failure mode). We reject
+   greedy-solvable boards during generation so every shipped board genuinely
+   requires planning. Deterministic, so boards stay stable across retries. */
+function greedySolvable(board){
+  let b = cloneBoard(board);
+  const seen = new Set();
+  const count = bd => bd.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0), 0);
+  while(hasItems(b)){
+    const k = canonical(b);
+    if(seen.has(k)) return false;                 // looping without finishing → not greedy-trivial
+    seen.add(k);
+    const moves = legalMoves(b);
+    if(!moves.length) return false;               // greedy stuck → needs planning
+    const before = count(b);
+    let advanced = false;
+    for(const mv of moves){                       // 1) any move that clears a shelf now
+      const nb = applyMove(b, mv);
+      if(count(nb) < before){ b = nb; advanced = true; break; }
+    }
+    if(advanced) continue;
+    let best = null, bestScore = 0;               // 2) best move that builds a match
+    for(const mv of moves){
+      const srcSlot = mv.pack ? packSlots(b[mv.fs])[0] : mv.ss;
+      const t = TYPE(b[mv.fs][srcSlot][0]);
+      let same = 0;
+      for(const sl of b[mv.ts]) if(sl.length && TYPE(sl[0]) === t) same++;
+      if(same > bestScore){ bestScore = same; best = mv; }
+    }
+    if(best){ b = applyMove(b, best); continue; }  // bestScore>=1 → a constructive move exists
+    return false;                                  // no constructive move → needs planning
+  }
+  return true;
+}
+
+/* Build, validate, enforce the difficulty floor, and fall back to gentler params
+   only if generation genuinely fails. Difficulty comes from screen-free levers
+   (tight space, deep back-rows, constraints) plus the greedy floor — NOT from
+   shelf count, which is capped so tiles stay readable. Breather/finale levels
+   (def.easy) skip the floor so they stay gently calming. */
 function generateBoard(def, levelIndex){
   const r = def.reserved || 0;
+  const depth = def.depth || (def.layers ? 2 : 1);
+  const wantHard = !def.easy;
+  // Relaxation NEVER adds empty shelves (that both inflates shelf count past the
+  // readable cap AND makes the board easier). Instead it drops constraints, then
+  // shallows, then reduces types (which REDUCES shelves). Only the final last
+  // resort adds room, and only if everything tighter failed to generate at all.
   const ladders = [
-    { K: def.kinds,     empty: def.empty,     layers: def.layers, extra: def.extra, reserved: r },
-    { K: def.kinds,     empty: def.empty + 1, layers: def.layers, extra: def.extra, reserved: r },
-    { K: def.kinds,     empty: def.empty + 1, layers: def.layers, extra: def.extra, reserved: Math.max(0, r - 1) },
-    { K: def.kinds,     empty: def.empty + 1, layers: false,      extra: 0,         reserved: 0 },
-    { K: Math.max(3, def.kinds - 1), empty: def.empty + 1, layers: false, extra: 0, reserved: 0 },
+    { K: def.kinds,                  empty: def.empty, layers: def.layers, extra: def.extra,                  reserved: r,                 depth },
+    { K: def.kinds,                  empty: def.empty, layers: def.layers, extra: def.extra,                  reserved: Math.max(0, r - 1), depth },
+    { K: def.kinds,                  empty: def.empty, layers: def.layers, extra: Math.max(1, def.extra - 1), reserved: Math.max(0, r - 1), depth: Math.min(depth, 2) },
+    { K: Math.max(3, def.kinds - 1), empty: def.empty, layers: def.layers, extra: Math.max(1, def.extra - 1), reserved: 0,                 depth: Math.min(depth, 2) },
+    { K: Math.max(3, def.kinds - 1), empty: def.empty + 1, layers: false,    extra: 0,                          reserved: 0,                 depth: 1 },
   ];
   for(const cfg of ladders){
-    for(let attempt = 0; attempt < 60; attempt++){
-      const seed = (levelIndex + 1) * 1_000_003 + attempt * 7919 + (cfg.layers ? 11 : 0);
+    let ladderSolvable = null;
+    for(let attempt = 0; attempt < 40; attempt++){
+      const seed = (levelIndex + 1) * 1_000_003 + attempt * 7919 + (cfg.layers ? 11 : 0) + cfg.depth * 101 + cfg.reserved * 31;
       const rand = mulberry32(seed);
-      const board = tryBuild(cfg.K, cfg.empty, cfg.layers, cfg.extra, cfg.reserved, rand);
+      const board = tryBuild(cfg.K, cfg.empty, cfg.layers, cfg.extra, cfg.reserved, rand, cfg.depth);
       if(!board) continue;
-      if(emptyShelfCount(board) < 1) continue;             // must be playable
+      // Playability is about empty SLOTS, not empty SHELVES — tight boards (the
+      // hard, good ones) may have no fully-empty shelf, just room to maneuver.
+      const emptySlots = board.reduce((n, sh) => n + emptyCount(sh), 0);
+      if(emptySlots < 2) continue;
       if(legalMoves(board).length === 0) continue;
-      if(emptyShelfCount(board) < cfg.empty && cfg.empty <= def.empty && attempt < 40) continue; // respect breathing room
       const v = solve(board, 250_000);
-      if(v.solvable) return board;                          // solvable → found fast
-      // unsolvable or exhausted: construction was off this time, reseed
+      if(!v.solvable) continue;
+      if(!ladderSolvable) ladderSolvable = board;          // safety net for this rung
+      if(!wantHard || !greedySolvable(board)) return board; // needs planning (or easy level) → ship it
+      // else: greedy-trivial and we want hard → keep searching this rung
     }
+    if(ladderSolvable) return ladderSolvable;              // rung only made easy boards → still hardest available here
   }
   // Should never happen; degrade to a trivially solvable starter.
-  return tryBuild(3, 3, false, 0, 0, mulberry32(levelIndex + 1)) ||
+  return tryBuild(3, 3, false, 0, 0, mulberry32(levelIndex + 1), 1) ||
          [[[0],[0],[]], [[0],[],[]], [[],[],[]]];
 }
 
@@ -990,159 +1086,164 @@ const DEPTS = [
 const L = (kinds, empty, o = {}) =>
   ({ kinds, empty, layers: false, extra: 0, reserved: 0, ...o });
 
-/* Generous timer: thinking room scales with the work; gimmick levels get a bit
-   more. Easy mode turns the clock off entirely. */
+/* Generous timer: thinking room scales with the work; deep/gimmick levels get a
+   bit more. Easy mode turns the clock off entirely. */
 const mkTime = d => {
   const items = (d.kinds + (d.layers ? d.extra : 0)) * 3;
-  let t = items * 12;
-  if (d.feature) t += 60;
-  return Math.min(480, Math.max(150, Math.round(t)));
+  let t = items * 13;
+  if (d.depth >= 3) t += 60;
+  if (d.feature) t += 50;
+  return Math.min(540, Math.max(160, Math.round(t)));
 };
 
-/* ---- Chapter 1 · Opening Up — learn the one verb. Flat, roomy, no gimmicks. */
+/* Difficulty now comes from TIGHT space (empty 0-1), DEEP back rows (depth 2-3),
+   and constraints + the greedy difficulty floor — NOT from type count. Boards are
+   capped at 6 shelves (7 only for the two peak set-pieces) so tiles stay readable.
+   Shelves = kinds + empty + (layers?1:0). Breather/finale levels set easy via role. */
+
+/* ---- Chapter 1 · Opening Up — learn the verb; greedy floor makes even these think. */
 const CH1 = [
   L(3, 2, { blurb: "A quiet morning at the corner store." }),
-  L(3, 2, { blurb: "Drag a grocery to a shelf with room." }),
-  L(4, 2, { blurb: "Three of a kind, side by side." }),
-  L(4, 2, { blurb: "Everything in its right place." }),
-  L(4, 1, { blurb: "A little less room to work with." }),
-  L(5, 2, { blurb: "Five groceries, plenty of shelf." }),
-  L(3, 2, { role: "breather", blurb: "Easy does it — a quick tidy." }),
+  L(4, 2, { blurb: "Drag a grocery to a shelf with room." }),
+  L(4, 1, { blurb: "Three of a kind, side by side." }),
+  L(5, 1, { blurb: "A tighter fit now." }),
   L(4, 1, { blurb: "Make room, then make matches." }),
-  L(5, 1, { blurb: "Snug shelves. Plan your route." }),
+  L(5, 1, { blurb: "Snug shelves — plan ahead." }),
+  L(3, 2, { role: "breather", blurb: "Easy does it — a quick tidy." }),
+  L(5, 1, { blurb: "Think before you lift." }),
+  L(5, 1, { blurb: "Every move counts a little." }),
   L(5, 1, { role: "setpiece", blurb: "Open and stocked — sort it clean." }),
 ];
 
-/* ---- Chapter 2 · The Back Shelves — introduce hidden back rows. */
+/* ---- Chapter 2 · The Back Shelves — hidden back rows (depth 2). */
 const CH2 = [
-  L(3, 2, { layers: true, extra: 1, role: "intro", blurb: "Some items hide a grocery behind them." },),
-  L(4, 2, { layers: true, extra: 1, blurb: "Clear the front to reveal the back." }),
-  L(4, 2, { layers: true, extra: 1, blurb: "Peek behind before you commit." }),
-  L(4, 1, { layers: true, extra: 1, blurb: "Hidden stock, tighter shelves." }),
-  L(5, 2, { layers: true, extra: 1, blurb: "Five kinds, a few tucked away." }),
-  L(4, 2, { layers: true, extra: 1, blurb: "What's behind that one?" }),
+  L(3, 1, { layers: true, extra: 1, role: "intro", blurb: "Some items hide a grocery behind them." }),
+  L(3, 2, { layers: true, extra: 1, blurb: "Clear the front to reveal the back." }),
+  L(4, 1, { layers: true, extra: 2, blurb: "Peek behind before you commit." }),
+  L(4, 1, { layers: true, extra: 2, blurb: "Hidden stock, tight shelves." }),
+  L(3, 1, { layers: true, extra: 2, blurb: "Reveal the right one first." }),
+  L(4, 1, { layers: true, extra: 2, blurb: "What's behind that one?" }),
   L(3, 2, { layers: true, extra: 1, role: "breather", blurb: "A gentle reshuffle." }),
-  L(5, 1, { layers: true, extra: 1, blurb: "Reveal, then route." }),
-  L(5, 1, { layers: true, extra: 2, blurb: "Two-deep in places. Mind the order." }),
-  L(5, 1, { layers: true, extra: 2, role: "setpiece", blurb: "Deep stock, neat shelves." }),
+  L(4, 1, { layers: true, extra: 2, blurb: "Reveal, then route." }),
+  L(4, 0, { layers: true, extra: 2, blurb: "No spare shelf — mind the order." }),
+  L(4, 1, { layers: true, extra: 3, role: "setpiece", blurb: "Deep stock, neat shelves." }),
 ];
 
 /* ---- Chapter 3 · Reserved Homes — a sign means only its grocery goes there. */
 const CH3 = [
   L(3, 2, { reserved: 1, feature: "reserved", role: "intro", blurb: "A shelf with a sign takes only its grocery." }),
-  L(4, 2, { reserved: 1, feature: "reserved", blurb: "Read the sign, route around it." }),
-  L(4, 2, { reserved: 2, feature: "reserved", blurb: "Two reserved homes now." }),
-  L(4, 1, { reserved: 1, feature: "reserved", layers: true, extra: 1, blurb: "A sign, and stock hidden behind." }),
-  L(5, 2, { reserved: 2, feature: "reserved", blurb: "Mind both signs." }),
-  L(5, 1, { reserved: 2, feature: "reserved", layers: true, extra: 1, blurb: "Reserved and tight — think ahead." }),
+  L(4, 1, { reserved: 1, feature: "reserved", blurb: "Read the sign, route around it." }),
+  L(4, 1, { reserved: 2, feature: "reserved", blurb: "Two reserved homes now." }),
+  L(4, 1, { reserved: 1, feature: "reserved", layers: true, extra: 2, blurb: "A sign, and stock hidden behind." }),
+  L(5, 1, { reserved: 2, feature: "reserved", blurb: "Mind both signs." }),
+  L(4, 1, { reserved: 2, feature: "reserved", layers: true, extra: 2, blurb: "Reserved and tight — think ahead." }),
   L(3, 2, { reserved: 1, feature: "reserved", role: "breather", blurb: "One sign, lots of room." }),
-  L(5, 1, { reserved: 2, feature: "reserved", layers: true, extra: 1, blurb: "Signs everywhere, scratch space scarce." }),
-  L(6, 1, { reserved: 3, feature: "reserved", layers: true, extra: 1, blurb: "Three reserved homes. Route carefully." }),
-  L(6, 1, { reserved: 3, feature: "reserved", layers: true, extra: 1, role: "setpiece", blurb: "Every shelf has a job. Sort to plan." }),
+  L(4, 1, { reserved: 2, feature: "reserved", layers: true, extra: 2, blurb: "Signs everywhere, scratch space scarce." }),
+  L(4, 0, { reserved: 2, feature: "reserved", layers: true, extra: 2, blurb: "No room to spare around the signs." }),
+  L(5, 1, { reserved: 3, feature: "reserved", role: "setpiece", blurb: "Every shelf has a job. Sort to plan." }),
 ];
 
 /* ---- Chapter 4 · The Loading Dock — take-only delivery pallets. */
 const CH4 = [
   L(3, 2, { feature: "dispenser", role: "intro", blurb: "The 📦 pallet only unloads — never stack onto it." }),
-  L(4, 2, { feature: "dispenser", blurb: "Empty the pallet; it won't take any back." }),
-  L(4, 2, { feature: "dispenser", layers: true, extra: 1, blurb: "Unload, and watch the hidden stock." }),
+  L(4, 1, { feature: "dispenser", blurb: "Empty the pallet; it won't take any back." }),
+  L(4, 1, { feature: "dispenser", layers: true, extra: 2, blurb: "Unload, and watch the hidden stock." }),
   L(4, 1, { feature: "dispenser", blurb: "Less room, one pallet to clear." }),
-  L(5, 2, { feature: "dispenser", layers: true, extra: 1, blurb: "Deliveries keep coming." }),
-  L(5, 1, { feature: "dispenser", reserved: 1, blurb: "A pallet and a reserved home together." }),
+  L(5, 1, { feature: "dispenser", blurb: "Deliveries keep coming." }),
+  L(4, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 2, blurb: "A pallet, a sign, hidden crates." }),
   L(3, 2, { feature: "dispenser", role: "breather", blurb: "One pallet, easy floor." }),
-  L(5, 1, { feature: "dispenser", layers: true, extra: 1, blurb: "Tight dock, hidden crates." }),
-  L(6, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 1, blurb: "Pallet, sign, and back rows." }),
-  L(6, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 1, role: "setpiece", blurb: "Clear the dock before it backs up." }),
+  L(4, 1, { feature: "dispenser", layers: true, extra: 2, blurb: "Tight dock, hidden crates." }),
+  L(4, 0, { feature: "dispenser", layers: true, extra: 2, blurb: "No scratch space at the dock." }),
+  L(5, 1, { feature: "dispenser", reserved: 1, role: "setpiece", blurb: "Clear the dock before it backs up." }),
 ];
 
-/* ---- Chapter 5 · Deep Storage — no new gimmick; deep back rows + pressure. */
+/* ---- Chapter 5 · Deep Storage — no new gimmick; the DEEPEST back rows (depth 3). */
 const CH5 = [
-  L(4, 2, { layers: true, extra: 2, role: "intro", blurb: "Stacked two-deep. Uncover with care." }),
-  L(5, 1, { layers: true, extra: 2, blurb: "Tight aisles, deep shelves." }),
-  L(5, 1, { layers: true, extra: 2, blurb: "Reveal the right one first." }),
-  L(5, 1, { layers: true, extra: 2, reserved: 1, blurb: "A sign in the stacks." }),
-  L(6, 1, { layers: true, extra: 2, blurb: "Six kinds, two layers deep." }),
-  L(6, 1, { layers: true, extra: 2, blurb: "Patience in the back." }),
-  L(4, 2, { layers: true, extra: 1, role: "breather", blurb: "Shallow shelves, room to breathe." }),
-  L(6, 1, { layers: true, extra: 2, blurb: "No scratch space to spare." }),
-  L(6, 1, { layers: true, extra: 2, reserved: 1, blurb: "Deep, tight, and labeled." }),
-  L(6, 1, { layers: true, extra: 2, reserved: 1, role: "setpiece", blurb: "The deepest corner of the store." }),
+  L(3, 1, { layers: true, extra: 2, depth: 3, role: "intro", blurb: "Stacked three-deep. Uncover with care." }),
+  L(4, 1, { layers: true, extra: 2, depth: 3, blurb: "Deep aisles, tight floor." }),
+  L(4, 1, { layers: true, extra: 3, depth: 3, blurb: "Reveal the right one first." }),
+  L(4, 1, { layers: true, extra: 3, depth: 3, reserved: 1, blurb: "A sign deep in the stacks." }),
+  L(4, 0, { layers: true, extra: 3, depth: 3, blurb: "No spare shelf, three deep." }),
+  L(4, 1, { layers: true, extra: 3, depth: 3, blurb: "Patience in the back." }),
+  L(3, 2, { layers: true, extra: 1, role: "breather", blurb: "Shallow shelves, room to breathe." }),
+  L(4, 0, { layers: true, extra: 3, depth: 3, blurb: "Every move matters back here." }),
+  L(4, 1, { layers: true, extra: 3, depth: 3, reserved: 1, blurb: "Deep, tight, and labeled." }),
+  L(4, 0, { layers: true, extra: 3, depth: 3, reserved: 1, role: "setpiece", blurb: "The deepest corner of the store." }),
 ];
 
-/* ---- Chapter 6 · Mixed Bags — wildcards (flat only, and kept to kinds<=5 with
-   tight space: wildcards explode the solver, and roomy/high-kind boards push
-   on-demand generation past a second. Tight wildcard boards stay snappy). */
+/* ---- Chapter 6 · Mixed Bags — wildcards (flat, kinds<=5, tight: keeps the
+   solver fast, since wildcards explode roomy/high-kind boards). */
 const CH6 = [
   L(3, 2, { feature: "wildcard", wildcards: 1, role: "intro", blurb: "A mixed bag 🛍️ completes any shelf." }),
-  L(4, 2, { feature: "wildcard", wildcards: 1, blurb: "Save the bag for a shelf that needs it." }),
-  L(4, 2, { feature: "wildcard", wildcards: 2, blurb: "Two bags to place wisely." }),
-  L(4, 1, { feature: "wildcard", wildcards: 1, blurb: "One bag, tighter shelves." }),
-  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Bags fit anywhere — spend them well." }),
+  L(4, 1, { feature: "wildcard", wildcards: 1, blurb: "Save the bag for a shelf that needs it." }),
+  L(4, 1, { feature: "wildcard", wildcards: 2, blurb: "Two bags to place wisely." }),
+  L(5, 1, { feature: "wildcard", wildcards: 1, blurb: "One bag, tighter shelves." }),
+  L(4, 1, { feature: "wildcard", wildcards: 2, blurb: "Spend the bags well." }),
   L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Plan each bag's home." }),
   L(3, 2, { feature: "wildcard", wildcards: 1, role: "breather", blurb: "An easy bag to place." }),
   L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Two wilds, snug shelves." }),
-  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Five kinds, two mixed bags." }),
-  L(5, 1, { feature: "wildcard", wildcards: 2, role: "setpiece", blurb: "Two bags, tight floor — make them count." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Tight floor, two mixed bags." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, role: "setpiece", blurb: "Two bags, no slack — make them count." }),
 ];
 
 /* ---- Chapter 7 · The Cold Room — shuttered back room, opens after N clears. */
 const CH7 = [
   L(3, 2, { feature: "shutter", shutterAfter: 2, role: "intro", blurb: "Stock's locked behind the shutter — clear the floor to reach it." }),
-  L(4, 2, { feature: "shutter", shutterAfter: 2, blurb: "Two clears and the gate opens." }),
-  L(4, 2, { feature: "shutter", shutterAfter: 2, layers: true, extra: 1, blurb: "Cold stock, hidden behind front items." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Two clears and the gate opens." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Cold stock, hidden behind front items." }),
   L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Earn the key with less room." }),
-  L(5, 2, { feature: "shutter", shutterAfter: 2, layers: true, extra: 1, blurb: "Groceries wait behind the gate." }),
-  L(5, 1, { feature: "shutter", shutterAfter: 3, blurb: "Three clears to open this one." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 2, blurb: "Groceries wait behind the gate." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 3, layers: true, extra: 2, blurb: "Three clears to open this one." }),
   L(3, 2, { feature: "shutter", shutterAfter: 2, role: "breather", blurb: "A small back room, easy floor." }),
-  L(5, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 1, blurb: "Tight, cold, and locked." }),
-  L(6, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, layers: true, extra: 1, blurb: "A sign and a shutter to manage." }),
-  L(6, 1, { feature: "shutter", shutterAfter: 3, layers: true, extra: 1, role: "setpiece", blurb: "Clear three, then stock the cold room." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Tight, cold, and locked." }),
+  L(4, 0, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "No scratch space, gate shut." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, role: "setpiece", blurb: "Clear three, then stock the cold room." }),
 ];
 
-/* ---- Chapter 8 · The Bulk Aisle — multipacks move as a unit (flat only). */
+/* ---- Chapter 8 · The Bulk Aisle — multipacks move as a unit (flat, needs 2 open slots). */
 const CH8 = [
   L(3, 2, { feature: "multipack", packs: 1, role: "intro", blurb: "A shrink-wrapped 2-pack 🎀 moves together — give it two open slots." }),
   L(4, 2, { feature: "multipack", packs: 1, blurb: "Keep two slots free for the pack." }),
   L(4, 2, { feature: "multipack", packs: 2, blurb: "Two multipacks now." }),
-  L(5, 2, { feature: "multipack", packs: 1, blurb: "One pack among five kinds." }),
-  L(5, 2, { feature: "multipack", packs: 2, blurb: "Shuffle the packs with care." }),
-  L(6, 2, { feature: "multipack", packs: 2, blurb: "Two packs, more to sort around." }),
+  L(4, 2, { feature: "multipack", packs: 2, blurb: "Shuffle the packs with care." }),
+  L(4, 2, { feature: "multipack", packs: 2, blurb: "Where will both halves land?" }),
+  L(4, 2, { feature: "multipack", packs: 3, blurb: "Three packs to route." }),
   L(3, 2, { feature: "multipack", packs: 1, role: "breather", blurb: "An easy pack to rehome." }),
-  L(6, 2, { feature: "multipack", packs: 2, blurb: "Mind the open slots." }),
-  L(6, 2, { feature: "multipack", packs: 3, blurb: "Three packs in the aisle." }),
-  L(6, 2, { feature: "multipack", packs: 3, role: "setpiece", blurb: "Bulk day — keep the packs moving." }),
+  L(4, 2, { feature: "multipack", packs: 2, blurb: "Mind the open slots." }),
+  L(4, 2, { feature: "multipack", packs: 3, blurb: "Packs everywhere in the aisle." }),
+  L(4, 2, { feature: "multipack", packs: 3, role: "setpiece", blurb: "Bulk day — keep the packs moving." }),
 ];
 
-/* ---- Chapter 9 · Rush Hour — everything you've learned, combined. Peaks ~90. */
+/* ---- Chapter 9 · Rush Hour — everything combined; tightest + deepest. Peaks ~90. */
 const CH9 = [
-  L(5, 2, { reserved: 2, feature: "reserved", layers: true, extra: 1, role: "intro", blurb: "Rush hour. Signs and hidden stock again." }),
-  L(5, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 1, blurb: "A pallet and two signs at once." }),
-  L(6, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, layers: true, extra: 1, blurb: "Locked stock and a labeled home." }),
+  L(4, 1, { reserved: 2, feature: "reserved", layers: true, extra: 2, role: "intro", blurb: "Rush hour. Signs and hidden stock again." }),
+  L(4, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 2, blurb: "A pallet, a sign, deep shelves." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Locked stock and back rows." }),
   L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Two bags in the crush." }),
-  L(6, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 1, blurb: "Clear the dock under pressure." }),
-  L(6, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Deep stock behind the gate." }),
+  L(4, 0, { feature: "dispenser", reserved: 1, layers: true, extra: 3, depth: 3, blurb: "Clear the dock — no room, three deep." }),
+  L(4, 0, { feature: "shutter", shutterAfter: 2, layers: true, extra: 3, depth: 3, blurb: "Deep stock, gate shut, no slack." }),
   L(4, 2, { feature: "multipack", packs: 1, role: "breather", blurb: "One quiet pack before the push." }),
-  L(6, 1, { reserved: 3, feature: "reserved", layers: true, extra: 2, blurb: "Three signs, two layers, no room." }),
-  L(6, 1, { feature: "dispenser", reserved: 2, layers: true, extra: 2, blurb: "The busiest corner of the floor." }),
-  L(6, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, layers: true, extra: 2, role: "setpiece", blurb: "Peak rush — everything at once." }),
+  L(4, 0, { reserved: 2, feature: "reserved", layers: true, extra: 3, depth: 3, blurb: "Two signs, three deep, no room." }),
+  L(5, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 3, depth: 3, blurb: "The busiest corner of the floor." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, layers: true, extra: 3, depth: 3, role: "setpiece", blurb: "Peak rush — everything at once." }),
 ];
 
 /* ---- Chapter 10 · Closing Time — wind down to a calm finale. */
 const CH10 = [
-  L(6, 1, { layers: true, extra: 1, blurb: "The crowd thins. Catch your breath." }),
-  L(5, 1, { reserved: 1, feature: "reserved", layers: true, extra: 1, blurb: "A last few signs to honor." }),
-  L(5, 2, { layers: true, extra: 1, blurb: "Room opening back up." }),
-  L(5, 2, { blurb: "Lights still warm, shelves settling." }),
-  L(4, 2, { layers: true, extra: 1, blurb: "Tidying the last aisles." }),
+  L(4, 1, { layers: true, extra: 2, blurb: "The crowd thins. Catch your breath." }),
+  L(4, 1, { reserved: 1, feature: "reserved", layers: true, extra: 1, blurb: "A last few signs to honor." }),
+  L(4, 1, { layers: true, extra: 1, blurb: "Room opening back up." }),
+  L(4, 2, { blurb: "Lights still warm, shelves settling." }),
+  L(4, 1, { layers: true, extra: 1, blurb: "Tidying the last aisles." }),
   L(4, 2, { blurb: "Almost there. No rush at all." }),
   L(4, 2, { role: "breather", blurb: "A slow, easy pass." }),
   L(3, 2, { blurb: "Quiet shelves, quiet mind." }),
-  L(3, 2, { blurb: "One last tidy before the door." }),
+  L(4, 2, { blurb: "One last tidy before the door." }),
   L(3, 3, { role: "finale", blurb: "Closing time — leave it neat." }),
 ];
 
 const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH9, CH10)
-  .map((d, i) => ({ ...d, time: mkTime(d), chapter: Math.floor(i / 10) }));
+  .map((d, i) => ({ ...d, easy: d.role === "breather" || d.role === "finale", time: mkTime(d), chapter: Math.floor(i / 10) }));
 
 /* =======================================================================
    Persistence (localStorage only — nothing depleting lives here)
@@ -1152,12 +1253,73 @@ function loadSave(){
   try{
     const s = JSON.parse(localStorage.getItem(SAVE_KEY));
     if(s && typeof s === "object")
-      return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, easy: !!s.easy };
+      return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, easy: !!s.easy,
+               sfx: s.sfx !== false, music: !!s.music };
   }catch(e){}
-  return { unlocked: 1, current: 0, easy: false };
+  return { unlocked: 1, current: 0, easy: false, sfx: true, music: false };
 }
 function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
 let save = loadSave();
+
+/* =======================================================================
+   Sound — synthesized with the Web Audio API (no asset files). Soft pop on
+   place, a bright chime that climbs with combo depth on a clear, a flourish on
+   a win, plus an optional gentle ambient loop. All gated by save.sfx/save.music
+   and respectful of the browser autoplay policy (unlocked on first gesture).
+   ======================================================================= */
+const SFX = (() => {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let ctx = null, master = null, musicTimer = null, unlocked = false;
+  function ensure(){
+    if(ctx || !AC) return;
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = 0.45; master.connect(ctx.destination);
+  }
+  function resume(){ if(ctx && ctx.state === "suspended") ctx.resume(); }
+  function tone(freq, dur, type, vol, delay){
+    if(!ctx) return;
+    const t = ctx.currentTime + (delay || 0);
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type || "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.25, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.03);
+  }
+  const on = () => save.sfx !== false && !!ctx;
+  function music(playing){
+    ensure(); resume();
+    if(musicTimer){ clearTimeout(musicTimer); musicTimer = null; }
+    if(!playing || !ctx) return;
+    const scale = [196.0, 220.0, 261.6, 293.7, 329.6, 392.0];   // low + calm
+    const step = () => {
+      if(!save.music || !ctx){ musicTimer = null; return; }
+      const f = scale[(Math.random() * scale.length) | 0];
+      const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.05, t + 0.5);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + 2.7);
+      musicTimer = setTimeout(step, 1100 + Math.random() * 900);
+    };
+    step();
+  }
+  return {
+    firstGesture(){ if(unlocked) return; unlocked = true; ensure(); resume(); if(save.music) music(true); },
+    pickup(){ ensure(); resume(); if(on()) tone(540, 0.07, "sine", 0.13); },
+    place(){ ensure(); resume(); if(on()){ tone(300, 0.09, "triangle", 0.17); tone(460, 0.06, "sine", 0.09, 0.01); } },
+    invalid(){ ensure(); resume(); if(on()) tone(150, 0.12, "sawtooth", 0.09); },
+    clear(combo){
+      ensure(); resume(); if(!on()) return;
+      const base = 523.25, steps = [0, 4, 7, 11, 14, 17, 21];     // a bright major run
+      const n = Math.max(1, Math.min(combo, steps.length));
+      for(let i = 0; i < n; i++) tone(base * Math.pow(2, steps[i] / 12), 0.45, "sine", 0.20, i * 0.07);
+    },
+    win(){ ensure(); resume(); if(on()) [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, 0.5, "sine", 0.22, i * 0.13)); },
+    music,
+  };
+})();
 
 /* =======================================================================
    Game state + DOM wiring
@@ -1236,7 +1398,7 @@ function fitBoard(){
   const availH = Math.max(200, window.innerHeight - top - reserve - boardPadV);
   const slotFromH = (availH - gap * (n - 1) - padSum) / n;
   const slotFromW = (boardEl.clientWidth - 24 - gap * 2) / 3; // shelf side padding + 2 gaps
-  const slot = Math.max(38, Math.min(slotFromW, slotFromH, 150));
+  const slot = Math.max(44, Math.min(slotFromW, slotFromH, 150));
   const root = document.documentElement.style;
   root.setProperty("--slot", slot + "px");
   root.setProperty("--gap", gap + "px");
@@ -1302,17 +1464,51 @@ function render(){
   fitBoard();
 }
 
+/* ---------- juice: celebrate real clears ---------- */
+function juiceClears(cleared){
+  const big = cleared.length >= 2;
+  [...new Set(cleared)].forEach(i => burstShelf(i, big));
+  if(cleared.length >= 2) showCombo(cleared.length);
+}
+function burstShelf(i, big){
+  const el = boardEl.querySelector('.shelf[data-shelf="' + i + '"]');
+  if(!el) return;
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 520);
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const n = big ? 12 : 7;
+  for(let k = 0; k < n; k++){
+    const s = document.createElement("div");
+    s.className = "spark"; s.textContent = k % 3 === 0 ? "⭐" : "✨";
+    s.style.left = cx + "px"; s.style.top = cy + "px";
+    s.style.setProperty("--dx", ((Math.random() * 2 - 1) * (big ? 110 : 80)).toFixed(0) + "px");
+    s.style.setProperty("--dy", (-(30 + Math.random() * (big ? 90 : 60))).toFixed(0) + "px");
+    s.style.fontSize = (12 + Math.random() * 12).toFixed(0) + "px";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 700);
+  }
+}
+function showCombo(n){
+  const el = document.createElement("div");
+  el.className = "combo";
+  el.textContent = "Combo ×" + n + "!";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 850);
+}
+
 /* ---------- the one verb: move front(from) → shelf(to) ---------- */
 /* Apply a validated move descriptor, then resolve win / deadlock / shutters. */
 function commitMove(mv){
-  const before = G.board.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0), 0);
-  G.board = applyMove(G.board, mv);
-  const after = G.board.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0), 0);
-  G.cleared += (before - after) / 3;          // each cleared shelf removes 3 items
+  const cleared = [];                         // shelf indices that cleared this move (cascades included)
+  G.board = applyMove(G.board, mv, cleared);
+  G.cleared += cleared.length;                // exact shelves cleared
   updateShutters();                           // open any shelf whose threshold is met
   G.selected = null;
   G.moveToken++;
   render();
+  if(cleared.length){ juiceClears(cleared); SFX.clear(cleared.length); }
+  else { SFX.place(); }
 
   if(!hasItems(G.board)){ finishWin(); return true; }                 // win
   if(legalMoves(G.board).length === 0){ finishDead("hard"); return true; }  // hard deadlock
@@ -1356,6 +1552,7 @@ function doPackMove(fs, ts){
 function finishWin(){
   G.ended = true;
   stopTimer();
+  SFX.win();
   const last = G.index >= LEVELS.length - 1;
   if(!last) save.unlocked = Math.max(save.unlocked, G.index + 2);
   persist();
@@ -1469,6 +1666,7 @@ function moveSelectedTo(ts){
 
 function onPointerDown(e){
   if(G.ended || G.over) return;
+  SFX.firstGesture();                          // unlock audio on the first touch
   const tile = tileAt(e.target);
   // tap on empty shelf area while something is selected → move there
   if(!tile){
@@ -1486,6 +1684,7 @@ function onPointerDown(e){
     moved: false, ghost: null, hover: -1,
     pointerId: e.pointerId,
   };
+  SFX.pickup();
   window.addEventListener("pointermove", onPointerMove, { passive: false });
   window.addEventListener("pointerup", onPointerUp);
   window.addEventListener("pointercancel", onPointerUp);
@@ -1546,6 +1745,7 @@ function onPointerUp(e){
     if(ts >= 0 && dragAccepts(d, ts)){
       d.isPack ? doPackMove(d.fs, ts) : doMove(d.fs, d.ss, ts);
     }else{
+      SFX.invalid();
       render();                                         // snap back (restores lifted tiles)
     }
   }else{
@@ -1598,11 +1798,15 @@ function hideCard(){ scrim.classList.remove("show"); G.over = false; }
 
 const sheet = document.getElementById("sheet");
 const easyToggle = document.getElementById("easyToggle");
+const sfxToggle = document.getElementById("sfxToggle");
+const musicToggle = document.getElementById("musicToggle");
 const levelGrid = document.getElementById("levelGrid");
 
 function openMenu(){
   G.over = true;
   easyToggle.classList.toggle("on", save.easy);
+  sfxToggle.classList.toggle("on", save.sfx);
+  musicToggle.classList.toggle("on", save.music);
   if(typeof installRow !== "undefined" && installRow)
     installRow.style.display = installAvailable() ? "" : "none";
   buildLevelGrid();
@@ -1664,8 +1868,22 @@ easyToggle.onclick = () => {
   updateTimerUI();
 };
 
+sfxToggle.onclick = () => {
+  save.sfx = !save.sfx;
+  sfxToggle.classList.toggle("on", save.sfx);
+  persist();
+  if(save.sfx) SFX.place();                 // little confirmation blip
+};
+
+musicToggle.onclick = () => {
+  save.music = !save.music;
+  musicToggle.classList.toggle("on", save.music);
+  persist();
+  SFX.music(save.music);
+};
+
 document.getElementById("resetProgress").onclick = () => {
-  save = { unlocked: 1, current: 0, easy: save.easy };
+  save = { unlocked: 1, current: 0, easy: save.easy, sfx: save.sfx, music: save.music };
   persist();
   closeMenu();
   startLevel(0);
