@@ -38,6 +38,9 @@
     --tile-shadow:rgba(74,58,42,.22);
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  /* a grocery icon: sized in em so it lands where an emoji would, but a touch
+     larger (SVG art fills its box edge-to-edge, and bolder reads better on tiles) */
+  .gicon{ width:1.25em; height:1.25em; display:block; pointer-events:none; }
   html,body{ margin:0; height:100%; }
   body{
     font-family:"Nunito",system-ui,sans-serif;
@@ -485,6 +488,125 @@
 </script>
 </head>
 <body>
+<!-- ===================================================================
+     Bespoke grocery icon sprite (soft & cozy). One hidden master SVG of
+     <symbol>s referenced by <use>; rendered at 1em so each icon drops into
+     the exact spot an emoji used to. License-clean, single-file, no assets.
+     Chapter 1 (fruit) pilot — more departments added once the style's signed off.
+     =================================================================== -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <radialGradient id="gApple" cx="38%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ff8475"/><stop offset=".55" stop-color="#ed4f49"/><stop offset="1" stop-color="#c5322f"/>
+    </radialGradient>
+    <radialGradient id="gOrange" cx="36%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#ffb347"/><stop offset=".5" stop-color="#fb8e22"/><stop offset="1" stop-color="#df6a10"/>
+    </radialGradient>
+    <linearGradient id="gPeach" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff9fb2"/><stop offset=".5" stop-color="#ffbf9e"/><stop offset="1" stop-color="#ffd98c"/>
+    </linearGradient>
+    <linearGradient id="gBanana" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe27a"/><stop offset=".6" stop-color="#fbcf45"/><stop offset="1" stop-color="#e8af2e"/>
+    </linearGradient>
+    <radialGradient id="gGrape" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#b78ee0"/><stop offset=".6" stop-color="#8a5cc0"/><stop offset="1" stop-color="#6a3fa0"/>
+    </radialGradient>
+    <radialGradient id="gKiwi" cx="50%" cy="50%" r="60%">
+      <stop offset="0" stop-color="#cfe89a"/><stop offset=".7" stop-color="#8cbb55"/><stop offset="1" stop-color="#6a9a3c"/>
+    </radialGradient>
+    <radialGradient id="gMelon" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#ff8f9f"/><stop offset=".6" stop-color="#f2566a"/><stop offset="1" stop-color="#d83f55"/>
+    </radialGradient>
+    <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fc46a"/><stop offset="1" stop-color="#5a9440"/>
+    </linearGradient>
+    <linearGradient id="gBag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e6b87f"/><stop offset="1" stop-color="#cf9655"/>
+    </linearGradient>
+  </defs>
+
+  <symbol id="ic-apple" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="60" rx="17" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <ellipse cx="32" cy="36" rx="23" ry="22" fill="url(#gApple)"/>
+    <ellipse cx="22" cy="25" rx="7" ry="10" fill="#fff" opacity=".22" transform="rotate(-22 22 25)"/>
+    <rect x="30.6" y="7" width="2.6" height="10" rx="1.3" fill="#7a5230"/>
+    <path d="M33 13c3-5 10-7 15-5-1 6-8 10-15 6z" fill="url(#gLeaf)"/>
+  </symbol>
+
+  <symbol id="ic-banana" viewBox="0 0 64 64">
+    <ellipse cx="33" cy="58" rx="18" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 12 C 8 33 21 55 50 52 C 43 47 31 45 26 36 C 21 27 19 19 18 13 Z" fill="url(#gBanana)"/>
+    <path d="M21 18 C 15 31 20 42 28 47" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".22"/>
+    <path d="M16 12 C 17 14 17.5 15 17.5 16.5 16 16 15 14.5 16 12 Z" fill="#6b4626"/>
+    <path d="M50 52 C 48 51.4 47 50.6 46.4 49.6 48 49.6 49.4 50.4 50 52 Z" fill="#6b4626"/>
+  </symbol>
+
+  <symbol id="ic-grapes" viewBox="0 0 64 64">
+    <ellipse cx="31" cy="60" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="31.4" y="7" width="2.4" height="9" rx="1.2" fill="#7a5230"/>
+    <path d="M33 11c4-4 11-4 15-1-3 5-9 6-15 3z" fill="url(#gLeaf)"/>
+    <g fill="url(#gGrape)">
+      <circle cx="23" cy="25" r="7.2"/><circle cx="38" cy="24" r="7.2"/>
+      <circle cx="31" cy="34" r="7.5"/>
+      <circle cx="17" cy="36" r="7.2"/><circle cx="45" cy="36" r="7.2"/>
+      <circle cx="26" cy="45" r="7.2"/><circle cx="39" cy="46" r="6.6"/>
+      <circle cx="32" cy="55" r="6.2"/>
+    </g>
+    <circle cx="20" cy="23" r="2.3" fill="#fff" opacity=".45"/>
+  </symbol>
+
+  <symbol id="ic-orange" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="59" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="35" r="22" fill="url(#gOrange)"/>
+    <circle cx="23" cy="27" r="6.5" fill="#fff" opacity=".20"/>
+    <g fill="#c25f12" opacity=".35"><circle cx="40" cy="40" r="1.1"/><circle cx="44" cy="32" r="1.1"/><circle cx="36" cy="46" r="1.1"/><circle cx="26" cy="44" r="1.1"/><circle cx="42" cy="24" r="1.1"/></g>
+    <circle cx="32" cy="14" r="2.4" fill="#3f7a3a"/>
+    <path d="M33 14c2-4 7-6 12-5-1 5-7 8-12 6z" fill="url(#gLeaf)"/>
+  </symbol>
+
+  <symbol id="ic-kiwi" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="58" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="33" r="23" fill="#8a5a2b"/>
+    <circle cx="32" cy="33" r="20.5" fill="url(#gKiwi)"/>
+    <circle cx="32" cy="33" r="9.5" fill="#f3f8e3"/>
+    <g fill="#27331a">
+      <circle cx="32" cy="18" r="1.3"/><circle cx="41" cy="22" r="1.3"/><circle cx="46" cy="31" r="1.3"/>
+      <circle cx="44" cy="41" r="1.3"/><circle cx="36" cy="46" r="1.3"/><circle cx="28" cy="46" r="1.3"/>
+      <circle cx="20" cy="41" r="1.3"/><circle cx="18" cy="31" r="1.3"/><circle cx="23" cy="22" r="1.3"/>
+    </g>
+  </symbol>
+
+  <symbol id="ic-peach" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="59" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="36" r="21" fill="url(#gPeach)"/>
+    <path d="M31 16 C 28 26 28 46 31 55" fill="none" stroke="#e87a8f" stroke-width="2.2" opacity=".5" stroke-linecap="round"/>
+    <ellipse cx="40" cy="29" rx="6" ry="8" fill="#fff" opacity=".28" transform="rotate(18 40 29)"/>
+    <path d="M33 17c1-5 6-7 11-6-1 5-6 8-11 6z" fill="url(#gLeaf)"/>
+  </symbol>
+
+  <symbol id="ic-watermelon" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="16" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M5 22 A27 27 0 0 0 59 22 Z" fill="#3f8f4e"/>
+    <path d="M8.5 23 A23.5 23.5 0 0 0 55.5 23 Z" fill="#9bd07a"/>
+    <path d="M12 24.5 A20 20 0 0 0 52 24.5 Z" fill="url(#gMelon)"/>
+    <g fill="#33241a">
+      <ellipse cx="25" cy="31" rx="1.4" ry="2.1"/><ellipse cx="33" cy="30" rx="1.4" ry="2.1"/><ellipse cx="41" cy="31" rx="1.4" ry="2.1"/>
+      <ellipse cx="29" cy="39" rx="1.4" ry="2.1"/><ellipse cx="37" cy="39" rx="1.4" ry="2.1"/>
+    </g>
+  </symbol>
+
+  <symbol id="ic-wild" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="60" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="22" cy="20" r="7" fill="#ff8fab"/>
+    <circle cx="33" cy="15" r="7.4" fill="#ffd45e"/>
+    <circle cx="44" cy="21" r="6.6" fill="#7bd88f"/>
+    <path d="M13 26h38l-2.9 29a3.2 3.2 0 0 1-3.2 2.9H19.1a3.2 3.2 0 0 1-3.2-2.9z" fill="url(#gBag)"/>
+    <path d="M13 26h38v4H13z" fill="#cf9b63"/>
+    <path d="M28 26v31" stroke="#b07d44" stroke-width="1.2" opacity=".5"/>
+    <path d="M39 26v31" stroke="#b07d44" stroke-width="1.2" opacity=".3"/>
+  </symbol>
+</svg>
+
 <div id="app">
   <header>
     <button class="iconbtn" id="menuBtn" aria-label="Menu">☰</button>
@@ -1125,7 +1247,7 @@ function buildLevel(def, levelIndex){
 /* Departments: name + grocery palette. Chapter c == Math.floor(levelIndex/10).
    Palettes are chosen so the items in one aisle read distinctly at a glance. */
 const DEPTS = [
-  { name: "Opening Up",       pal: ["🍎","🍌","🍇","🍊","🥝","🍑","🍉"] },
+  { name: "Opening Up",       pal: ["apple","banana","grapes","orange","kiwi","peach","watermelon"] },
   { name: "The Back Shelves", pal: ["🍞","🥫","🍝","🫙","🍯","🥜","🍪","🧂"] },
   { name: "Reserved Homes",   pal: ["🥛","🧀","🧈","🥚","🍦","🍨","🍮"] },
   { name: "The Loading Dock", pal: ["🧃","🥤","🍾","🧉","🧊","🥡","🫙"] },
@@ -1530,6 +1652,18 @@ window.addEventListener("resize", fitBoard);
 window.addEventListener("orientationchange", () => setTimeout(fitBoard, 120));
 
 /* ---------- rendering ---------- */
+/* A palette entry is either a bespoke icon key (rendered as an inline <use> of
+   the sprite symbol) or, for departments not yet redrawn, a plain emoji string
+   (rendered as text). glyphHTML() picks the right one so the icon rollout can be
+   incremental. WILD always uses the bespoke "wild" bag icon. */
+const ICON_KEYS = new Set(["apple","banana","grapes","orange","kiwi","peach","watermelon","wild"]);
+function glyphHTML(key){
+  return ICON_KEYS.has(key)
+    ? '<svg class="gicon" viewBox="0 0 64 64"><use href="#ic-' + key + '"></use></svg>'
+    : (key == null ? "" : String(key));        // emoji fallback (text)
+}
+const keyOf = item => item === WILD ? "wild" : G.emojis[TYPE(item)];
+
 function render(){
   boardEl.innerHTML = "";
   G.board.forEach((shelf, si) => {
@@ -1542,7 +1676,7 @@ function render(){
     if(shelf.label != null){                            // reserved-shelf sign
       const sign = document.createElement("div");
       sign.className = "sign";
-      sign.textContent = G.emojis[shelf.label];
+      sign.innerHTML = glyphHTML(G.emojis[shelf.label]);
       shEl.appendChild(sign);
     }
     if(shelf.dispenser){                                // take-only delivery pallet
@@ -1567,7 +1701,7 @@ function render(){
       if(back != null){                                 // sealed, visible-but-inert next layer
         const bk = document.createElement("div");
         bk.className = "back" + (back === WILD ? " wild" : "");
-        bk.textContent = back === WILD ? "🛍️" : G.emojis[TYPE(back)];
+        bk.innerHTML = glyphHTML(keyOf(back));
         if(sl === 1 && buriedMore > 0){                 // hint that more layers wait below
           const d = document.createElement("i"); d.className = "depthtag"; d.textContent = "+" + buriedMore;
           bk.appendChild(d);
@@ -1578,7 +1712,7 @@ function render(){
         const front = slot[0];
         const tile = document.createElement("div");
         tile.className = "tile" + (front === WILD ? " wild" : "") + (isFrozen(front) ? " frozen" : "");
-        tile.textContent = front === WILD ? "🛍️" : G.emojis[TYPE(front)];
+        tile.innerHTML = glyphHTML(keyOf(front));
         tile.dataset.shelf = si;
         tile.dataset.slot = sl;
         if(isFrozen(front)){ const tag = document.createElement("i"); tag.className = "frosttag"; tag.textContent = "❄️"; tile.appendChild(tag); }
@@ -1814,7 +1948,7 @@ function onPointerDown(e){
     return;
   }
   G.drag = {
-    fs, ss, tile, type: TYPE(front),
+    fs, ss, tile, type: TYPE(front), iconKey: keyOf(front),
     startX: e.clientX, startY: e.clientY,
     moved: false, ghost: null, hover: -1,
     pointerId: e.pointerId,
@@ -1848,7 +1982,7 @@ function beginDragVisual(d, e){
   d.tile.classList.add("lift");                 // lift the grabbed item
   const ghost = document.createElement("div");
   ghost.className = "ghost" + (d.type === WILD ? " wild" : "");
-  ghost.textContent = d.tile.textContent;
+  ghost.innerHTML = glyphHTML(d.iconKey);
   ghost.style.left = e.clientX + "px";
   ghost.style.top  = e.clientY + "px";
   document.body.appendChild(ghost);
