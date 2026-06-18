@@ -1485,6 +1485,7 @@ function startLevel(i){
   G.selected = null;
   G.ended = false;
   G.cleared = 0;
+  G.moveToken++;             // invalidate any pending (delayed) soft-deadlock check from the last level
   G.total = durationFor(G.def);
   G.remaining = G.total;
   updateShutters();
@@ -1641,23 +1642,24 @@ function commitMove(mv){
   if(!hasItems(G.board)){ finishWin(); return true; }                 // win
   if(legalMoves(G.board).length === 0){ finishDead("hard"); return true; }  // hard deadlock
 
-  // soft deadlock: moves exist but no win reachable. Run off the critical path;
-  // only a definitive "unsolvable" (fully explored, not capped) ends the level.
-  // Skipped on wildcard levels: their state space explodes the solver (a 60k-node
-  // search would freeze this single-threaded check for seconds), and a wildcard
-  // board stays solvable by construction, so soft-locks there are vanishingly
-  // rare — hard-deadlock detection and the timer still cover the player.
-  // Also skipped on layered (sealed-buried) levels: the solver is heavy there
-  // (a 60k search would hitch the single-threaded check), and those boards are
-  // solver-verified at build time. Hard-deadlock detection + timer still apply.
-  if(G.def.feature !== "wildcard" && !G.def.layers){
+  // Soft deadlock: moves exist but no win is reachable — including the layered
+  // case where the back rows can never open because no shelf can be matched and
+  // cleared. We DON'T flag it instantly: the check fires ~15s after the player's
+  // LAST move, giving them a moment to spot it themselves AND running the solver
+  // at most once per stuck pause (cheap even on deep layered boards — a per-move
+  // check is what was too heavy, not an occasional one). A fresh move reschedules
+  // it (moveToken). Only a definitive "unsolvable" (fully explored, not capped)
+  // ends the level. Still skipped on WILDCARD levels alone: their state space
+  // explodes the solver (tens of seconds), and a wildcard board stays solvable by
+  // construction, so soft-locks there are vanishingly rare.
+  if(G.def.feature !== "wildcard"){
     const token = G.moveToken;
     setTimeout(() => {
       if(G.ended || token !== G.moveToken) return;
-      const v = solve(G.board, 60_000, G.cleared);        // pass progress so shutters unlock correctly
+      const v = solve(G.board, 200_000, G.cleared);       // pass progress so shutters unlock correctly
       if(G.ended || token !== G.moveToken) return;
       if(!v.solvable && !v.exhausted) finishDead("soft");
-    }, 30);
+    }, 15_000);
   }
   return true;
 }
