@@ -173,6 +173,10 @@ per-level gimmick icon.
 - **Emoji art retained** (no upgrade for now) — correct for a free link-shared PWA; the licensing/quality concerns only applied to the paid-App-Store path. If art is ever revisited, an AI-generator comparison research pass was scoped but stopped (re-run it then — pricing/terms will be fresher).
 - **Cheap upgrade if a store listing is ever wanted:** Google Play is a one-time $25 (vs Apple's $99/yr); the web app wraps via TWA/Bevy/Capacitor.
 
+### Design reference docs (read before adding "engagement" features)
+- [`top-shelf-level-design.md`](top-shelf-level-design.md) — how to build good levels & the difficulty arc.
+- [`top-shelf-engagement-ethics.md`](top-shelf-engagement-ethics.md) — **research-backed catalog of engagement/retention mechanics with an ethical verdict for each (engaging vs compulsive/dark-pattern), and the one actionable ethics test to apply to any new feature.** Use it to keep the game "sticky" through craft (mastery, autonomy, honest feedback) without crossing into compulsion. Names explicitly the two newly-considered-and-rejected mechanics: competition/leaderboards and penalty-bearing streaks.
+
 ### Maintenance notes
 - The game file was renamed `top-shelf.html` → **`index.html`** (so the bare hosting URL loads it). `sw.js`, `manifest.webmanifest`, and `tests/harness.js` were updated to match.
 - `tests/harness.js` evals the engine slice and times `buildLevel`+`solve` for every level: `node tests/harness.js [loLevel] [hiLevel]` (1-based, prints per level). Run it after any change to level defs or generation to confirm all boards stay solvable and fast. Bump `CACHE` in `sw.js` whenever you change the HTML/assets, or the service worker will serve a stale cached copy (this bit during dev — cache-first hides edits until the cache version changes).
