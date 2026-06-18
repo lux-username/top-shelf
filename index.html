@@ -219,6 +219,13 @@
     content:""; position:absolute; inset:-3px -6px; border-radius:8px;
     border:2px dashed rgba(122,106,86,.4);
   }
+  /* "+N" badge on a sealed peek: more layers wait below this one */
+  .depthtag{
+    position:absolute; top:-30%; right:-34%; font-style:normal;
+    font-family:"Nunito"; font-weight:800; font-size:.42em; line-height:1.2;
+    color:var(--ink-soft); background:rgba(255,247,225,.92);
+    border-radius:6px; padding:0 3px; box-shadow:0 1px 2px rgba(0,0,0,.15);
+  }
   .tile{
     position:relative;
     width:84%; height:84%;
@@ -584,13 +591,17 @@ function shuffle(arr, rand){
      .dispenser   take-only delivery pallet — nothing can be placed onto it
      .locked      shuttered shelf — closed right now (opens after N clears)
      .lockedUntil clears needed before this shelf opens */
-const SHELF_ATTRS = ["label", "dispenser", "locked", "lockedUntil"];
-const cloneShelf = sh => { const n = sh.map(sl => sl.slice()); for(const k of SHELF_ATTRS) if(sh[k] != null) n[k] = sh[k]; return n; };
+const SHELF_ATTRS = ["label", "dispenser", "locked", "lockedUntil", "buried"];
+const cloneShelf = sh => {
+  const n = sh.map(sl => sl.slice());
+  for(const k of SHELF_ATTRS) if(sh[k] != null) n[k] = (k === "buried") ? sh[k].map(r => r.slice()) : sh[k];
+  return n;
+};
 const cloneBoard = b => b.map(cloneShelf);
-const hasItems   = b => b.some(sh => sh.some(sl => sl.length));
+const hasItems   = b => b.some(sh => sh.some(sl => sl.length) || (sh.buried && sh.buried.length));
 const filledCount = sh => sh.reduce((n, sl) => n + (sl.length ? 1 : 0), 0);
 const shelfHasRoom = sh => sh.some(sl => sl.length === 0);
-const emptyShelfCount = b => b.filter(sh => sh.every(sl => sl.length === 0)).length;
+const emptyShelfCount = b => b.filter(sh => sh.every(sl => sl.length === 0) && !(sh.buried && sh.buried.length)).length;
 const emptyCount = sh => sh.reduce((n, sl) => n + (sl.length === 0 ? 1 : 0), 0);
 /* a shelf accepts `n` items of `type` if it has that many open slots, isn't a
    take-only dispenser or closed shutter, and isn't reserved for another type. */
@@ -626,8 +637,16 @@ function resolveClears(b, out){
   while(changed){
     changed = false;
     for(let i = 0; i < b.length; i++){
-      if(shelfMonochrome(b[i])){
-        for(const sl of b[i]) sl.shift();
+      const sh = b[i];
+      if(shelfMonochrome(sh)){
+        for(const sl of sh) sl.shift();                       // remove the three matched fronts
+        // SEALED LAYERS: if the active layer is now empty and a buried row waits,
+        // the whole row rises to become the new active layer (may itself match →
+        // cascade/combo). (Flat shelves have no .buried — they just stay empty.)
+        if(sh.buried && sh.buried.length && sh.every(sl => sl.length === 0)){
+          const row = sh.buried.shift();
+          for(let s = 0; s < 3; s++) sh[s].push(row[s]);
+        }
         cleared++; changed = true;
         if(out) out.push(i);
       }
@@ -698,7 +717,9 @@ function canonical(b){
   const shelves = b.map(sh =>
     (sh.label != null ? "L" + sh.label : "") + (sh.dispenser ? "D" : "") +
     (sh.lockedUntil != null ? (sh.locked ? "K" : "k") : "") + ":" +
-    sh.map(sl => sl.map(cell).join(".")).sort().join("|"));
+    sh.map(sl => sl.map(cell).join(".")).sort().join("|") +
+    // buried rows: order matters (b[0] rises next); items within a row don't.
+    (sh.buried && sh.buried.length ? ";B" + sh.buried.map(r => r.map(cell).slice().sort().join(".")).join(";") : ""));
   shelves.sort();
   return shelves.join("/");
 }
@@ -852,7 +873,7 @@ function tryBuild(K, emptyShelves, layers, extraClears, reserved, rand, depth){
 function greedySolvable(board){
   let b = cloneBoard(board);
   const seen = new Set();
-  const count = bd => bd.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0), 0);
+  const count = bd => bd.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0) + (sh.buried ? sh.buried.length * 3 : 0), 0);
   while(hasItems(b)){
     const k = canonical(b);
     if(seen.has(k)) return false;                 // looping without finishing → not greedy-trivial
@@ -923,6 +944,45 @@ function generateBoard(def, levelIndex){
   // Should never happen; degrade to a trivially solvable starter.
   return tryBuild(3, 3, false, 0, 0, mulberry32(levelIndex + 1), 1) ||
          [[[0],[0],[]], [[0],[],[]], [[],[],[]]];
+}
+
+/* SEALED-LAYERS generation (the new back-row mechanic). A layered shelf is an
+   active row (3 slots) over `depth-1` buried full rows that only surface when the
+   shelf is matched and cleared. Random-fill + solver-gate + greedy floor — proven
+   in tests/proto-layers.js to yield ~100% hard, solvable boards in ~1-2 tries.
+   K filled shelves (each `depth` rows) + E empty shelves; every type lands in a
+   whole number of rows so counts are multiples of 3 by construction. Deterministic
+   per level index. Plain levels only (features stay flat); kept to K<=4 (K5 makes
+   the solver too slow). */
+function genLayered(def, levelIndex){
+  const K = def.kinds, E = def.empty, depth = def.depth || 2;
+  const wantHard = !def.easy;
+  const rows = K * depth;
+  for(let attempt = 0; attempt < 80; attempt++){
+    const rand = mulberry32((levelIndex + 1) * 1_000_003 + attempt * 7919 + depth * 101 + K * 31);
+    const rowTypes = []; for(let r = 0; r < rows; r++) rowTypes.push(r % K);
+    shuffle(rowTypes, rand);
+    const items = []; for(const t of rowTypes) items.push(t, t, t);
+    shuffle(items, rand);
+    const board = []; let idx = 0;
+    for(let f = 0; f < K; f++){
+      const sh = [[items[idx++]], [items[idx++]], [items[idx++]]];     // active layer
+      if(depth > 1){
+        const bur = [];
+        for(let d = 0; d < depth - 1; d++) bur.push([items[idx++], items[idx++], items[idx++]]);
+        sh.buried = bur;                                               // sealed rows beneath
+      }
+      board.push(sh);
+    }
+    for(let e = 0; e < E; e++) board.push([[], [], []]);
+    if(hasMonochromeFull(board)) continue;                            // no frame-one clears
+    if(legalMoves(board).length === 0) continue;                      // must be playable (needs E>=1)
+    const v = solve(board, 100000);
+    if(!v.solvable) continue;
+    if(wantHard && greedySolvable(board)) continue;                   // require planning
+    return board;
+  }
+  return generateBoard({ ...def, layers: false, depth: 1 }, levelIndex);  // gentle flat fallback (rare)
 }
 
 /* ---------- per-level emoji assignment ----------
@@ -1053,6 +1113,8 @@ function buildLevel(def, levelIndex){
   if(def.feature === "dispenser") return buildDispenserLevel(def, levelIndex);
   if(def.feature === "shutter")   return buildShutterLevel(def, levelIndex);
   if(def.feature === "multipack") return buildMultipackLevel(def, levelIndex);
+  if(def.layers && !def.feature && !def.reserved)    // plain layered → sealed-buried mechanic
+    return { board: genLayered(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
   return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
 }
 
@@ -1086,14 +1148,13 @@ const DEPTS = [
 const L = (kinds, empty, o = {}) =>
   ({ kinds, empty, layers: false, extra: 0, reserved: 0, ...o });
 
-/* Generous timer: thinking room scales with the work; deep/gimmick levels get a
-   bit more. Easy mode turns the clock off entirely. */
+/* Generous timer: thinking room scales with the work (layered levels hold far
+   more items in their buried rows). Easy mode turns the clock off entirely. */
 const mkTime = d => {
-  const items = (d.kinds + (d.layers ? d.extra : 0)) * 3;
-  let t = items * 13;
-  if (d.depth >= 3) t += 60;
+  const items = d.layers ? d.kinds * (d.depth || 2) * 3 : d.kinds * 3;
+  let t = items * 12;
   if (d.feature) t += 50;
-  return Math.min(540, Math.max(160, Math.round(t)));
+  return Math.min(620, Math.max(160, Math.round(t)));
 };
 
 /* Difficulty now comes from TIGHT space (empty 0-1), DEEP back rows (depth 2-3),
@@ -1115,18 +1176,20 @@ const CH1 = [
   L(5, 1, { role: "setpiece", blurb: "Open and stocked — sort it clean." }),
 ];
 
-/* ---- Chapter 2 · The Back Shelves — hidden back rows (depth 2). */
+/* ---- Chapter 2 · The Back Shelves — SEALED layers (depth 2). A buried row only
+   surfaces when you match-and-clear the shelf above it; you can't excavate by
+   moving fronts around. (Plain layered — routed to genLayered.) */
 const CH2 = [
-  L(3, 1, { layers: true, extra: 1, role: "intro", blurb: "Some items hide a grocery behind them." }),
-  L(3, 2, { layers: true, extra: 1, blurb: "Clear the front to reveal the back." }),
-  L(4, 1, { layers: true, extra: 2, blurb: "Peek behind before you commit." }),
-  L(4, 1, { layers: true, extra: 2, blurb: "Hidden stock, tight shelves." }),
-  L(3, 1, { layers: true, extra: 2, blurb: "Reveal the right one first." }),
-  L(4, 1, { layers: true, extra: 2, blurb: "What's behind that one?" }),
-  L(3, 2, { layers: true, extra: 1, role: "breather", blurb: "A gentle reshuffle." }),
-  L(4, 1, { layers: true, extra: 2, blurb: "Reveal, then route." }),
-  L(4, 0, { layers: true, extra: 2, blurb: "No spare shelf — mind the order." }),
-  L(4, 1, { layers: true, extra: 3, role: "setpiece", blurb: "Deep stock, neat shelves." }),
+  L(3, 2, { layers: true, depth: 2, role: "intro", blurb: "Clear a shelf to reveal the row sealed beneath it." }),
+  L(3, 1, { layers: true, depth: 2, blurb: "What rises when this clears?" }),
+  L(4, 2, { layers: true, depth: 2, blurb: "A hidden row under each stack." }),
+  L(4, 1, { layers: true, depth: 2, blurb: "Match in place to dig down." }),
+  L(4, 1, { layers: true, depth: 2, blurb: "You can't peek — you must clear." }),
+  L(4, 2, { layers: true, depth: 2, blurb: "Plan the layer, then the one below." }),
+  L(3, 2, { layers: true, depth: 2, role: "breather", blurb: "A shallow, easy dig." }),
+  L(4, 1, { layers: true, depth: 2, blurb: "Tight, with stock beneath." }),
+  L(4, 1, { layers: true, depth: 2, blurb: "Two layers, no slack." }),
+  L(4, 2, { layers: true, depth: 2, role: "setpiece", blurb: "Clear the floor, then the cellar." }),
 ];
 
 /* ---- Chapter 3 · Reserved Homes — a sign means only its grocery goes there. */
@@ -1134,12 +1197,12 @@ const CH3 = [
   L(3, 2, { reserved: 1, feature: "reserved", role: "intro", blurb: "A shelf with a sign takes only its grocery." }),
   L(4, 1, { reserved: 1, feature: "reserved", blurb: "Read the sign, route around it." }),
   L(4, 1, { reserved: 2, feature: "reserved", blurb: "Two reserved homes now." }),
-  L(4, 1, { reserved: 1, feature: "reserved", layers: true, extra: 2, blurb: "A sign, and stock hidden behind." }),
+  L(4, 1, { reserved: 1, feature: "reserved", blurb: "One sign, snug shelves." }),
   L(5, 1, { reserved: 2, feature: "reserved", blurb: "Mind both signs." }),
-  L(4, 1, { reserved: 2, feature: "reserved", layers: true, extra: 2, blurb: "Reserved and tight — think ahead." }),
+  L(5, 1, { reserved: 2, feature: "reserved", blurb: "Reserved and tight — think ahead." }),
   L(3, 2, { reserved: 1, feature: "reserved", role: "breather", blurb: "One sign, lots of room." }),
-  L(4, 1, { reserved: 2, feature: "reserved", layers: true, extra: 2, blurb: "Signs everywhere, scratch space scarce." }),
-  L(4, 0, { reserved: 2, feature: "reserved", layers: true, extra: 2, blurb: "No room to spare around the signs." }),
+  L(5, 1, { reserved: 2, feature: "reserved", blurb: "Signs everywhere, scratch space scarce." }),
+  L(5, 1, { reserved: 3, feature: "reserved", blurb: "Three reserved homes. Route carefully." }),
   L(5, 1, { reserved: 3, feature: "reserved", role: "setpiece", blurb: "Every shelf has a job. Sort to plan." }),
 ];
 
@@ -1147,28 +1210,29 @@ const CH3 = [
 const CH4 = [
   L(3, 2, { feature: "dispenser", role: "intro", blurb: "The 📦 pallet only unloads — never stack onto it." }),
   L(4, 1, { feature: "dispenser", blurb: "Empty the pallet; it won't take any back." }),
-  L(4, 1, { feature: "dispenser", layers: true, extra: 2, blurb: "Unload, and watch the hidden stock." }),
+  L(4, 1, { feature: "dispenser", blurb: "Unload, then sort what's left." }),
   L(4, 1, { feature: "dispenser", blurb: "Less room, one pallet to clear." }),
   L(5, 1, { feature: "dispenser", blurb: "Deliveries keep coming." }),
-  L(4, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 2, blurb: "A pallet, a sign, hidden crates." }),
+  L(5, 1, { feature: "dispenser", reserved: 1, blurb: "A pallet and a sign together." }),
   L(3, 2, { feature: "dispenser", role: "breather", blurb: "One pallet, easy floor." }),
-  L(4, 1, { feature: "dispenser", layers: true, extra: 2, blurb: "Tight dock, hidden crates." }),
-  L(4, 0, { feature: "dispenser", layers: true, extra: 2, blurb: "No scratch space at the dock." }),
-  L(5, 1, { feature: "dispenser", reserved: 1, role: "setpiece", blurb: "Clear the dock before it backs up." }),
+  L(5, 1, { feature: "dispenser", blurb: "Tight dock, one take-only pallet." }),
+  L(5, 1, { feature: "dispenser", reserved: 1, blurb: "Pallet and sign, snug floor." }),
+  L(5, 1, { feature: "dispenser", reserved: 2, role: "setpiece", blurb: "Clear the dock before it backs up." }),
 ];
 
-/* ---- Chapter 5 · Deep Storage — no new gimmick; the DEEPEST back rows (depth 3). */
+/* ---- Chapter 5 · Deep Storage — the DEEPEST sealed layers (depth 3): two buried
+   rows under each shelf, each surfacing only when the one above is cleared. */
 const CH5 = [
-  L(3, 1, { layers: true, extra: 2, depth: 3, role: "intro", blurb: "Stacked three-deep. Uncover with care." }),
-  L(4, 1, { layers: true, extra: 2, depth: 3, blurb: "Deep aisles, tight floor." }),
-  L(4, 1, { layers: true, extra: 3, depth: 3, blurb: "Reveal the right one first." }),
-  L(4, 1, { layers: true, extra: 3, depth: 3, reserved: 1, blurb: "A sign deep in the stacks." }),
-  L(4, 0, { layers: true, extra: 3, depth: 3, blurb: "No spare shelf, three deep." }),
-  L(4, 1, { layers: true, extra: 3, depth: 3, blurb: "Patience in the back." }),
-  L(3, 2, { layers: true, extra: 1, role: "breather", blurb: "Shallow shelves, room to breathe." }),
-  L(4, 0, { layers: true, extra: 3, depth: 3, blurb: "Every move matters back here." }),
-  L(4, 1, { layers: true, extra: 3, depth: 3, reserved: 1, blurb: "Deep, tight, and labeled." }),
-  L(4, 0, { layers: true, extra: 3, depth: 3, reserved: 1, role: "setpiece", blurb: "The deepest corner of the store." }),
+  L(3, 1, { layers: true, depth: 3, role: "intro", blurb: "Three layers deep. Clear to descend." }),
+  L(4, 1, { layers: true, depth: 3, blurb: "Deep stock, tight floor." }),
+  L(4, 1, { layers: true, depth: 3, blurb: "One layer at a time." }),
+  L(4, 2, { layers: true, depth: 3, blurb: "Room to work, depth to plumb." }),
+  L(4, 1, { layers: true, depth: 3, blurb: "No peeking past the next row." }),
+  L(4, 2, { layers: true, depth: 3, blurb: "Patience in the deep." }),
+  L(3, 2, { layers: true, depth: 2, role: "breather", blurb: "A shallow shelf to catch your breath." }),
+  L(4, 1, { layers: true, depth: 3, blurb: "Every move matters, three deep." }),
+  L(4, 2, { layers: true, depth: 3, blurb: "The cellar runs deep." }),
+  L(4, 2, { layers: true, depth: 3, role: "setpiece", blurb: "The deepest corner of the store." }),
 ];
 
 /* ---- Chapter 6 · Mixed Bags — wildcards (flat, kinds<=5, tight: keeps the
@@ -1190,13 +1254,13 @@ const CH6 = [
 const CH7 = [
   L(3, 2, { feature: "shutter", shutterAfter: 2, role: "intro", blurb: "Stock's locked behind the shutter — clear the floor to reach it." }),
   L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Two clears and the gate opens." }),
-  L(4, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Cold stock, hidden behind front items." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Cold stock waits behind the gate." }),
   L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Earn the key with less room." }),
   L(5, 1, { feature: "shutter", shutterAfter: 2, blurb: "Groceries wait behind the gate." }),
-  L(4, 1, { feature: "shutter", shutterAfter: 3, layers: true, extra: 2, blurb: "Three clears to open this one." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 3, blurb: "Three clears to open this one." }),
   L(3, 2, { feature: "shutter", shutterAfter: 2, role: "breather", blurb: "A small back room, easy floor." }),
-  L(4, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Tight, cold, and locked." }),
-  L(4, 0, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "No scratch space, gate shut." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 2, blurb: "Tight, cold, and locked." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, blurb: "A sign and a shutter to manage." }),
   L(5, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, role: "setpiece", blurb: "Clear three, then stock the cold room." }),
 ];
 
@@ -1214,27 +1278,29 @@ const CH8 = [
   L(4, 2, { feature: "multipack", packs: 3, role: "setpiece", blurb: "Bulk day — keep the packs moving." }),
 ];
 
-/* ---- Chapter 9 · Rush Hour — everything combined; tightest + deepest. Peaks ~90. */
+/* ---- Chapter 9 · Rush Hour — everything you've learned, alternating sealed-deep
+   boards with flat feature boards. Peaks ~90. (Features stay flat; depth carries
+   the hardest levels.) */
 const CH9 = [
-  L(4, 1, { reserved: 2, feature: "reserved", layers: true, extra: 2, role: "intro", blurb: "Rush hour. Signs and hidden stock again." }),
-  L(4, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 2, blurb: "A pallet, a sign, deep shelves." }),
-  L(4, 1, { feature: "shutter", shutterAfter: 2, layers: true, extra: 2, blurb: "Locked stock and back rows." }),
+  L(4, 1, { layers: true, depth: 2, role: "intro", blurb: "Rush hour. Sealed stock again." }),
+  L(4, 1, { feature: "dispenser", reserved: 1, blurb: "A pallet and a sign at once." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Locked stock to earn." }),
   L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Two bags in the crush." }),
-  L(4, 0, { feature: "dispenser", reserved: 1, layers: true, extra: 3, depth: 3, blurb: "Clear the dock — no room, three deep." }),
-  L(4, 0, { feature: "shutter", shutterAfter: 2, layers: true, extra: 3, depth: 3, blurb: "Deep stock, gate shut, no slack." }),
+  L(4, 1, { layers: true, depth: 3, blurb: "Deep stock, no slack." }),
+  L(4, 2, { layers: true, depth: 3, blurb: "Three layers under pressure." }),
   L(4, 2, { feature: "multipack", packs: 1, role: "breather", blurb: "One quiet pack before the push." }),
-  L(4, 0, { reserved: 2, feature: "reserved", layers: true, extra: 3, depth: 3, blurb: "Two signs, three deep, no room." }),
-  L(5, 1, { feature: "dispenser", reserved: 1, layers: true, extra: 3, depth: 3, blurb: "The busiest corner of the floor." }),
-  L(5, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, layers: true, extra: 3, depth: 3, role: "setpiece", blurb: "Peak rush — everything at once." }),
+  L(5, 1, { reserved: 3, feature: "reserved", blurb: "Three signs, no room to spare." }),
+  L(4, 2, { layers: true, depth: 3, blurb: "The deepest rush." }),
+  L(4, 2, { layers: true, depth: 3, role: "setpiece", blurb: "Peak rush — clear it all." }),
 ];
 
 /* ---- Chapter 10 · Closing Time — wind down to a calm finale. */
 const CH10 = [
-  L(4, 1, { layers: true, extra: 2, blurb: "The crowd thins. Catch your breath." }),
-  L(4, 1, { reserved: 1, feature: "reserved", layers: true, extra: 1, blurb: "A last few signs to honor." }),
-  L(4, 1, { layers: true, extra: 1, blurb: "Room opening back up." }),
+  L(4, 2, { layers: true, depth: 2, blurb: "The crowd thins; one last deep aisle." }),
+  L(4, 1, { reserved: 1, feature: "reserved", blurb: "A last sign to honor." }),
+  L(4, 2, { layers: true, depth: 2, blurb: "Settling the back shelves." }),
   L(4, 2, { blurb: "Lights still warm, shelves settling." }),
-  L(4, 1, { layers: true, extra: 1, blurb: "Tidying the last aisles." }),
+  L(4, 2, { layers: true, depth: 2, blurb: "Tidying the last stack." }),
   L(4, 2, { blurb: "Almost there. No rush at all." }),
   L(4, 2, { role: "breather", blurb: "A slow, easy pass." }),
   L(3, 2, { blurb: "Quiet shelves, quiet mind." }),
@@ -1243,7 +1309,9 @@ const CH10 = [
 ];
 
 const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH9, CH10)
-  .map((d, i) => ({ ...d, easy: d.role === "breather" || d.role === "finale", time: mkTime(d), chapter: Math.floor(i / 10) }));
+  .map((d, i) => ({ ...d,
+    easy: d.role === "breather" || d.role === "finale" || d.role === "intro",
+    time: mkTime(d), chapter: Math.floor(i / 10) }));
 
 /* =======================================================================
    Persistence (localStorage only — nothing depleting lives here)
@@ -1447,14 +1515,21 @@ function render(){
       sh2.innerHTML = `<span>🔒 opens in ${Math.max(0, need)} clear${need === 1 ? "" : "s"}</span>`;
       shEl.appendChild(sh2);
     }
+    const buriedTop = (shelf.buried && shelf.buried.length) ? shelf.buried[0] : null;
+    const buriedMore = shelf.buried ? shelf.buried.length - 1 : 0;   // rows hidden below the peek
     shelf.forEach((slot, sl) => {
+      const back = buriedTop ? buriedTop[sl] : null;    // the sealed item that will rise here
       const slotEl = document.createElement("div");
-      slotEl.className = "slot" + (slot.length > 1 ? " has-back" : "");
-      if(slot.length > 1){                              // hidden back-row item
-        const back = document.createElement("div");
-        back.className = "back" + (slot[1] === WILD ? " wild" : "");
-        back.textContent = slot[1] === WILD ? "🛍️" : G.emojis[TYPE(slot[1])];
-        slotEl.appendChild(back);
+      slotEl.className = "slot" + (back != null ? " has-back" : "");
+      if(back != null){                                 // sealed, visible-but-inert next layer
+        const bk = document.createElement("div");
+        bk.className = "back" + (back === WILD ? " wild" : "");
+        bk.textContent = back === WILD ? "🛍️" : G.emojis[TYPE(back)];
+        if(sl === 1 && buriedMore > 0){                 // hint that more layers wait below
+          const d = document.createElement("i"); d.className = "depthtag"; d.textContent = "+" + buriedMore;
+          bk.appendChild(d);
+        }
+        slotEl.appendChild(bk);
       }
       if(slot.length){
         const front = slot[0];
@@ -1531,7 +1606,10 @@ function commitMove(mv){
   // search would freeze this single-threaded check for seconds), and a wildcard
   // board stays solvable by construction, so soft-locks there are vanishingly
   // rare — hard-deadlock detection and the timer still cover the player.
-  if(G.def.feature !== "wildcard"){
+  // Also skipped on layered (sealed-buried) levels: the solver is heavy there
+  // (a 60k search would hitch the single-threaded check), and those boards are
+  // solver-verified at build time. Hard-deadlock detection + timer still apply.
+  if(G.def.feature !== "wildcard" && !G.def.layers){
     const token = G.moveToken;
     setTimeout(() => {
       if(G.ended || token !== G.moveToken) return;
