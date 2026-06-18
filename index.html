@@ -41,6 +41,8 @@
   /* a grocery icon: sized in em so it lands where an emoji would, but a touch
      larger (SVG art fills its box edge-to-edge, and bolder reads better on tiles) */
   .gicon{ width:1.25em; height:1.25em; display:block; pointer-events:none; }
+  /* inline icon for the menu legend (flows with text) */
+  .lgi{ width:1.35em; height:1.35em; display:inline-block; vertical-align:-.4em; }
   html,body{ margin:0; height:100%; }
   body{
     font-family:"Nunito",system-ui,sans-serif;
@@ -568,6 +570,7 @@
     <radialGradient id="gBroc" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#74b257"/><stop offset="1" stop-color="#477d34"/></radialGradient>
     <linearGradient id="gTea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a7cf63"/><stop offset="1" stop-color="#80a83f"/></linearGradient>
     <linearGradient id="gTeapot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef9a7e"/><stop offset="1" stop-color="#cf6f50"/></linearGradient>
+    <linearGradient id="gLock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf5e"/><stop offset="1" stop-color="#e0a020"/></linearGradient>
   </defs>
 
   <symbol id="ic-apple" viewBox="0 0 64 64">
@@ -1018,6 +1021,37 @@
     <circle cx="32" cy="13" r="3.4" fill="#f0a98a"/>
     <ellipse cx="25" cy="33" rx="5" ry="7" fill="#fff" opacity=".18"/>
   </symbol>
+
+  <!-- ===== gimmick markers (badges + shelf tags) ===== -->
+  <symbol id="ic-mk-reserved" viewBox="0 0 64 64">
+    <rect x="29.5" y="30" width="5" height="28" rx="2.5" fill="#9a6a3a"/>
+    <rect x="11" y="9" width="42" height="27" rx="6" fill="#fdf3df" stroke="#d6a85e" stroke-width="3"/>
+    <g stroke="#cf9a52" stroke-width="3.4" stroke-linecap="round"><path d="M21 19h22M21 27h15"/></g>
+  </symbol>
+  <symbol id="ic-mk-box" viewBox="0 0 64 64">
+    <path d="M32 10 L54 21 L32 32 L10 21 Z" fill="#dcab6c"/>
+    <path d="M10 21 L32 32 L32 55 L10 44 Z" fill="#b07d44"/>
+    <path d="M54 21 L32 32 L32 55 L54 44 Z" fill="#c69453"/>
+    <path d="M32 10 L32 32" stroke="#9a6a3a" stroke-width="1.6" opacity=".5"/>
+    <path d="M22 38 L42 38" stroke="#8a5a2b" stroke-width="2.4" opacity=".45"/>
+    <path d="M21 16 L43 27" stroke="#c79a5a" stroke-width="2" opacity=".5"/>
+  </symbol>
+  <symbol id="ic-mk-lock" viewBox="0 0 64 64">
+    <path d="M22 30 V21 a10 10 0 0 1 20 0 V30" fill="none" stroke="#9aa3ab" stroke-width="5.5"/>
+    <path d="M22 30 V21 a10 10 0 0 1 20 0 V30" fill="none" stroke="#c3cad1" stroke-width="2"/>
+    <rect x="15" y="29" width="34" height="27" rx="6" fill="url(#gLock)"/>
+    <circle cx="32" cy="40" r="3.6" fill="#9a6a1a"/>
+    <rect x="30.2" y="41" width="3.6" height="8" rx="1.8" fill="#9a6a1a"/>
+    <rect x="19" y="32" width="4" height="20" rx="2" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="ic-mk-snow" viewBox="0 0 64 64">
+    <g stroke="#74c2e6" stroke-width="3.6" stroke-linecap="round">
+      <path d="M32 8 V56 M11.6 20 L52.4 44 M52.4 20 L11.6 44"/>
+      <path d="M32 16 l-5-5 M32 16 l5-5 M32 48 l-5 5 M32 48 l5 5"/>
+      <path d="M18.6 24 l-6.8-1.8 M18.6 24 l1.8-6.8 M45.4 40 l6.8 1.8 M45.4 40 l-1.8 6.8"/>
+      <path d="M45.4 24 l6.8-1.8 M45.4 24 l-1.8-6.8 M18.6 40 l-6.8 1.8 M18.6 40 l1.8 6.8"/>
+    </g>
+  </symbol>
 </svg>
 
 <div id="app">
@@ -1078,7 +1112,12 @@
       <button class="act" id="installRowBtn">Add</button>
     </div>
     <h3>Levels</h3>
-    <div class="feat-legend">🪧 reserved shelf &nbsp; 🛍️ wildcard &nbsp; 📦 dispenser &nbsp; 🔒 shutter &nbsp; ❄️ frozen</div>
+    <div class="feat-legend">
+      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-reserved"/></svg> reserved &nbsp;
+      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-wild"/></svg> wildcard &nbsp;
+      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-box"/></svg> dispenser &nbsp;
+      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-lock"/></svg> shutter &nbsp;
+      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-snow"/></svg> frozen</div>
     <div id="levelGrid"></div>
     <div class="menutext">
       <b>No ads. No purchases. No lives.</b> Ever. Unlimited retries, and every board
@@ -1742,7 +1781,7 @@ const CH3 = [
 
 /* ---- Chapter 4 · The Loading Dock — take-only delivery pallets. */
 const CH4 = [
-  L(3, 2, { feature: "dispenser", role: "intro", blurb: "The 📦 pallet only unloads — never stack onto it." }),
+  L(3, 2, { feature: "dispenser", role: "intro", blurb: "The delivery pallet only unloads — never stack onto it." }),
   L(4, 1, { feature: "dispenser", blurb: "Empty the pallet; it won't take any back." }),
   L(4, 1, { feature: "dispenser", blurb: "Unload, then sort what's left." }),
   L(4, 1, { feature: "dispenser", blurb: "Less room, one pallet to clear." }),
@@ -1772,7 +1811,7 @@ const CH5 = [
 /* ---- Chapter 6 · Mixed Bags — wildcards (flat, kinds<=5, tight: keeps the
    solver fast, since wildcards explode roomy/high-kind boards). */
 const CH6 = [
-  L(3, 2, { feature: "wildcard", wildcards: 1, role: "intro", blurb: "A mixed bag 🛍️ completes any shelf." }),
+  L(3, 2, { feature: "wildcard", wildcards: 1, role: "intro", blurb: "A mixed bag completes any shelf." }),
   L(4, 1, { feature: "wildcard", wildcards: 1, blurb: "Save the bag for a shelf that needs it." }),
   L(4, 1, { feature: "wildcard", wildcards: 2, blurb: "Two bags to place wisely." }),
   L(5, 1, { feature: "wildcard", wildcards: 1, blurb: "One bag, tighter shelves." }),
@@ -1803,7 +1842,7 @@ const CH7 = [
 /* ---- Chapter 8 · The Freezer Aisle — FROZEN items (flat). An iced item ❄️ can't
    be lifted; you must sort the others around it and complete its shelf in place. */
 const CH8 = [
-  L(3, 2, { feature: "frozen", frozen: 1, role: "intro", blurb: "An iced item ❄️ can't be moved — finish its shelf right where it sits." }),
+  L(3, 2, { feature: "frozen", frozen: 1, role: "intro", blurb: "An iced item can't be moved — finish its shelf right where it sits." }),
   L(4, 2, { feature: "frozen", frozen: 1, blurb: "Sort around what's frozen in place." }),
   L(4, 1, { feature: "frozen", frozen: 1, blurb: "One item stuck fast, less room to work." }),
   L(4, 1, { feature: "frozen", frozen: 2, blurb: "Two frozen items now." }),
@@ -2078,6 +2117,7 @@ const ICON_KEYS = new Set([
   "croissant","baguette","bagel","cupcake","cakeslice","donut","pretzel",
   "lotion","soap","toiletpaper","sponge","basket","bucket","broom",
   "carrot","tomato","broccoli","tea","pie","teapot",
+  "mk-reserved","mk-box","mk-lock","mk-snow",
 ]);
 function glyphHTML(key){
   return ICON_KEYS.has(key)
@@ -2104,14 +2144,14 @@ function render(){
     if(shelf.dispenser){                                // take-only delivery pallet
       const sign = document.createElement("div");
       sign.className = "sign disp";
-      sign.textContent = "📦";
+      sign.innerHTML = glyphHTML("mk-box");
       shEl.appendChild(sign);
     }
     if(shelf.locked){                                   // closed roller shutter
       const need = (shelf.lockedUntil || 0) - G.cleared;
       const sh2 = document.createElement("div");
       sh2.className = "shutter";
-      sh2.innerHTML = `<span>🔒 opens in ${Math.max(0, need)} clear${need === 1 ? "" : "s"}</span>`;
+      sh2.innerHTML = `<span><svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-lock"></use></svg> opens in ${Math.max(0, need)} clear${need === 1 ? "" : "s"}</span>`;
       shEl.appendChild(sh2);
     }
     const buriedTop = (shelf.buried && shelf.buried.length) ? shelf.buried[0] : null;
@@ -2137,7 +2177,7 @@ function render(){
         tile.innerHTML = glyphHTML(keyOf(front));
         tile.dataset.shelf = si;
         tile.dataset.slot = sl;
-        if(isFrozen(front)){ const tag = document.createElement("i"); tag.className = "frosttag"; tag.textContent = "❄️"; tile.appendChild(tag); }
+        if(isFrozen(front)){ const tag = document.createElement("i"); tag.className = "frosttag"; tag.innerHTML = glyphHTML("mk-snow"); tile.appendChild(tag); }
         const sel = G.selected;
         if(sel && sel.fs === si && sel.ss === sl) tile.classList.add("selected");
         slotEl.appendChild(tile);
@@ -2502,13 +2542,14 @@ function openMenu(){
 }
 function closeMenu(){ sheet.classList.remove("show"); G.over = false; }
 
-function featBadge(def){
-  return def.feature && def.feature.indexOf("reserved") === 0 ? "🪧"
-       : def.feature === "wildcard"  ? "🛍️"
-       : def.feature === "dispenser" ? "📦"
-       : def.feature === "shutter"   ? "🔒"
-       : def.feature === "frozen"    ? "❄️" : "";
+function featKey(def){
+  return def.feature && def.feature.indexOf("reserved") === 0 ? "mk-reserved"
+       : def.feature === "wildcard"  ? "wild"
+       : def.feature === "dispenser" ? "mk-box"
+       : def.feature === "shutter"   ? "mk-lock"
+       : def.feature === "frozen"    ? "mk-snow" : "";
 }
+function featBadge(def){ const k = featKey(def); return k ? glyphHTML(k) : ""; }
 
 /* PLAYTEST MODE: when true, every level is selectable (free navigation), ignoring
    progression locks. Set to false to ship with locks (unlock-as-you-finish). */
