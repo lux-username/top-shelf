@@ -1912,13 +1912,18 @@ function featBadge(def){
        : def.feature === "multipack" ? "🎀" : "";
 }
 
+/* PLAYTEST MODE: when true, every level is selectable (free navigation), ignoring
+   progression locks. Set to false to ship with locks (unlock-as-you-finish). */
+const PLAYTEST = true;
+
 /* Level picker, grouped by department. Levels unlock as you finish them: a level
-   is playable once reached (i + 1 <= unlocked); later levels show a lock. */
+   is playable once reached (i + 1 <= unlocked); later levels show a lock —
+   unless PLAYTEST, in which case all levels are open. */
 function buildLevelGrid(){
   levelGrid.innerHTML = "";
   DEPTS.forEach((dept, c) => {
     const start = c * 10;
-    const chapterReached = start + 1 <= save.unlocked;     // any level in this chapter open?
+    const chapterReached = PLAYTEST || start + 1 <= save.unlocked;     // any level in this chapter open?
     const head = document.createElement("div");
     head.className = "chaphead" + (chapterReached ? "" : " locked");
     head.innerHTML = `<b>${chapterReached ? dept.name : "🔒 " + dept.name}</b><span>${start + 1}–${start + 10}</span>`;
@@ -1929,7 +1934,7 @@ function buildLevelGrid(){
     for(let n = 0; n < 10; n++){
       const i = start + n;
       const def = LEVELS[i];
-      const reached = i + 1 <= save.unlocked;              // playable (current or replay)
+      const reached = PLAYTEST || i + 1 <= save.unlocked;  // playable (current or replay)
       const done = i + 1 < save.unlocked;
       const b = document.createElement("button");
       b.className = "lvl" + (done ? " done" : "") + (i === G.index ? " current" : "") + (reached ? "" : " locked");
