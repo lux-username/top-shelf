@@ -1354,10 +1354,22 @@ function updateShutters(){
 }
 
 /* ---------- level lifecycle ---------- */
+/* Boards are deterministic per level index, so we build each one ONCE per session
+   and reuse it (replays/resets/navigation become instant instead of re-running
+   the generator + solver + greedy floor). The board is CLONED on every use:
+   play mutates it (updateShutters flips .locked in place, moves reassign G.board),
+   so the cached copy must stay pristine. Emojis are read-only — safe to share. */
+const _boardCache = Object.create(null);   // levelIndex -> pristine { board, emojis }
+function buildLevelCached(def, i){
+  if(!_boardCache[i]) _boardCache[i] = buildLevel(def, i);
+  const c = _boardCache[i];
+  return { board: cloneBoard(c.board), emojis: c.emojis };
+}
+
 function startLevel(i){
   G.index = i;
   G.def = LEVELS[i];
-  const built = buildLevel(G.def, i);   // returns board + emojis
+  const built = buildLevelCached(G.def, i);   // built once per session, cloned per use
   G.board = built.board;
   G.emojis = built.emojis;
   G.selected = null;
