@@ -211,7 +211,7 @@
   /* hidden back-row item: greyed + dashed, identifiable but locked */
   .back{
     position:absolute; top:6%; left:50%; transform:translateX(-50%);
-    font-size:calc(var(--slot,90px) * .40); line-height:1; filter:grayscale(.7) opacity(.62);
+    font-size:calc(var(--slot,90px) * .46); line-height:1; filter:grayscale(.7) opacity(.62);
     pointer-events:none; z-index:1;
     text-shadow:0 1px 2px rgba(0,0,0,.12);
   }
@@ -228,12 +228,12 @@
   }
   .tile{
     position:relative;
-    width:84%; height:84%;
+    width:88%; height:88%;
     border-radius:12px;
     background:linear-gradient(180deg,#fffdf8,#fff4e3);
     box-shadow:0 3px 0 #e7d4b3, 0 5px 10px var(--tile-shadow), inset 0 1px 0 rgba(255,255,255,.8);
     display:grid; place-items:center;
-    font-size:calc(var(--slot,90px) * .54); line-height:1;
+    font-size:calc(var(--slot,90px) * .62); line-height:1;
     cursor:grab;
     z-index:2;
     transition:transform .12s cubic-bezier(.2,1.3,.5,1), box-shadow .1s ease;
@@ -263,22 +263,26 @@
     50%{ box-shadow:0 3px 0 #e7d4b3, 0 5px 12px var(--tile-shadow), 0 0 0 2px rgba(255,255,255,.95), 0 0 20px 4px rgba(255,143,171,.6); }
   }
   .back.wild{ filter:grayscale(.3) opacity(.6); }
-  /* multipack: a shrink-wrapped 2-pack that moves as one unit */
-  .tile.pack{
-    background:linear-gradient(180deg,#fff7ec,#ffe9cf);
-    box-shadow:0 3px 0 #e7c79b, 0 5px 10px var(--tile-shadow), inset 0 1px 0 rgba(255,255,255,.8), 0 0 0 2px #e89b5a;
+  /* frozen: an item iced to the shelf — it can't be lifted, but its shelf still
+     clears in place. A frosty sheen + ❄️ tag reads as "stuck / can't move". */
+  .tile.frozen{
+    background:linear-gradient(160deg,#eaf7ff 0%, #f6fcff 45%, #dff0fb 100%);
+    box-shadow:0 3px 0 #b9d8ea, 0 5px 10px var(--tile-shadow), inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 2px #9ccbe6;
+    cursor:not-allowed;
   }
-  .tile.pack::before{                                   /* shrink-wrap band across the tile */
-    content:""; position:absolute; left:-2px; right:-2px; top:50%; transform:translateY(-50%);
-    height:26%; background:repeating-linear-gradient(90deg, rgba(232,155,90,.30) 0 5px, rgba(232,155,90,.12) 5px 10px);
-    border-top:1px solid rgba(232,155,90,.5); border-bottom:1px solid rgba(232,155,90,.5);
-    pointer-events:none;
+  .tile.frozen::before{                                 /* frosted glaze over the tile */
+    content:""; position:absolute; inset:0; border-radius:12px; pointer-events:none;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.55) 0 18%, rgba(255,255,255,0) 38%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,.16) 0 6px, rgba(255,255,255,0) 6px 13px);
   }
-  .packtag{
-    position:absolute; top:-5px; right:-5px; font-size:calc(var(--slot,90px) * .26); line-height:1;
-    filter:drop-shadow(0 1px 1px rgba(0,0,0,.25)); pointer-events:none; font-style:normal; z-index:3;
+  .frosttag{
+    position:absolute; top:-6px; right:-6px; font-size:calc(var(--slot,90px) * .28); line-height:1;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.2)); pointer-events:none; font-style:normal; z-index:3;
   }
-  .ghost.pack{ box-shadow:0 10px 22px rgba(74,58,42,.35), 0 0 0 3px #e89b5a; }
+  .tile.shiver{ animation:shiver .32s ease; }           /* buzz when you try to lift a frozen item */
+  @keyframes shiver{ 0%,100%{ transform:none; } 20%{ transform:translateX(-3px) rotate(-1.5deg); }
+                     50%{ transform:translateX(3px) rotate(1.5deg); } 80%{ transform:translateX(-2px); } }
   @keyframes drop{ from{ transform:translateY(-10px) scale(.9); opacity:0;} to{ transform:none; opacity:1;} }
   @keyframes pop{ 0%{ transform:scale(.6); opacity:0;} 60%{ transform:scale(1.12);} 100%{ transform:none; opacity:1;} }
 
@@ -320,7 +324,7 @@
     width:calc(var(--slot,90px) * .9); height:calc(var(--slot,90px) * .9); border-radius:13px;
     background:linear-gradient(180deg,#fffdf8,#fff4e3);
     box-shadow:0 10px 22px rgba(74,58,42,.35), 0 0 0 3px var(--accent);
-    display:grid; place-items:center; font-size:calc(var(--slot,90px) * .54); line-height:1;
+    display:grid; place-items:center; font-size:calc(var(--slot,90px) * .62); line-height:1;
     transform:translate(-50%,-50%) scale(1.06) rotate(-3deg);
   }
 
@@ -401,6 +405,18 @@
   }
   .toggle.on{ background:var(--good); }
   .toggle.on .knob{ left:26px; }
+
+  /* three-way segmented control (timer difficulty) */
+  .seg{ display:flex; gap:4px; background:var(--cream-2); padding:4px; border-radius:12px; flex:none; }
+  .seg button{
+    border:none; cursor:pointer; font-family:"Nunito"; font-weight:800; font-size:.82rem;
+    padding:8px 12px; border-radius:9px; color:var(--ink-soft); background:transparent;
+    transition:background .15s ease, color .15s ease, box-shadow .15s ease; white-space:nowrap;
+  }
+  .seg button.on{ color:#fff; background:linear-gradient(180deg,#69a37e,var(--accent)); box-shadow:0 2px 0 #487a5b; }
+  .row.col{ flex-direction:column; align-items:stretch; gap:10px; }
+  .row.col .seg{ width:100%; }
+  .row.col .seg button{ flex:1; }
 
   .levelgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:2px 0 14px; }
   .chaphead{
@@ -506,9 +522,13 @@
 <div class="sheet" id="sheet">
   <div class="panel">
     <div class="grab"></div>
-    <div class="row">
-      <div class="txt"><b>Easy mode</b><span>Turn the timer off — sort at your own pace.</span></div>
-      <button class="toggle" id="easyToggle"><span class="knob"></span></button>
+    <div class="row col">
+      <div class="txt"><b>Timer</b><span>Casual has no clock. Easy is gentle. Hard is a tighter sprint.</span></div>
+      <div class="seg" id="timerSeg">
+        <button data-mode="casual">Casual</button>
+        <button data-mode="easy">Easy</button>
+        <button data-mode="hard">Hard</button>
+      </div>
     </div>
     <div class="row">
       <div class="txt"><b>Sound effects</b><span>Pops, chimes, and clear bursts.</span></div>
@@ -523,7 +543,7 @@
       <button class="act" id="installRowBtn">Add</button>
     </div>
     <h3>Levels</h3>
-    <div class="feat-legend">🪧 reserved shelf &nbsp; 🛍️ wildcard &nbsp; 📦 dispenser &nbsp; 🔒 shutter &nbsp; 🎀 multipack</div>
+    <div class="feat-legend">🪧 reserved shelf &nbsp; 🛍️ wildcard &nbsp; 📦 dispenser &nbsp; 🔒 shutter &nbsp; ❄️ frozen</div>
     <div id="levelGrid"></div>
     <div class="menutext">
       <b>No ads. No purchases. No lives.</b> Ever. Unlimited retries, and every board
@@ -611,12 +631,13 @@ const canAcceptN = (sh, type, n) =>
 const canAccept = (sh, type) => canAcceptN(sh, type, 1);
 
 /* ---------- item values ----------
-   A slot item is normally a plain type-id. A MULTIPACK item is an object
-   { t, p } — type t, pack-group p — two of which (same p, same shelf) move as a
-   bound unit into two open slots at once. TYPE() reads the type either way. */
+   A slot item is normally a plain type-id. A FROZEN item is an object
+   { t, fz:1 } — type t, iced to its shelf: it can never be moved, but its shelf
+   still clears in place when its three fronts match. TYPE() reads the type
+   either way; isFrozen() detects the locked-in-place items. */
 const WILD = -1;
 const TYPE = x => (typeof x === "object" ? x.t : x);
-const isPack = x => typeof x === "object" && x !== null;
+const isFrozen = x => typeof x === "object" && x !== null && !!x.fz;
 
 /* WILD is a "mixed grocery bag" that stands in for any item — three fronts
    clear when the non-wild ones all match (or they're all wild). */
@@ -655,57 +676,31 @@ function resolveClears(b, out){
   return cleared;
 }
 
-/* Indices of the two slots holding shelf `i`'s multipack (or null). At most one
-   pack per shelf, since a pack fills two of the three slots. */
-function packSlots(sh){
-  const idx = [];
-  for(let s = 0; s < 3; s++) if(sh[s].length && isPack(sh[s][0])) idx.push(s);
-  return idx.length === 2 ? idx : null;
-}
-
-/* All legal moves. A single front item moves to any shelf that accepts it; a
-   multipack moves as a unit to any shelf with two open slots that accepts it. */
+/* All legal moves. A single front item moves to any shelf that accepts it.
+   FROZEN items are never a legal source — they're iced to their shelf. */
 function legalMoves(b){
   const out = [];
   for(let i = 0; i < b.length; i++){
     if(b[i].locked) continue;                  // closed shutter: stock is inert until it opens
-    const pk = packSlots(b[i]);
     for(let s = 0; s < 3; s++){
       if(b[i][s].length === 0) continue;
-      if(pk && pk.includes(s)) continue;       // pack halves handled below, not as singles
+      if(isFrozen(b[i][s][0])) continue;       // frozen item can't be lifted
       const t = TYPE(b[i][s][0]);
       for(let j = 0; j < b.length; j++){
         if(j === i) continue;
         if(canAccept(b[j], t)) out.push({ fs:i, ss:s, ts:j });
       }
     }
-    if(pk){
-      const t = TYPE(b[i][pk[0]][0]);
-      for(let j = 0; j < b.length; j++){
-        if(j === i) continue;
-        if(canAcceptN(b[j], t, 2)) out.push({ fs:i, ts:j, pack:true });
-      }
-    }
   }
   return out;
 }
 
-/* Apply a move to a fresh copy; resolve clears; return new board. Handles both
-   single-item moves and whole-pack moves (two items into two open slots). */
+/* Apply a single-item move to a fresh copy; resolve clears; return new board. */
 function applyMove(b, mv, clearedOut){
   const nb = cloneBoard(b);
-  if(mv.pack){
-    const ps = packSlots(nb[mv.fs]);
-    const carried = ps.map(s => nb[mv.fs][s].shift());
-    for(const item of carried){
-      const e = nb[mv.ts].findIndex(sl => sl.length === 0);
-      nb[mv.ts][e].push(item);
-    }
-  }else{
-    const t = nb[mv.fs][mv.ss].shift();
-    const e = nb[mv.ts].findIndex(sl => sl.length === 0);
-    nb[mv.ts][e].push(t);
-  }
+  const t = nb[mv.fs][mv.ss].shift();
+  const e = nb[mv.ts].findIndex(sl => sl.length === 0);
+  nb[mv.ts][e].push(t);
   resolveClears(nb, clearedOut);
   return nb;
 }
@@ -713,7 +708,7 @@ function applyMove(b, mv, clearedOut){
 /* Canonical key: slot order within a shelf and shelf order are irrelevant, but
    a shelf's reserved label, take-only nature, and shutter state are identity. */
 function canonical(b){
-  const cell = x => isPack(x) ? "P" + x.t : "" + x;     // packed items distinct from singles
+  const cell = x => isFrozen(x) ? "F" + x.t : "" + x;   // frozen items distinct from movable singles
   const shelves = b.map(sh =>
     (sh.label != null ? "L" + sh.label : "") + (sh.dispenser ? "D" : "") +
     (sh.lockedUntil != null ? (sh.locked ? "K" : "k") : "") + ":" +
@@ -889,8 +884,7 @@ function greedySolvable(board){
     if(advanced) continue;
     let best = null, bestScore = 0;               // 2) best move that builds a match
     for(const mv of moves){
-      const srcSlot = mv.pack ? packSlots(b[mv.fs])[0] : mv.ss;
-      const t = TYPE(b[mv.fs][srcSlot][0]);
+      const t = TYPE(b[mv.fs][mv.ss][0]);
       let same = 0;
       for(const sl of b[mv.ts]) if(sl.length && TYPE(sl[0]) === t) same++;
       if(same > bestScore){ bestScore = same; best = mv; }
@@ -1062,34 +1056,35 @@ function buildShutterLevel(def, levelIndex){
   return fallback || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
 }
 
-/* MULTIPACK: bind pairs of same-type items (sitting together on a shelf) into
-   shrink-wrapped 2-packs that must move as a unit. Binding only restricts moves,
-   so we solver-gate and keep the first board that stays winnable. Flat levels
-   only (packs + hidden back rows would be a tangle), with roomy boards so a pack
-   always has two open slots to move into. */
-function buildMultipackLevel(def, levelIndex){
-  const want = def.packs || 1;
+/* FROZEN: ice a few front items to their shelves. A frozen item can never be
+   lifted (it's locked in place), but its shelf still clears when its three
+   fronts match — so you must sort the OTHER items around it and complete its
+   shelf right where it sits. Freezing only removes moves (and pins a shelf's
+   final color + costs a buffer slot), so we solver-gate each candidate and keep
+   the first board that stays winnable. We freeze items on DISTINCT shelves so a
+   shelf never needs two frozen tiles routed to it, and never freeze an item on a
+   shelf that's already monochrome-full (it would auto-clear). */
+function buildFrozenLevel(def, levelIndex){
+  const want = def.frozen || 1;
   for(let attempt = 0; attempt < 60; attempt++){
     const board = generateBoard(def, levelIndex + attempt * 1000);
-    // shelves that hold two singles of the same type → a bindable pair
     const order = shuffle(board.map((_, i) => i), mulberry32(levelIndex * 911 + attempt + 1));
-    let pid = 1;
+    let made = 0;
     for(const i of order){
-      if(pid > want) break;
-      const byType = {};
-      for(let s = 0; s < 3; s++){
-        const sl = board[i][s];
-        if(sl.length === 1 && !isPack(sl[0])) (byType[sl[0]] ||= []).push(s);
-      }
-      const pair = Object.values(byType).find(ss => ss.length >= 2);
-      if(!pair) continue;
-      const t = board[i][pair[0]][0];
-      board[i][pair[0]][0] = { t, p: pid };
-      board[i][pair[1]][0] = { t, p: pid };
-      pid++;
+      if(made >= want) break;
+      if(board[i].label != null || board[i].dispenser || board[i].locked) continue;  // leave special shelves alone
+      // a plain front item on a shelf that isn't already complete
+      const s = board[i].findIndex(sl => sl.length === 1 && typeof sl[0] === "number" && sl[0] !== WILD);
+      if(s < 0 || shelfMonochrome(board[i])) continue;
+      board[i][s][0] = { t: board[i][s][0], fz: 1 };
+      made++;
     }
-    if(pid - 1 < want) continue;                          // didn't find enough pairs this seed
-    if(!hasMonochromeFull(board) && legalMoves(board).length > 0 && solve(board, 300000).solvable)
+    if(made < want) continue;                             // not enough freezable shelves this seed
+    // Flat, small boards: a solvable frozen board is found in very few nodes, so a
+    // modest cap verifies winners cheaply AND rejects the (common) unsolvable
+    // freezes fast — keeping first-load generation snappy even when freezing is
+    // tight. (Frozen only removes moves from an already-verified base board.)
+    if(!hasMonochromeFull(board) && legalMoves(board).length > 0 && solve(board, 120000).solvable)
       return { board, emojis: paletteFor(levelIndex, def.kinds) };
   }
   return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
@@ -1112,7 +1107,7 @@ function buildLevel(def, levelIndex){
   }
   if(def.feature === "dispenser") return buildDispenserLevel(def, levelIndex);
   if(def.feature === "shutter")   return buildShutterLevel(def, levelIndex);
-  if(def.feature === "multipack") return buildMultipackLevel(def, levelIndex);
+  if(def.feature === "frozen")    return buildFrozenLevel(def, levelIndex);
   if(def.layers && !def.feature && !def.reserved)    // plain layered → sealed-buried mechanic
     return { board: genLayered(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
   return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
@@ -1136,8 +1131,8 @@ const DEPTS = [
   { name: "The Loading Dock", pal: ["🧃","🥤","🍾","🧉","🧊","🥡","🫙"] },
   { name: "Deep Storage",     pal: ["🧊","🥟","🍕","🌭","🍔","🍟","🍙"] },
   { name: "Mixed Bags",       pal: ["🥐","🥖","🥯","🧁","🍰","🍩","🥨"] },
-  { name: "The Cold Room",    pal: ["🥩","🍗","🐟","🦐","🥓","🦀","🧊"] },
-  { name: "The Bulk Aisle",   pal: ["🥜","🌰","🫘","🍿","🍬","🍫","🍭"] },
+  { name: "The Stockroom",    pal: ["🧴","🧼","🧻","🧽","🧺","🪣","🧹"] },
+  { name: "The Freezer Aisle", pal: ["🍦","🍨","🧁","🥟","🍕","🌭","🧊"] },
   { name: "Rush Hour",        pal: ["🍎","🥕","🍞","🥛","🧀","🍌","🍅","🥦"] },
   { name: "Closing Time",     pal: ["🍵","🍪","🥧","🍮","🫖","🍯","🍰"] },
 ];
@@ -1148,14 +1143,18 @@ const DEPTS = [
 const L = (kinds, empty, o = {}) =>
   ({ kinds, empty, layers: false, extra: 0, reserved: 0, ...o });
 
-/* Generous timer: thinking room scales with the work (layered levels hold far
-   more items in their buried rows). Easy mode turns the clock off entirely. */
+/* Base (Easy-mode) timer: thinking room scales with the work (layered levels hold
+   far more items in their buried rows), but kept tighter than before so even the
+   gentle clock has a little pulse. `time` is the EASY duration; Casual removes the
+   clock entirely and Hard runs a much shorter sprint (see durationFor). */
 const mkTime = d => {
   const items = d.layers ? d.kinds * (d.depth || 2) * 3 : d.kinds * 3;
-  let t = items * 12;
-  if (d.feature) t += 50;
-  return Math.min(620, Math.max(160, Math.round(t)));
+  let t = items * 6.5;
+  if (d.feature) t += 25;
+  return Math.min(240, Math.max(60, Math.round(t)));
 };
+/* Hard mode is a much shorter sprint over the same board. */
+const HARD_TIME_FACTOR = 0.55;
 
 /* Difficulty now comes from TIGHT space (empty 0-1), DEEP back rows (depth 2-3),
    and constraints + the greedy difficulty floor — NOT from type count. Boards are
@@ -1250,54 +1249,63 @@ const CH6 = [
   L(5, 1, { feature: "wildcard", wildcards: 2, role: "setpiece", blurb: "Two bags, no slack — make them count." }),
 ];
 
-/* ---- Chapter 7 · The Cold Room — shuttered back room, opens after N clears. */
+/* ---- Chapter 7 · The Stockroom — a roller shutter over a stocked back room that
+   opens only after N clears. (Reskinned off the old "Cold Room" so the Freezer
+   Aisle owns the cold theme.) */
 const CH7 = [
   L(3, 2, { feature: "shutter", shutterAfter: 2, role: "intro", blurb: "Stock's locked behind the shutter — clear the floor to reach it." }),
-  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Two clears and the gate opens." }),
-  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Cold stock waits behind the gate." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Two clears and the gate rolls up." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Back-room stock waits behind the gate." }),
   L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Earn the key with less room." }),
-  L(5, 1, { feature: "shutter", shutterAfter: 2, blurb: "Groceries wait behind the gate." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 2, blurb: "Supplies wait behind the gate." }),
   L(4, 1, { feature: "shutter", shutterAfter: 3, blurb: "Three clears to open this one." }),
   L(3, 2, { feature: "shutter", shutterAfter: 2, role: "breather", blurb: "A small back room, easy floor." }),
-  L(5, 1, { feature: "shutter", shutterAfter: 2, blurb: "Tight, cold, and locked." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 2, blurb: "Tight, packed, and locked." }),
   L(5, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, blurb: "A sign and a shutter to manage." }),
-  L(5, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, role: "setpiece", blurb: "Clear three, then stock the cold room." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 3, reserved: 1, role: "setpiece", blurb: "Clear three, then empty the back room." }),
 ];
 
-/* ---- Chapter 8 · The Bulk Aisle — multipacks move as a unit (flat, needs 2 open slots). */
+/* ---- Chapter 8 · The Freezer Aisle — FROZEN items (flat). An iced item ❄️ can't
+   be lifted; you must sort the others around it and complete its shelf in place. */
 const CH8 = [
-  L(3, 2, { feature: "multipack", packs: 1, role: "intro", blurb: "A shrink-wrapped 2-pack 🎀 moves together — give it two open slots." }),
-  L(4, 2, { feature: "multipack", packs: 1, blurb: "Keep two slots free for the pack." }),
-  L(4, 2, { feature: "multipack", packs: 2, blurb: "Two multipacks now." }),
-  L(4, 2, { feature: "multipack", packs: 2, blurb: "Shuffle the packs with care." }),
-  L(4, 2, { feature: "multipack", packs: 2, blurb: "Where will both halves land?" }),
-  L(4, 2, { feature: "multipack", packs: 3, blurb: "Three packs to route." }),
-  L(3, 2, { feature: "multipack", packs: 1, role: "breather", blurb: "An easy pack to rehome." }),
-  L(4, 2, { feature: "multipack", packs: 2, blurb: "Mind the open slots." }),
-  L(4, 2, { feature: "multipack", packs: 3, blurb: "Packs everywhere in the aisle." }),
-  L(4, 2, { feature: "multipack", packs: 3, role: "setpiece", blurb: "Bulk day — keep the packs moving." }),
+  L(3, 2, { feature: "frozen", frozen: 1, role: "intro", blurb: "An iced item ❄️ can't be moved — finish its shelf right where it sits." }),
+  L(4, 2, { feature: "frozen", frozen: 1, blurb: "Sort around what's frozen in place." }),
+  L(4, 1, { feature: "frozen", frozen: 1, blurb: "One item stuck fast, less room to work." }),
+  L(4, 1, { feature: "frozen", frozen: 2, blurb: "Two frozen items now." }),
+  L(4, 1, { feature: "frozen", frozen: 2, blurb: "Plan around both icy tiles." }),
+  L(4, 1, { feature: "frozen", frozen: 2, blurb: "Their shelves are already half-decided." }),
+  L(3, 2, { feature: "frozen", frozen: 1, role: "breather", blurb: "One frozen item, plenty of room." }),
+  L(5, 1, { feature: "frozen", frozen: 2, blurb: "Tight aisle, two stuck tiles." }),
+  L(5, 1, { feature: "frozen", frozen: 2, blurb: "Two frozen on a tight, busy aisle." }),
+  L(4, 2, { feature: "frozen", frozen: 3, role: "setpiece", blurb: "Deep freeze — three iced tiles to work around." }),
 ];
 
-/* ---- Chapter 9 · Rush Hour — everything you've learned, alternating sealed-deep
-   boards with flat feature boards. Peaks ~90. (Features stay flat; depth carries
-   the hardest levels.) */
+/* ---- Chapter 9 · Rush Hour — the climax: every feature learned, now COMBINED with
+   reserved signs so two gimmicks share one board (a pallet AND a sign, a shutter
+   AND signs, a frozen item AND a sign, a mixed bag AND a sign…). Peaks ~90. Each
+   feature builder already honors `reserved` (they all call generateBoard), so a
+   combo is just a richer def, solver-gated like everything else. Combos stay FLAT:
+   features don't mix with sealed layers in this engine (layers carry their own
+   plain chapters), so the hardest pressure here comes from tight space + two
+   stacked constraints. */
 const CH9 = [
-  L(4, 1, { layers: true, depth: 2, role: "intro", blurb: "Rush hour. Sealed stock again." }),
-  L(4, 1, { feature: "dispenser", reserved: 1, blurb: "A pallet and a sign at once." }),
-  L(4, 1, { feature: "shutter", shutterAfter: 2, blurb: "Locked stock to earn." }),
-  L(5, 1, { feature: "wildcard", wildcards: 2, blurb: "Two bags in the crush." }),
-  L(4, 1, { layers: true, depth: 3, blurb: "Deep stock, no slack." }),
-  L(4, 2, { layers: true, depth: 3, blurb: "Three layers under pressure." }),
-  L(4, 2, { feature: "multipack", packs: 1, role: "breather", blurb: "One quiet pack before the push." }),
-  L(5, 1, { reserved: 3, feature: "reserved", blurb: "Three signs, no room to spare." }),
-  L(4, 2, { layers: true, depth: 3, blurb: "The deepest rush." }),
-  L(4, 2, { layers: true, depth: 3, role: "setpiece", blurb: "Peak rush — clear it all." }),
+  L(4, 2, { feature: "dispenser", reserved: 1, role: "intro", blurb: "Rush hour — a pallet and a sign at once." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, blurb: "Locked stock and a reserved home." }),
+  L(4, 1, { feature: "frozen", frozen: 2, reserved: 1, blurb: "Iced tiles and a sign to honor." }),
+  L(5, 1, { feature: "wildcard", wildcards: 2, reserved: 1, blurb: "Two bags and a sign in the crush." }),
+  L(5, 1, { feature: "dispenser", reserved: 2, blurb: "A pallet and two signs." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 2, reserved: 2, blurb: "Two signs and a locked back room." }),
+  L(3, 2, { feature: "frozen", frozen: 1, role: "breather", blurb: "One quiet frozen tile before the push." }),
+  L(5, 1, { feature: "frozen", frozen: 2, reserved: 2, blurb: "Two iced tiles, two signs, no slack." }),
+  L(5, 1, { feature: "shutter", shutterAfter: 3, reserved: 2, blurb: "Three clears to open it — and signs to mind." }),
+  L(5, 1, { feature: "dispenser", reserved: 3, role: "setpiece", blurb: "Peak rush — a pallet and three reserved homes. Clear it all." }),
 ];
 
-/* ---- Chapter 10 · Closing Time — wind down to a calm finale. */
+/* ---- Chapter 10 · Closing Time — two last combined challenges, then a long wind
+   down to a calm finale. */
 const CH10 = [
-  L(4, 2, { layers: true, depth: 2, blurb: "The crowd thins; one last deep aisle." }),
-  L(4, 1, { reserved: 1, feature: "reserved", blurb: "A last sign to honor." }),
+  L(4, 1, { feature: "shutter", shutterAfter: 2, reserved: 1, blurb: "Last rush of the day — locked stock and a sign." }),
+  L(4, 1, { feature: "dispenser", reserved: 1, blurb: "One more pallet and a reserved home." }),
   L(4, 2, { layers: true, depth: 2, blurb: "Settling the back shelves." }),
   L(4, 2, { blurb: "Lights still warm, shelves settling." }),
   L(4, 2, { layers: true, depth: 2, blurb: "Tidying the last stack." }),
@@ -1317,14 +1325,18 @@ const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH9, CH10)
    Persistence (localStorage only — nothing depleting lives here)
    ======================================================================= */
 const SAVE_KEY = "topshelf.save.v1";
+const TIMER_MODES = ["casual", "easy", "hard"];
 function loadSave(){
   try{
     const s = JSON.parse(localStorage.getItem(SAVE_KEY));
-    if(s && typeof s === "object")
-      return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, easy: !!s.easy,
+    if(s && typeof s === "object"){
+      // migrate the old boolean "easy" (timer off) → the new three-way mode
+      const timer = TIMER_MODES.includes(s.timer) ? s.timer : (s.easy ? "casual" : "easy");
+      return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, timer,
                sfx: s.sfx !== false, music: !!s.music };
+    }
   }catch(e){}
-  return { unlocked: 1, current: 0, easy: false, sfx: true, music: false };
+  return { unlocked: 1, current: 0, timer: "easy", sfx: true, music: false };
 }
 function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
 let save = loadSave();
@@ -1337,13 +1349,42 @@ let save = loadSave();
    ======================================================================= */
 const SFX = (() => {
   const AC = window.AudioContext || window.webkitAudioContext;
-  let ctx = null, master = null, musicTimer = null, unlocked = false;
+  let ctx = null, master = null, musicTimer = null, unlocked = false, silentEl = null;
   function ensure(){
     if(ctx || !AC) return;
     ctx = new AC();
     master = ctx.createGain(); master.gain.value = 0.45; master.connect(ctx.destination);
   }
   function resume(){ if(ctx && ctx.state === "suspended") ctx.resume(); }
+  /* A tiny silent WAV. Looping it through an <audio> element on iOS flips the page
+     into the "playback" audio session, so Web-Audio tones are NOT silenced by the
+     hardware ring/silent switch — the usual reason sound works on a laptop but not
+     an iPhone. Built at runtime so there's no asset file. */
+  function silentClipURL(){
+    const sr = 8000, n = sr / 2;                 // 0.5s of 8-bit mono silence
+    const buf = new ArrayBuffer(44 + n), dv = new DataView(buf);
+    const ws = (o, s) => { for(let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+    ws(0, "RIFF"); dv.setUint32(4, 36 + n, true); ws(8, "WAVE"); ws(12, "fmt ");
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, sr, true); dv.setUint32(28, sr, true); dv.setUint16(32, 1, true); dv.setUint16(34, 8, true);
+    ws(36, "data"); dv.setUint32(40, n, true);
+    for(let i = 0; i < n; i++) dv.setUint8(44 + i, 128);   // 128 = silence for unsigned 8-bit PCM
+    let bin = ""; const u8 = new Uint8Array(buf);
+    for(let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+    return "data:audio/wav;base64," + btoa(bin);
+  }
+  /* The canonical iOS Web-Audio unlock: play a one-sample silent buffer inside the
+     user gesture so the context is genuinely running, plus start the silent-loop
+     session claim above. Safe and inert on every other platform. */
+  function unlock(){
+    ensure(); resume();
+    if(!ctx) return;
+    try{ const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); }catch(e){}
+    if(!silentEl){
+      try{ silentEl = new Audio(silentClipURL()); silentEl.loop = true; silentEl.preload = "auto"; }catch(e){ silentEl = null; }
+    }
+    if(silentEl){ const p = silentEl.play(); if(p && p.catch) p.catch(() => {}); }
+  }
   function tone(freq, dur, type, vol, delay){
     if(!ctx) return;
     const t = ctx.currentTime + (delay || 0);
@@ -1374,7 +1415,8 @@ const SFX = (() => {
     step();
   }
   return {
-    firstGesture(){ if(unlocked) return; unlocked = true; ensure(); resume(); if(save.music) music(true); },
+    firstGesture(){ if(unlocked) return; unlocked = true; unlock(); if(save.music) music(true); },
+    resume,
     pickup(){ ensure(); resume(); if(on()) tone(540, 0.07, "sine", 0.13); },
     place(){ ensure(); resume(); if(on()){ tone(300, 0.09, "triangle", 0.17); tone(460, 0.06, "sine", 0.09, 0.01); } },
     invalid(){ ensure(); resume(); if(on()) tone(150, 0.12, "sawtooth", 0.09); },
@@ -1443,8 +1485,8 @@ function startLevel(i){
   G.selected = null;
   G.ended = false;
   G.cleared = 0;
-  G.total = G.def.time;
-  G.remaining = G.def.time;
+  G.total = durationFor(G.def);
+  G.remaining = G.total;
   updateShutters();
 
   save.current = i;
@@ -1534,14 +1576,13 @@ function render(){
       if(slot.length){
         const front = slot[0];
         const tile = document.createElement("div");
-        tile.className = "tile" + (front === WILD ? " wild" : "") + (isPack(front) ? " pack" : "");
+        tile.className = "tile" + (front === WILD ? " wild" : "") + (isFrozen(front) ? " frozen" : "");
         tile.textContent = front === WILD ? "🛍️" : G.emojis[TYPE(front)];
         tile.dataset.shelf = si;
         tile.dataset.slot = sl;
-        if(isPack(front)){ const tag = document.createElement("i"); tag.className = "packtag"; tag.textContent = "🎀"; tile.appendChild(tag); }
+        if(isFrozen(front)){ const tag = document.createElement("i"); tag.className = "frosttag"; tag.textContent = "❄️"; tile.appendChild(tag); }
         const sel = G.selected;
-        if(sel && sel.fs === si && (sel.ss === sl || (sel.pack && packSlots(shelf) && packSlots(shelf).includes(sl))))
-          tile.classList.add("selected");
+        if(sel && sel.fs === si && sel.ss === sl) tile.classList.add("selected");
         slotEl.appendChild(tile);
       }
       shEl.appendChild(slotEl);
@@ -1621,21 +1662,12 @@ function commitMove(mv){
   return true;
 }
 
-/* Move one front item to another shelf. Packed items move via doPackMove. */
+/* Move one front item to another shelf. Frozen items can't be moved. */
 function doMove(fs, ss, ts){
   if(G.ended || fs === ts) return false;
-  if(!G.board[fs][ss].length || isPack(G.board[fs][ss][0])) return false;
+  if(!G.board[fs][ss].length || isFrozen(G.board[fs][ss][0])) return false;
   if(!canAccept(G.board[ts], TYPE(G.board[fs][ss][0]))) return false;
   return commitMove({ fs, ss, ts });
-}
-
-/* Move shelf fs's multipack as a unit to shelf ts (needs two open slots). */
-function doPackMove(fs, ts){
-  if(G.ended || fs === ts) return false;
-  const ps = packSlots(G.board[fs]);
-  if(!ps) return false;
-  if(!canAcceptN(G.board[ts], TYPE(G.board[fs][ps[0]][0]), 2)) return false;
-  return commitMove({ fs, ts, pack: true });
 }
 
 /* ---------- win / fail flows ---------- */
@@ -1687,16 +1719,22 @@ function finishTimeUp(){
   showCard({
     emoji: "⏳",
     title: "Time's up",
-    body: "No worries — nothing lost. The same board is right here for another try. (Prefer no clock? Turn on Easy mode in the menu.)",
+    body: "No worries — nothing lost. The same board is right here for another try. (Prefer no clock? Switch the Timer to Casual in the menu.)",
     primary: "Try again",
     onPrimary: () => { hideCard(); resetBoard(); },
   });
 }
 
 /* ---------- timer ---------- */
+/* Seconds on the clock for a level under the current mode: Casual = no clock,
+   Easy = the level's base time, Hard = a much shorter sprint over the same board. */
+function durationFor(def){
+  if(save.timer === "hard") return Math.max(30, Math.round(def.time * HARD_TIME_FACTOR));
+  return def.time;                                   // easy (and the value casual ignores)
+}
 let timerHandle = null, lastTick = 0;
 function tickTimer(now){
-  if(G.over || G.ended || save.easy){ lastTick = now; timerHandle = requestAnimationFrame(tickTimer); return; }
+  if(G.over || G.ended || save.timer === "casual"){ lastTick = now; timerHandle = requestAnimationFrame(tickTimer); return; }
   if(!lastTick) lastTick = now;
   const dt = (now - lastTick) / 1000;
   lastTick = now;
@@ -1713,7 +1751,7 @@ function startTimer(){
 function stopTimer(){ if(timerHandle){ cancelAnimationFrame(timerHandle); timerHandle = null; } }
 
 function updateTimerUI(){
-  if(save.easy){
+  if(save.timer === "casual"){
     timerWrap.style.opacity = ".7";
     timerFill.style.width = "100%";
     timerFill.className = "timerfill";
@@ -1743,15 +1781,15 @@ function shelfIndexFromPoint(x, y){
   return sh ? +sh.dataset.shelf : -1;
 }
 
-/* can shelf `idx` receive the currently-dragged item? (a pack needs two slots) */
+/* can shelf `idx` receive the currently-dragged item? */
 function dragAccepts(d, idx){
-  return idx !== d.fs && (d.isPack ? canAcceptN(G.board[idx], d.type, 2) : canAccept(G.board[idx], d.type));
+  return idx !== d.fs && canAccept(G.board[idx], d.type);
 }
-/* route the current tap-selection onto shelf ts (pack or single) */
+/* route the current tap-selection onto shelf ts */
 function moveSelectedTo(ts){
   const sel = G.selected;
   if(!sel) return false;
-  return sel.pack ? doPackMove(sel.fs, ts) : doMove(sel.fs, sel.ss, ts);
+  return doMove(sel.fs, sel.ss, ts);
 }
 
 function onPointerDown(e){
@@ -1768,8 +1806,13 @@ function onPointerDown(e){
   }
   const fs = +tile.dataset.shelf, ss = +tile.dataset.slot;
   const front = G.board[fs][ss][0];
+  if(isFrozen(front)){                           // iced to the shelf — can't be lifted
+    if(G.selected && G.selected.fs !== fs){ moveSelectedTo(fs); }   // but its shelf can still receive
+    else { SFX.invalid(); tile.classList.remove("shiver"); void tile.offsetWidth; tile.classList.add("shiver"); }
+    return;
+  }
   G.drag = {
-    fs, ss, tile, isPack: isPack(front), type: TYPE(front),
+    fs, ss, tile, type: TYPE(front),
     startX: e.clientX, startY: e.clientY,
     moved: false, ghost: null, hover: -1,
     pointerId: e.pointerId,
@@ -1800,17 +1843,10 @@ function onPointerMove(e){
 }
 
 function beginDragVisual(d, e){
-  // lift the grabbed item (both halves, for a pack)
-  if(d.isPack){
-    const ps = packSlots(G.board[d.fs]) || [];
-    ps.forEach(s => { const t = boardEl.querySelector(`.tile[data-shelf="${d.fs}"][data-slot="${s}"]`); if(t) t.classList.add("lift"); });
-  }else{
-    d.tile.classList.add("lift");
-  }
+  d.tile.classList.add("lift");                 // lift the grabbed item
   const ghost = document.createElement("div");
-  ghost.className = "ghost" + (d.isPack ? " pack" : "") + (d.type === WILD ? " wild" : "");
+  ghost.className = "ghost" + (d.type === WILD ? " wild" : "");
   ghost.textContent = d.tile.textContent;
-  if(d.isPack){ const tag = document.createElement("i"); tag.className = "packtag"; tag.textContent = "🎀"; ghost.appendChild(tag); }
   ghost.style.left = e.clientX + "px";
   ghost.style.top  = e.clientY + "px";
   document.body.appendChild(ghost);
@@ -1833,7 +1869,7 @@ function onPointerUp(e){
     [...boardEl.querySelectorAll(".shelf")].forEach(sh => sh.classList.remove("droppable","hover"));
     const ts = shelfIndexFromPoint(e.clientX, e.clientY);
     if(ts >= 0 && dragAccepts(d, ts)){
-      d.isPack ? doPackMove(d.fs, ts) : doMove(d.fs, d.ss, ts);
+      doMove(d.fs, d.ss, ts);
     }else{
       SFX.invalid();
       render();                                         // snap back (restores lifted tiles)
@@ -1843,17 +1879,16 @@ function onPointerUp(e){
   }
 }
 
-/* tap-to-select fallback (handles packs: tapping either half selects the pack) */
+/* tap-to-select fallback */
 function handleTap(fs, ss){
-  const isP = isPack(G.board[fs][ss][0]);
   const sel = G.selected;
-  const sameAsSelected = sel && sel.fs === fs && (sel.pack ? isP : sel.ss === ss);
+  const sameAsSelected = sel && sel.fs === fs && sel.ss === ss;
   if(sameAsSelected){
     G.selected = null;                                  // tap again to deselect
   }else if(sel && fs !== sel.fs && moveSelectedTo(fs)){
     return;                                             // moved onto tapped item's shelf (re-rendered)
   }else{
-    G.selected = { fs, ss, pack: isP };                 // select (or reselect)
+    G.selected = { fs, ss };                            // select (or reselect)
   }
   render();
 }
@@ -1887,14 +1922,19 @@ function showCard({ emoji, title, body, primary, onPrimary, secondary, onSeconda
 function hideCard(){ scrim.classList.remove("show"); G.over = false; }
 
 const sheet = document.getElementById("sheet");
-const easyToggle = document.getElementById("easyToggle");
+const timerSeg = document.getElementById("timerSeg");
 const sfxToggle = document.getElementById("sfxToggle");
 const musicToggle = document.getElementById("musicToggle");
 const levelGrid = document.getElementById("levelGrid");
 
+function syncTimerSeg(){
+  [...timerSeg.querySelectorAll("button")].forEach(b =>
+    b.classList.toggle("on", b.dataset.mode === save.timer));
+}
+
 function openMenu(){
   G.over = true;
-  easyToggle.classList.toggle("on", save.easy);
+  syncTimerSeg();
   sfxToggle.classList.toggle("on", save.sfx);
   musicToggle.classList.toggle("on", save.music);
   if(typeof installRow !== "undefined" && installRow)
@@ -1909,7 +1949,7 @@ function featBadge(def){
        : def.feature === "wildcard"  ? "🛍️"
        : def.feature === "dispenser" ? "📦"
        : def.feature === "shutter"   ? "🔒"
-       : def.feature === "multipack" ? "🎀" : "";
+       : def.feature === "frozen"    ? "❄️" : "";
 }
 
 /* PLAYTEST MODE: when true, every level is selectable (free navigation), ignoring
@@ -1956,12 +1996,18 @@ document.getElementById("menuBtn").onclick = openMenu;
 document.getElementById("resetBtn").onclick = () => { if(!G.over) resetBoard(); };
 sheet.addEventListener("click", e => { if(e.target === sheet) closeMenu(); });
 
-easyToggle.onclick = () => {
-  save.easy = !save.easy;
-  easyToggle.classList.toggle("on", save.easy);
+timerSeg.addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if(!btn || !TIMER_MODES.includes(btn.dataset.mode)) return;
+  save.timer = btn.dataset.mode;
+  syncTimerSeg();
   persist();
+  // re-base the running clock for this level under the new mode
+  G.total = durationFor(G.def);
+  G.remaining = Math.min(G.remaining, G.total);
   updateTimerUI();
-};
+  if(!G.ended && !G.over) startTimer();
+});
 
 sfxToggle.onclick = () => {
   save.sfx = !save.sfx;
@@ -1978,15 +2024,23 @@ musicToggle.onclick = () => {
 };
 
 document.getElementById("resetProgress").onclick = () => {
-  save = { unlocked: 1, current: 0, easy: save.easy, sfx: save.sfx, music: save.music };
+  save = { unlocked: 1, current: 0, timer: save.timer, sfx: save.sfx, music: save.music };
   persist();
   closeMenu();
   startLevel(0);
 };
 
-/* pause the clock when the tab is hidden */
+/* Arm audio on the very first interaction anywhere — not just a board touch — so
+   tapping the menu, a button, or the board all unlock sound (mobile autoplay
+   policy requires this to happen inside a user gesture). */
+["pointerdown", "touchend", "click", "keydown"].forEach(ev =>
+  window.addEventListener(ev, () => SFX.firstGesture(), { passive: true }));
+
+/* pause the clock when the tab is hidden; iOS suspends the AudioContext in the
+   background, so resume it (and the silent session loop) on return. */
 document.addEventListener("visibilitychange", () => {
   if(document.hidden){ G._wasHidden = true; }
+  else { SFX.resume(); if(save.music) SFX.music(true); }
 });
 
 /* =======================================================================

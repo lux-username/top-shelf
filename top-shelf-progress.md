@@ -6,6 +6,20 @@ The whole game lives in one file: **`index.html`** (~1490 lines, single self-con
 
 ---
 
+## Session update — 2026-06-18 (read me first)
+
+Five changes shipped this session (SW cache bumped **v8 → v9**):
+
+1. **Multipack REMOVED, replaced by FROZEN ❄️.** Multipack (the bound 2-pack) was buggy — packs could land split across a shelf with another item between them — so the whole mechanic and its support code were deleted (`packSlots`, `doPackMove`, pack moves in `legalMoves`/`applyMove`, pack item form `{t,p}`, all pack CSS/drag/render paths). The new gimmick is a **single-item modifier** (no multi-slot binding = no split-pack class of bugs): an item `{t,fz:1}` that is **iced to its shelf and can never be moved**, but whose shelf still clears in place when its three fronts match. You sort the *other* items around it; it pins that shelf's final color and costs a buffer slot. Engine: `isFrozen()`; `legalMoves` never offers a frozen item as a source; `canonical` encodes it (`"F"+t`); `buildFrozenLevel` ices N plain front items on distinct non-special shelves and solver-gates (cap 120k — flat boards verify/reject fast). UI: frost-glaze tile + ❄️ tag, can't be dragged (shiver + buzz on attempt), but its shelf still receives drops. Chapter 8 reskinned **The Bulk Aisle → The Freezer Aisle** (frozen-food palette). All frozen levels machine-verified solvable AND won end-to-end through the real `doMove` path (incl. the 3-frozen setpiece).
+2. **Timer overhaul — three modes + shorter clocks.** `save.easy` (bool) → `save.timer` ∈ `{casual,easy,hard}` (old saves migrate: `easy:true`→casual, else→easy; default **easy**). **Casual** = no clock (∞). **Easy** = the level's base time, now **much shorter** (`mkTime`: items×6.5 +25/feature, clamp **60–240s**, was ×12 +50, 160–620). **Hard** = `easy × 0.55` (`HARD_TIME_FACTOR`, floor 30s). `durationFor(def)` resolves the clock; a segmented control (`#timerSeg`) in the menu replaced the Easy toggle and re-bases the running clock on switch.
+3. **Bigger icons.** Tile emoji ratio .54 → **.62**, tile box 84% → **88%**, back-row peek .40 → **.46**, drag-ghost .54 → **.62**. (Slot fit math unchanged; 6-shelf cap keeps them readable.)
+4. **Mobile sound fix.** Two real causes addressed: (a) audio now arms on the **first interaction anywhere** (document-level `pointerdown/touchend/click/keydown`), not only a board touch, and resumes on tab-return; (b) the **iOS ring/silent switch** — which mutes Web-Audio (the classic "works on laptop, silent on iPhone") — is defeated by playing a tiny runtime-built **silent looping WAV** through an `<audio>` element on first gesture, flipping the page into the "playback" audio session. Plus the canonical one-sample silent-buffer unlock. **Needs confirmation on real iPhone hardware** (couldn't test the silent switch here).
+5. **Final challenge levels = real combos.** **Important engine fact (re)confirmed:** sealed layers (`genLayered`/`shelf.buried`) **do NOT combine with features** — a `layers:true` def that also sets `feature`/`reserved` routes to `generateBoard`→`tryBuild`, whose layer path is the *deprecated invisible within-slot* back-row (and with `extra:0` produces no depth at all). So the only supported multi-gimmick board is **feature + reserved sign(s)** (both flat). CH9 Rush Hour is now nine such two-gimmick combos (pallet+sign, shutter+signs, frozen+signs, wildcard+sign, … peak L90 = pallet + 3 signs), and CH10 opens with two combo sendoffs (shutter+sign, pallet+sign) before the original calm wind-down. All verified: features + reserved counts coexist exactly, all solvable, max 6 shelves, total gen 6.9s (worst single = ~2s one-time on the L80 frozen setpiece, cached after).
+
+Everything browser-verified at iPhone viewport (0 console errors). `node tests/harness.js` = all 100 OK. `PLAYTEST` still `true`.
+
+---
+
 ## TL;DR for the next session
 
 - **The game is LIVE** as a free hosted PWA: **https://lux-username.github.io/top-shelf/** (repo `github.com/lux-username/top-shelf`, GitHub Pages from `main`). Installable (Add to Home Screen / a one-tap "📲 Install" button) and fully offline. Decided **against** the paid App Store route — see "Distribution decision".
@@ -76,7 +90,7 @@ A shelf **clears** when all 3 active slots are filled and their fronts match (`f
 | Wildcard 🛍️ | rainbow tile | completes any monochrome shelf | **flat levels only** (see gotcha) |
 | Dispenser 📦 | "UNLOAD" tag, cool tint | take-only; never accepts | shrinks working space over time |
 | Shutter 🔒 | translucent gate, "opens in N clears" | a **stocked** back-room shelf, inert until N shelves cleared | **redesigned** (see below) |
-| Multipack 🎀 | shrink-wrap band + ribbon | two same-type items bound; move as a unit into 2 open slots | item = `{t,p}`; **flat only** |
+| Frozen ❄️ | frosty glaze + snowflake tag | an item **iced to its shelf** — can never be lifted, but its shelf still clears in place when its three fronts match | item = `{t,fz:1}`; **flat only**; `isFrozen()`/`buildFrozenLevel`; **replaced multipack** |
 
 ---
 
@@ -118,9 +132,9 @@ looks distinct.
 | 4  | 31–40  | The Loading Dock  | dispenser 📦 |
 | 5  | 41–50  | Deep Storage      | (no new gimmick) deep back rows + pressure |
 | 6  | 51–60  | Mixed Bags        | wildcard 🛍️ (flat, kinds≤5) |
-| 7  | 61–70  | The Cold Room     | shutter 🔒 |
-| 8  | 71–80  | The Bulk Aisle    | multipack 🎀 (flat) |
-| 9  | 81–90  | Rush Hour         | combinations; global peak ~L90 |
+| 7  | 61–70  | The Stockroom     | shutter 🔒 (reskinned off "The Cold Room" so the Freezer Aisle owns cold) |
+| 8  | 71–80  | The Freezer Aisle | frozen ❄️ (flat) — immovable items, match-in-place |
+| 9  | 81–90  | Rush Hour         | combinations (feature + reserved signs); global peak ~L90 |
 | 10 | 91–100 | Closing Time      | wind-down to calm finale |
 
 Teaching order (confirmed with user): reserved → dispenser → back-rows(deepen) →
