@@ -424,10 +424,12 @@
     <ellipse cx="31" cy="50" rx="22" ry="3" fill="#3a2a1a" opacity=".12"/>
     <path d="M24 33 L14 25 L14 39 L24 47 Z" fill="#eccd90"/>
     <path d="M24 33 L50 19 L50 33 L24 47 Z" fill="#f4d8a4"/>
-    <path d="M24 39 L50 25 L50 28 L24 42 Z" fill="#fff4dd"/>
-    <path d="M24 43 L50 29 L50 31 L24 45 Z" fill="#f3a0a8"/>
-    <path d="M24 39 L14 31 L14 34 L24 42 Z" fill="#fbeccb"/>
+    <path d="M24 38 L50 24 L50 27 L24 41 Z" fill="#fff7e6"/>
+    <path d="M24 42 L50 28 L50 30.5 L24 44.5 Z" fill="#e3596f"/>
+    <path d="M24 38 L14 30 L14 33 L24 41 Z" fill="#fbeccb"/>
+    <path d="M24 33 L50 19 L50 24 C 46 23.5 45 28 40 27 C 36 29 34 25 30 28 C 27 29 26 31.5 24 33 Z" fill="url(#gFrost)"/>
     <path d="M24 33 L14 25 L50 19 Z" fill="url(#gFrost)"/>
+    <path d="M24 33 L14 25 L31 21.6 Z" fill="#fff" opacity=".14"/>
     <circle cx="33" cy="23.5" r="4" fill="#e0503f"/>
     <path d="M31 19.5h4l-2 3z" fill="#6ea24e"/>
     <circle cx="31.8" cy="21.8" r="1" fill="#fff" opacity=".5"/>
@@ -444,10 +446,10 @@
   <symbol id="ic-pretzel" viewBox="0 0 64 64">
     <ellipse cx="32" cy="54" rx="18" ry="3" fill="#3a2a1a" opacity=".12"/>
     <g fill="none" stroke="url(#gPretzel)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M34 22 C 30 12 14 14 14 24 C 14 32 24 34 30 28 C 33 31 36 38 42 47"/>
-      <path d="M30 22 C 34 12 50 14 50 24 C 50 32 40 34 34 28 C 31 31 28 38 22 47"/>
+      <path d="M34 21 C 28 11 12 14 12 26 C 12 34 24 36 30 28 C 42 34 44 50 32 51"/>
+      <path d="M30 21 C 36 11 52 14 52 26 C 52 34 40 36 34 28 C 22 34 20 50 32 51"/>
     </g>
-    <g fill="#efe3c2"><circle cx="14" cy="20" r="1.1"/><circle cx="50" cy="20" r="1.1"/><circle cx="32" cy="42" r="1.1"/></g>
+    <g fill="#efe3c2"><circle cx="13" cy="21" r="1.1"/><circle cx="51" cy="21" r="1.1"/><circle cx="32" cy="49" r="1.1"/></g>
   </symbol>
 
   <!-- ===== Ch7 · stockroom / household ===== -->
