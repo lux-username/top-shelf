@@ -167,27 +167,33 @@
   <!-- ===== Ch2 · pantry ===== -->
   <symbol id="ic-bread" viewBox="0 0 64 64">
     <ellipse cx="32" cy="56" rx="20" ry="3" fill="#3a2a1a" opacity=".12"/>
-    <path d="M9 38c0-15 9-22 23-22s23 7 23 22v4a4 4 0 0 1-4 4H13a4 4 0 0 1-4-4z" fill="url(#gBread)"/>
-    <path d="M14 30c3-6 9-9 18-9s15 3 18 9c-4-3-10-5-18-5s-14 2-18 5z" fill="#fff" opacity=".18"/>
-    <path d="M24 22c2 3 2 6 0 9M32 21c2 3 2 7 0 10M40 22c2 3 2 6 0 9" stroke="#a86a30" stroke-width="1.6" fill="none" opacity=".5" stroke-linecap="round"/>
+    <path d="M8 40c0-16 10-23 24-23s24 7 24 23v2a5 5 0 0 1-5 5H13a5 5 0 0 1-5-5z" fill="url(#gBread)"/>
+    <path d="M12 33c4-7 11-11 20-11s16 4 20 11c-5-4-12-6-20-6s-15 2-20 6z" fill="#fff" opacity=".22"/>
+    <g stroke="#a86a30" stroke-width="2" fill="none" opacity=".5" stroke-linecap="round"><path d="M21 39l6-11M30 41l6-12M39 39l6-11"/></g>
+    <path d="M11 45h42" stroke="#9a6a30" stroke-width="1.4" opacity=".3"/>
   </symbol>
   <symbol id="ic-can" viewBox="0 0 64 64">
     <ellipse cx="32" cy="58" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
     <rect x="18" y="13" width="28" height="40" rx="4" fill="url(#gCan)" stroke="#959ea3" stroke-width="1.2"/>
-    <ellipse cx="32" cy="13" rx="14" ry="3.4" fill="#e9edf0" stroke="#9aa3ab" stroke-width="1"/>
-    <rect x="18" y="24" width="28" height="18" fill="#fff" opacity=".9"/>
-    <circle cx="32" cy="33" r="5" fill="#e85a4a"/>
-    <path d="M27 33c2-3 8-3 10 0" stroke="#fff" stroke-width="1.4" fill="none"/>
-    <rect x="22" y="15" width="4" height="36" fill="#fff" opacity=".18"/>
+    <ellipse cx="32" cy="13" rx="14" ry="3.4" fill="#eef1f4" stroke="#9aa3ab" stroke-width="1"/>
+    <ellipse cx="32" cy="13" rx="9" ry="2" fill="#cdd6dc"/>
+    <rect x="18" y="23" width="28" height="20" fill="#f6efe0"/>
+    <rect x="18" y="23" width="28" height="3.5" fill="#d2402e"/>
+    <rect x="18" y="39.5" width="28" height="3.5" fill="#d2402e"/>
+    <circle cx="32" cy="33" r="5.5" fill="#e85a4a"/>
+    <path d="M32 28.5c1-2 4-1.6 4 .4" stroke="#5a9440" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="29.5" cy="31" r="1.6" fill="#fff" opacity=".5"/>
+    <rect x="21" y="15" width="3.5" height="36" fill="#fff" opacity=".2"/>
   </symbol>
   <symbol id="ic-pasta" viewBox="0 0 64 64">
     <ellipse cx="32" cy="54" rx="22" ry="4" fill="#3a2a1a" opacity=".12"/>
-    <path d="M10 40a22 22 0 0 0 44 0z" fill="#e6ebf0" stroke="#c4ccd4" stroke-width="1.5"/>
-    <ellipse cx="32" cy="40" rx="22" ry="7" fill="#f1dfa6"/>
-    <g stroke="#e8c252" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9">
-      <path d="M14 40c4-5 10-6 14-3M24 38c4-4 12-4 16 0M34 41c4-4 10-4 14-1M18 42c5-3 12-3 16 1"/>
-    </g>
-    <circle cx="26" cy="38" r="3.4" fill="#cf4530"/><circle cx="40" cy="40" r="3.4" fill="#cf4530"/>
+    <path d="M9 38a23 23 0 0 0 46 0z" fill="#eef1f4" stroke="#c4ccd4" stroke-width="1.5"/>
+    <path d="M12 38a20 8 0 0 0 40 0z" fill="#e3e9ef"/>
+    <path d="M13 37c0-7 9-12 19-12s19 5 19 12a19 7 0 0 1-38 0z" fill="#f2dca0"/>
+    <g stroke="#dcc070" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".85"><path d="M16 35c3-5 9-6 13-3M22 31c5-4 13-3 17 1M27 36c4-4 11-3 15 1"/></g>
+    <circle cx="27" cy="33" r="4" fill="#cf4530"/><circle cx="38" cy="35" r="4" fill="#cf4530"/>
+    <circle cx="25.5" cy="31.5" r="1.4" fill="#fff" opacity=".4"/>
+    <path d="M31 24c2-3 6-3 8-1-2 2-6 2-8 1z" fill="#5a9440"/>
   </symbol>
   <symbol id="ic-jar" viewBox="0 0 64 64">
     <ellipse cx="32" cy="57" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
@@ -198,17 +204,21 @@
   </symbol>
   <symbol id="ic-honey" viewBox="0 0 64 64">
     <ellipse cx="32" cy="57" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
-    <rect x="30.6" y="10" width="2.8" height="16" rx="1.4" fill="#9a6a30"/>
-    <ellipse cx="32" cy="24" rx="6" ry="4" fill="#c98a40"/>
-    <path d="M16 30h32l-2 18a6 6 0 0 1-6 5H24a6 6 0 0 1-6-5z" fill="url(#gHoney)"/>
-    <rect x="14" y="26" width="36" height="7" rx="3.5" fill="#f0a824"/>
-    <path d="M22 36c0 12 20 12 20 0" fill="#fff" opacity=".12"/>
+    <rect x="30.6" y="8" width="2.8" height="13" rx="1.4" fill="#9a6a30"/>
+    <ellipse cx="32" cy="23" rx="5.5" ry="6" fill="#caa050"/>
+    <g stroke="#9a6a30" stroke-width="1" opacity=".55"><path d="M27 20h10M27 23h10M27 26h10"/></g>
+    <path d="M32 29c-1.2 3-1.2 6 0 8 1.2-2 1.2-5 0-8z" fill="url(#gHoney)"/>
+    <path d="M15 31h34l-2.5 18a6 6 0 0 1-6 5H23.5a6 6 0 0 1-6-5z" fill="url(#gHoney)"/>
+    <rect x="13" y="27" width="38" height="7" rx="3.5" fill="#f0a824"/>
+    <rect x="13" y="27" width="38" height="7" rx="3.5" fill="none" stroke="#df9418" stroke-width="1" opacity=".4"/>
+    <ellipse cx="22" cy="41" rx="3.5" ry="6" fill="#fff" opacity=".15"/>
   </symbol>
   <symbol id="ic-nuts" viewBox="0 0 64 64">
     <ellipse cx="32" cy="56" rx="14" ry="2.8" fill="#3a2a1a" opacity=".12"/>
-    <path d="M32 8c-7 0-12 5-12 11 0 4 2 6 2 9s-3 5-3 10c0 8 6 14 13 14s13-6 13-14c0-5-3-7-3-10s2-5 2-9c0-6-5-11-12-11z" fill="url(#gNut)"/>
-    <g stroke="#b07d44" stroke-width="1.2" opacity=".5" fill="none"><path d="M24 18c5 2 11 2 16 0M22 30c6 3 14 3 20 0M23 42c5 3 13 3 18 0"/></g>
-    <ellipse cx="26" cy="20" rx="3" ry="5" fill="#fff" opacity=".18"/>
+    <path d="M32 8c-6 0-11 4-11 10 0 3 1 5 2 7-2 2-4 5-4 9 0 8 6 13 13 13s13-5 13-13c0-4-2-7-4-9 1-2 2-4 2-7 0-6-5-10-11-10z" fill="url(#gNut)"/>
+    <ellipse cx="27" cy="16" rx="3.4" ry="4.4" fill="#fff" opacity=".22"/>
+    <g stroke="#b07d44" stroke-width="1" opacity=".45" fill="none"><path d="M24 14c5 3 11 3 16 0M21.5 24c6.5 4 14.5 4 21 0M21.5 34c6.5 4 14.5 4 21 0M24 42c5 3 11 3 16 0"/></g>
+    <path d="M26.5 24c-1-2-1-4 0-6M37.5 24c1-2 1-4 0-6" stroke="#b07d44" stroke-width="1" opacity=".4" fill="none"/>
   </symbol>
   <symbol id="ic-cookie" viewBox="0 0 64 64">
     <ellipse cx="32" cy="56" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
@@ -252,16 +262,19 @@
   <symbol id="ic-egg" viewBox="0 0 64 64">
     <ellipse cx="32" cy="57" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
     <path d="M32 10c-9 0-16 14-16 26 0 11 7 18 16 18s16-7 16-18c0-12-7-26-16-26z" fill="url(#gEgg)" stroke="#e0cfac" stroke-width="1.4"/>
-    <ellipse cx="26" cy="30" rx="4" ry="7" fill="#fff" opacity=".4" transform="rotate(-12 26 30)"/>
+    <ellipse cx="26" cy="30" rx="4" ry="7.5" fill="#fff" opacity=".4" transform="rotate(-14 26 30)"/>
+    <ellipse cx="31" cy="19" rx="6" ry="2.6" fill="#fff" opacity=".3"/>
+    <ellipse cx="34" cy="48" rx="9" ry="4" fill="#d8c6a0" opacity=".3"/>
   </symbol>
   <symbol id="ic-icecream" viewBox="0 0 64 64">
     <ellipse cx="32" cy="58" rx="9" ry="2.2" fill="#3a2a1a" opacity=".12"/>
-    <path d="M24 31h16l-7 25a1 1 0 0 1-2 0z" fill="#e0a960"/>
-    <path d="M25 37h14M27 45h10" stroke="#b07d44" stroke-width="1" opacity=".5"/>
-    <path d="M20 32c0-9 5-14 12-14s12 5 12 14c0 2-3 3-5 1-2 3-6 3-8 1-2 2-5 2-7 0-2 2-4 1-4-3z" fill="url(#gCream)" stroke="#eccba2" stroke-width="1.3"/>
-    <path d="M24 24c0-6 3-10 8-10s8 4 8 10c0 2-2 2-4 1-2 2-4 2-6 0-2 1-4 1-6-1z" fill="#ffecd4"/>
-    <path d="M27 17c0-4 2-7 5-7s5 3 5 7c0 2-2 2-3 1-1 1-3 1-4 0-1 1-3 0-3-1z" fill="#ffe4c6"/>
-    <path d="M30 13c0-3 1-5 2-6 1 1 2 3 2 6z" fill="#ffe4c6"/>
+    <path d="M24 31h16l-7 25a1 1 0 0 1-2 0z" fill="#dca860"/>
+    <g stroke="#b07d44" stroke-width="1" opacity=".5"><path d="M26 35l12 0M27 41l10 0M29 48l6 0"/><path d="M28 31l4 12M36 31l-4 12M32 31v25"/></g>
+    <path d="M20 32c0-9 5-14 12-14s12 5 12 14c0 2-3 3-5 1-2 3-6 3-8 1-2 2-5 2-7 0-2 2-4 1-4-3z" fill="url(#gCream)" stroke="#e7c79b" stroke-width="1.3"/>
+    <path d="M24 24c0-6 3-10 8-10s8 4 8 10c0 2-2 2-4 1-2 2-4 2-6 0-2 1-4 1-6-1z" fill="#ffe6c8"/>
+    <path d="M27 17c0-4 2-7 5-7s5 3 5 7c0 2-2 2-3 1-1 1-3 1-4 0-1 1-3 0-3-1z" fill="#ffdcb8"/>
+    <path d="M30 13c0-3 1-5 2-6 1 1 2 3 2 6z" fill="#ffdcb8"/>
+    <path d="M22 31c2 2 5 2 7 0M26 24c2 1 4 1 5 0" stroke="#eccba2" stroke-width="1.1" fill="none" opacity=".6"/>
     <ellipse cx="28" cy="22" rx="2" ry="3" fill="#fff" opacity=".4"/>
   </symbol>
   <symbol id="ic-sundae" viewBox="0 0 64 64">
@@ -275,11 +288,13 @@
     <rect x="31" y="11" width="2" height="6" rx="1" fill="#6ea24e"/>
   </symbol>
   <symbol id="ic-flan" viewBox="0 0 64 64">
-    <ellipse cx="32" cy="54" rx="20" ry="3.4" fill="#3a2a1a" opacity=".12"/>
-    <ellipse cx="32" cy="48" rx="18" ry="5" fill="#e2e7ec"/>
-    <path d="M18 44c0-9 6-14 14-14s14 5 14 14a14 5 0 0 1-28 0z" fill="url(#gFlan)"/>
-    <path d="M18 44c0-9 6-14 14-14s14 5 14 14c-4-3-9-4-14-4s-10 1-14 4z" fill="#c8852f" opacity=".55"/>
-    <path d="M30 30c-2 2-2 4 0 6" stroke="#a8682a" stroke-width="2" fill="none" opacity=".4"/>
+    <ellipse cx="32" cy="55" rx="20" ry="3.2" fill="#3a2a1a" opacity=".12"/>
+    <ellipse cx="32" cy="49" rx="20" ry="5.5" fill="#eef1f4" stroke="#d6dde2" stroke-width="1.2"/>
+    <ellipse cx="32" cy="48" rx="15" ry="3.2" fill="#bd7e2a" opacity=".4"/>
+    <path d="M18 30a14 5 0 0 1 28 0c1 7-5 13-14 13s-15-6-14-13z" fill="url(#gFlan)"/>
+    <ellipse cx="32" cy="30" rx="14" ry="5" fill="#c8852f"/>
+    <path d="M20 33c0 4 0 8-1 11M44 33c0 4 0 8 1 11" stroke="#bd7e2a" stroke-width="2.4" fill="none" opacity=".6" stroke-linecap="round"/>
+    <ellipse cx="27" cy="29" rx="4.5" ry="2" fill="#fff" opacity=".3"/>
   </symbol>
 
   <!-- ===== Ch4 · drinks ===== -->
@@ -318,8 +333,9 @@
   <symbol id="ic-ice" viewBox="0 0 64 64">
     <ellipse cx="32" cy="55" rx="15" ry="2.8" fill="#3a2a1a" opacity=".12"/>
     <rect x="14" y="16" width="36" height="36" rx="8" fill="url(#gIce)" stroke="#86bdd6" stroke-width="1.6"/>
-    <path d="M22 24l8 8-6 10" stroke="#fff" stroke-width="3" fill="none" opacity=".7" stroke-linecap="round"/>
-    <rect x="20" y="22" width="8" height="8" rx="3" fill="#fff" opacity=".4"/>
+    <rect x="21" y="22" width="6.5" height="20" rx="3.25" fill="#fff" opacity=".5" transform="rotate(20 24 32)"/>
+    <rect x="31" y="24" width="3.6" height="13" rx="1.8" fill="#fff" opacity=".38" transform="rotate(20 32 30)"/>
+    <circle cx="40" cy="43" r="2" fill="#fff" opacity=".4"/>
   </symbol>
   <symbol id="ic-takeout" viewBox="0 0 64 64">
     <ellipse cx="32" cy="56" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
@@ -370,8 +386,10 @@
   <symbol id="ic-riceball" viewBox="0 0 64 64">
     <ellipse cx="32" cy="55" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
     <path d="M32 12c-4 0-6 3-9 9-3 7-7 14-9 19-2 5 1 8 6 8h24c5 0 8-3 6-8-2-5-6-12-9-19-3-6-5-9-9-9z" fill="url(#gRice)" stroke="#cfd3cb" stroke-width="1.5"/>
-    <rect x="22" y="40" width="20" height="13" rx="2" fill="#33352f"/>
-    <ellipse cx="27" cy="26" rx="3" ry="4" fill="#fff" opacity=".5"/>
+    <rect x="21" y="40" width="22" height="13" rx="3" fill="#3a3d35"/>
+    <rect x="21" y="40" width="22" height="3" fill="#4a4e44"/>
+    <g fill="#e4e6e0"><ellipse cx="26" cy="22" rx="1.5" ry=".8" transform="rotate(-20 26 22)"/><ellipse cx="35" cy="25" rx="1.5" ry=".8" transform="rotate(20 35 25)"/><ellipse cx="30" cy="31" rx="1.5" ry=".8"/><ellipse cx="38" cy="33" rx="1.5" ry=".8" transform="rotate(30 38 33)"/></g>
+    <ellipse cx="27" cy="25" rx="3" ry="4.5" fill="#fff" opacity=".45"/>
   </symbol>
 
   <!-- ===== Ch6 · bakery ===== -->
@@ -404,13 +422,14 @@
   </symbol>
   <symbol id="ic-cakeslice" viewBox="0 0 64 64">
     <ellipse cx="32" cy="52" rx="22" ry="3" fill="#3a2a1a" opacity=".12"/>
-    <path d="M9 48 L48 24 a3 3 0 0 1 3 2.6 V45 a3 3 0 0 1-3 3 H12 a3 3 0 0 1-3-3 Z" fill="#f7dcab"/>
-    <path d="M30 39 H51 V42 H30 Z" fill="#fff1d6"/>
-    <path d="M9 47 L48 24 51 27 12 50 Z" fill="url(#gFrost)"/>
-    <path d="M48 25 a3 3 0 0 1 3 2.6 V32 l-3 1 Z" fill="#ff9ab8"/>
-    <circle cx="43" cy="23" r="3.8" fill="#e0503f"/>
-    <path d="M41 20h4l-2 3z" fill="#6ea24e"/>
-    <circle cx="42" cy="22" r="1" fill="#fff" opacity=".5"/>
+    <path d="M8 48 L49 21 a3 3 0 0 1 3 2.6 V45 a3 3 0 0 1-3 3 H11 a3 3 0 0 1-3-3 Z" fill="#f4d59f"/>
+    <rect x="26" y="36.5" width="23" height="3.6" fill="#fff3da"/>
+    <rect x="22" y="42" width="27" height="2.4" fill="#ef8e9b" opacity=".8"/>
+    <path d="M8 47 L49 21 52 24 11 50 Z" fill="url(#gFrost)"/>
+    <path d="M49 21 a3 3 0 0 1 3 2.6 V45 a3 3 0 0 1-3 3 Z" fill="#000" opacity=".06"/>
+    <circle cx="44" cy="21" r="3.8" fill="#e0503f"/>
+    <path d="M42 18h4l-2 3z" fill="#6ea24e"/>
+    <circle cx="43" cy="20" r="1" fill="#fff" opacity=".5"/>
   </symbol>
   <symbol id="ic-donut" viewBox="0 0 64 64">
     <ellipse cx="32" cy="56" rx="17" ry="2.8" fill="#3a2a1a" opacity=".12"/>
@@ -451,10 +470,14 @@
   <symbol id="ic-toiletpaper" viewBox="0 0 64 64">
     <ellipse cx="32" cy="56" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
     <rect x="14" y="22" width="36" height="28" rx="6" fill="#fff" stroke="#d3d9de" stroke-width="1.5"/>
+    <path d="M40 23a6 6 0 0 1 0 26v-3a4 4 0 0 0 0-20z" fill="#e9eef2"/>
+    <rect x="18" y="25" width="4" height="22" rx="2" fill="#fff" opacity=".7"/>
     <ellipse cx="32" cy="22" rx="18" ry="6" fill="#f6f9fb" stroke="#d3d9de" stroke-width="1.4"/>
-    <ellipse cx="32" cy="22" rx="6.5" ry="2.6" fill="#decba6"/>
+    <ellipse cx="32" cy="22" rx="6.5" ry="2.6" fill="#e3d0ac"/>
+    <ellipse cx="32" cy="22" rx="6.5" ry="2.6" fill="none" stroke="#c9b488" stroke-width="1"/>
+    <ellipse cx="32" cy="22" rx="2.6" ry="1" fill="#cbb789"/>
     <path d="M25 46 h14 v10 a2.5 2.5 0 0 1-2.5 2.5 h-9 A2.5 2.5 0 0 1 25 56 Z" fill="#fff" stroke="#d8dde2" stroke-width="1.2"/>
-    <path d="M25 51 h14 M25 56 h14" stroke="#e6ebef" stroke-width="1"/>
+    <path d="M25 51 h14 M25 56 h14" stroke="#e2e8ed" stroke-width="1"/>
   </symbol>
   <symbol id="ic-sponge" viewBox="0 0 64 64">
     <ellipse cx="32" cy="54" rx="18" ry="3" fill="#3a2a1a" opacity=".12"/>
@@ -512,14 +535,19 @@
     <path d="M16 30h28l-2 14a8 8 0 0 1-8 6H26a8 8 0 0 1-8-6z" fill="#fff" stroke="#d2dbe0" stroke-width="1.5"/>
     <path d="M44 32h4a6 6 0 0 1 0 12h-3" fill="none" stroke="#cdd6dc" stroke-width="3"/>
     <ellipse cx="30" cy="31" rx="13" ry="3.4" fill="url(#gTea)"/>
+    <ellipse cx="26" cy="30" rx="4" ry="1.2" fill="#fff" opacity=".3"/>
+    <path d="M18 38h22" stroke="#bcd89a" stroke-width="2" opacity=".45" stroke-linecap="round"/>
     <path d="M44 49a18 6 0 0 1-28 0z" fill="#e6ebef" stroke="#cdd6dc" stroke-width="1.2"/>
   </symbol>
   <symbol id="ic-pie" viewBox="0 0 64 64">
     <ellipse cx="32" cy="54" rx="22" ry="3.4" fill="#3a2a1a" opacity=".12"/>
-    <path d="M10 40h44a4 4 0 0 1-4 8H14a4 4 0 0 1-4-8z" fill="#d89a4e"/>
-    <path d="M10 40a22 12 0 0 1 44 0z" fill="url(#gBread)"/>
-    <g stroke="#a86a30" stroke-width="2" opacity=".5" fill="none"><path d="M20 38l24-8M28 40l20-10M16 33l30-6M24 28l8 14M34 27l6 13"/></g>
-    <path d="M14 40h36" stroke="#b07d44" stroke-width="1.4" opacity=".5"/>
+    <path d="M9 37h46l-2 9a5 5 0 0 1-5 4H16a5 5 0 0 1-5-4z" fill="#d89a4e"/>
+    <path d="M9 41h46" stroke="#b87f38" stroke-width="1.2" opacity=".4"/>
+    <ellipse cx="32" cy="37" rx="23" ry="8" fill="#eaae5e"/>
+    <ellipse cx="32" cy="37" rx="17.5" ry="5.6" fill="#c5402e"/>
+    <g stroke="#edc079" stroke-width="3.4" stroke-linecap="round"><path d="M20 33l8 8M27 32l9 9M34 32l8 8M44 33l-8 8M37 32l-9 9M30 32l-8 8"/></g>
+    <g fill="#eaae5e"><circle cx="12" cy="36" r="2.4"/><circle cx="18" cy="31" r="2.4"/><circle cx="25" cy="29" r="2.4"/><circle cx="32" cy="28.6" r="2.4"/><circle cx="39" cy="29" r="2.4"/><circle cx="46" cy="31" r="2.4"/><circle cx="52" cy="36" r="2.4"/></g>
+    <ellipse cx="24" cy="34" rx="4" ry="1.4" fill="#fff" opacity=".18"/>
   </symbol>
   <symbol id="ic-teapot" viewBox="0 0 64 64">
     <ellipse cx="32" cy="52" rx="20" ry="3.2" fill="#3a2a1a" opacity=".12"/>
