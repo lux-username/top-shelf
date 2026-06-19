@@ -1,0 +1,689 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Top Shelf icon set A (backup — do not edit). 70 icons.
+     Source of truth: the markup between SPRITE-START/SPRITE-END (verbatim copy of
+     index.html's inline sprite). Edit there, then: node icons/iconset.mjs apply A -->
+<svg xmlns="http://www.w3.org/2000/svg" width="764" height="1678" viewBox="0 0 764 1678" style="color:#4a3a2a">
+  <rect width="100%" height="100%" fill="#f7efe1"/>
+  <text x="382" y="40" text-anchor="middle" font-family="Georgia,serif" font-size="26" font-weight="700" fill="#4a3a2a">Top Shelf — Icon Set A</text>
+  <text x="382" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#7a6a56">70 icons · backup — do not edit</text>
+  <!--SPRITE-START-->
+  <defs>
+    <radialGradient id="gApple" cx="38%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ff8475"/><stop offset=".55" stop-color="#ed4f49"/><stop offset="1" stop-color="#c5322f"/>
+    </radialGradient>
+    <radialGradient id="gOrange" cx="36%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#ffb347"/><stop offset=".5" stop-color="#fb8e22"/><stop offset="1" stop-color="#df6a10"/>
+    </radialGradient>
+    <linearGradient id="gPeach" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff9fb2"/><stop offset=".5" stop-color="#ffbf9e"/><stop offset="1" stop-color="#ffd98c"/>
+    </linearGradient>
+    <linearGradient id="gBanana" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe27a"/><stop offset=".6" stop-color="#fbcf45"/><stop offset="1" stop-color="#e8af2e"/>
+    </linearGradient>
+    <radialGradient id="gGrape" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#b78ee0"/><stop offset=".6" stop-color="#8a5cc0"/><stop offset="1" stop-color="#6a3fa0"/>
+    </radialGradient>
+    <radialGradient id="gKiwi" cx="50%" cy="50%" r="60%">
+      <stop offset="0" stop-color="#cfe89a"/><stop offset=".7" stop-color="#8cbb55"/><stop offset="1" stop-color="#6a9a3c"/>
+    </radialGradient>
+    <radialGradient id="gMelon" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#ff8f9f"/><stop offset=".6" stop-color="#f2566a"/><stop offset="1" stop-color="#d83f55"/>
+    </radialGradient>
+    <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8fc46a"/><stop offset="1" stop-color="#5a9440"/>
+    </linearGradient>
+    <linearGradient id="gBag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e6b87f"/><stop offset="1" stop-color="#cf9655"/>
+    </linearGradient>
+    <!-- pantry / bakery -->
+    <linearGradient id="gBread" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#edc079"/><stop offset="1" stop-color="#c98a40"/></linearGradient>
+    <linearGradient id="gCan" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#dde2e7"/><stop offset=".5" stop-color="#c2c9d0"/><stop offset="1" stop-color="#a7afb6"/></linearGradient>
+    <linearGradient id="gJar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e0f0f3"/><stop offset=".5" stop-color="#c6e6ec"/><stop offset="1" stop-color="#a9d6df"/></linearGradient>
+    <linearGradient id="gHoney" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf5e"/><stop offset="1" stop-color="#e2901f"/></linearGradient>
+    <radialGradient id="gNut" cx="40%" cy="32%" r="75%"><stop offset="0" stop-color="#e8c184"/><stop offset="1" stop-color="#c2924c"/></radialGradient>
+    <radialGradient id="gCookie" cx="40%" cy="32%" r="75%"><stop offset="0" stop-color="#d99e62"/><stop offset="1" stop-color="#ab6531"/></radialGradient>
+    <radialGradient id="gDonut" cx="42%" cy="32%" r="72%"><stop offset="0" stop-color="#ffb6cf"/><stop offset="1" stop-color="#f386af"/></radialGradient>
+    <radialGradient id="gFrost" cx="42%" cy="30%" r="75%"><stop offset="0" stop-color="#ffc2d6"/><stop offset="1" stop-color="#fa8fb4"/></radialGradient>
+    <linearGradient id="gPretzel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c08840"/><stop offset="1" stop-color="#8a5424"/></linearGradient>
+    <radialGradient id="gBagel" cx="42%" cy="32%" r="72%"><stop offset="0" stop-color="#eac083"/><stop offset="1" stop-color="#c48f4a"/></radialGradient>
+    <!-- dairy -->
+    <linearGradient id="gMilk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9eef3"/></linearGradient>
+    <linearGradient id="gCheese" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd95a"/><stop offset="1" stop-color="#f0b431"/></linearGradient>
+    <linearGradient id="gButter" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe488"/><stop offset="1" stop-color="#f3c44d"/></linearGradient>
+    <radialGradient id="gEgg" cx="40%" cy="32%" r="75%"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#efe0c6"/></radialGradient>
+    <linearGradient id="gCream" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdedd6"/><stop offset="1" stop-color="#ffd7af"/></linearGradient>
+    <linearGradient id="gFlan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#e6ab52"/></linearGradient>
+    <!-- drinks -->
+    <linearGradient id="gSoda" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef6b5a"/><stop offset="1" stop-color="#cd3a2f"/></linearGradient>
+    <linearGradient id="gBottle" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a8159"/><stop offset=".5" stop-color="#2a6644"/><stop offset="1" stop-color="#1d4d33"/></linearGradient>
+    <linearGradient id="gMate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b98a4e"/><stop offset="1" stop-color="#8a5d2c"/></linearGradient>
+    <linearGradient id="gIce" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6f5fc"/><stop offset="1" stop-color="#b1daee"/></linearGradient>
+    <linearGradient id="gBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#eceff1"/></linearGradient>
+    <linearGradient id="gJuice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb24a"/><stop offset="1" stop-color="#f07f2a"/></linearGradient>
+    <!-- fast food / frozen -->
+    <linearGradient id="gPizza" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd87a"/><stop offset="1" stop-color="#f0b441"/></linearGradient>
+    <linearGradient id="gBun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b264"/><stop offset="1" stop-color="#cd8e3f"/></linearGradient>
+    <linearGradient id="gFries" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef6b5a"/><stop offset="1" stop-color="#cd3a2f"/></linearGradient>
+    <radialGradient id="gDumpling" cx="42%" cy="34%" r="72%"><stop offset="0" stop-color="#f6ead0"/><stop offset="1" stop-color="#dec79a"/></radialGradient>
+    <linearGradient id="gSausage" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d97a45"/><stop offset="1" stop-color="#b34f24"/></linearGradient>
+    <linearGradient id="gRice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eaede9"/></linearGradient>
+    <!-- household -->
+    <linearGradient id="gLotion" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdeae2"/><stop offset="1" stop-color="#9ccabd"/></linearGradient>
+    <linearGradient id="gSoap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86e0d2"/><stop offset="1" stop-color="#4fb3a6"/></linearGradient>
+    <linearGradient id="gSpongeT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe07a"/><stop offset="1" stop-color="#f2c84e"/></linearGradient>
+    <linearGradient id="gBasket" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8a868"/><stop offset="1" stop-color="#a9763f"/></linearGradient>
+    <linearGradient id="gBucket" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef6b5a"/><stop offset="1" stop-color="#cd3a2f"/></linearGradient>
+    <linearGradient id="gStraw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecca78"/><stop offset="1" stop-color="#c89a44"/></linearGradient>
+    <!-- produce / tea -->
+    <linearGradient id="gCarrot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9c3c"/><stop offset="1" stop-color="#ea6c12"/></linearGradient>
+    <radialGradient id="gTomato" cx="40%" cy="32%" r="72%"><stop offset="0" stop-color="#f4664c"/><stop offset="1" stop-color="#d2352a"/></radialGradient>
+    <radialGradient id="gBroc" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#74b257"/><stop offset="1" stop-color="#477d34"/></radialGradient>
+    <linearGradient id="gTea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a7cf63"/><stop offset="1" stop-color="#80a83f"/></linearGradient>
+    <linearGradient id="gTeapot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef9a7e"/><stop offset="1" stop-color="#cf6f50"/></linearGradient>
+    <linearGradient id="gLock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf5e"/><stop offset="1" stop-color="#e0a020"/></linearGradient>
+  </defs>
+
+  <symbol id="ic-apple" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="60" rx="17" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <ellipse cx="32" cy="36" rx="23" ry="22" fill="url(#gApple)"/>
+    <ellipse cx="22" cy="25" rx="7" ry="10" fill="#fff" opacity=".22" transform="rotate(-22 22 25)"/>
+    <rect x="30.6" y="7" width="2.6" height="10" rx="1.3" fill="#7a5230"/>
+    <path d="M33 13c3-5 10-7 15-5-1 6-8 10-15 6z" fill="url(#gLeaf)"/>
+  </symbol>
+
+  <symbol id="ic-banana" viewBox="0 0 64 64">
+    <ellipse cx="33" cy="58" rx="18" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 11 C 2 33 14 56 36 56 C 46 56 53 51 55 44 C 46 47 33 45 26 37 C 18 29 17 20 16 11 Z" fill="url(#gBanana)"/>
+    <path d="M20 16 C 12 32 18 47 31 49" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".22"/>
+    <circle cx="16.5" cy="11.5" r="2.4" fill="#6b4626"/>
+    <circle cx="54.5" cy="44.3" r="2.4" fill="#6b4626"/>
+  </symbol>
+
+  <symbol id="ic-grapes" viewBox="0 0 64 64">
+    <ellipse cx="31" cy="60" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="31.4" y="7" width="2.4" height="9" rx="1.2" fill="#7a5230"/>
+    <path d="M33 11c4-4 11-4 15-1-3 5-9 6-15 3z" fill="url(#gLeaf)"/>
+    <g fill="url(#gGrape)">
+      <circle cx="23" cy="25" r="7.2"/><circle cx="38" cy="24" r="7.2"/>
+      <circle cx="31" cy="34" r="7.5"/>
+      <circle cx="17" cy="36" r="7.2"/><circle cx="45" cy="36" r="7.2"/>
+      <circle cx="26" cy="45" r="7.2"/><circle cx="39" cy="46" r="6.6"/>
+      <circle cx="32" cy="55" r="6.2"/>
+    </g>
+    <circle cx="20" cy="23" r="2.3" fill="#fff" opacity=".45"/>
+  </symbol>
+
+  <symbol id="ic-orange" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="59" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="35" r="22" fill="url(#gOrange)"/>
+    <circle cx="23" cy="27" r="6.5" fill="#fff" opacity=".20"/>
+    <g fill="#c25f12" opacity=".35"><circle cx="40" cy="40" r="1.1"/><circle cx="44" cy="32" r="1.1"/><circle cx="36" cy="46" r="1.1"/><circle cx="26" cy="44" r="1.1"/><circle cx="42" cy="24" r="1.1"/></g>
+    <circle cx="32" cy="14" r="2.4" fill="#3f7a3a"/>
+    <path d="M33 14c2-4 7-6 12-5-1 5-7 8-12 6z" fill="url(#gLeaf)"/>
+  </symbol>
+
+  <symbol id="ic-kiwi" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="58" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="33" r="23" fill="#8a5a2b"/>
+    <circle cx="32" cy="33" r="20.5" fill="url(#gKiwi)"/>
+    <circle cx="32" cy="33" r="9.5" fill="#f3f8e3"/>
+    <g fill="#27331a">
+      <circle cx="32" cy="18" r="1.3"/><circle cx="41" cy="22" r="1.3"/><circle cx="46" cy="31" r="1.3"/>
+      <circle cx="44" cy="41" r="1.3"/><circle cx="36" cy="46" r="1.3"/><circle cx="28" cy="46" r="1.3"/>
+      <circle cx="20" cy="41" r="1.3"/><circle cx="18" cy="31" r="1.3"/><circle cx="23" cy="22" r="1.3"/>
+    </g>
+  </symbol>
+
+  <symbol id="ic-peach" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="59" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="36" r="21" fill="url(#gPeach)"/>
+    <path d="M31 16 C 28 26 28 46 31 55" fill="none" stroke="#e87a8f" stroke-width="2.2" opacity=".5" stroke-linecap="round"/>
+    <ellipse cx="40" cy="29" rx="6" ry="8" fill="#fff" opacity=".28" transform="rotate(18 40 29)"/>
+    <path d="M33 17c1-5 6-7 11-6-1 5-6 8-11 6z" fill="url(#gLeaf)"/>
+  </symbol>
+
+  <symbol id="ic-watermelon" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="16" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M5 22 A27 27 0 0 0 59 22 Z" fill="#3f8f4e"/>
+    <path d="M8.5 23 A23.5 23.5 0 0 0 55.5 23 Z" fill="#9bd07a"/>
+    <path d="M12 24.5 A20 20 0 0 0 52 24.5 Z" fill="url(#gMelon)"/>
+    <g fill="#33241a">
+      <ellipse cx="25" cy="31" rx="1.4" ry="2.1"/><ellipse cx="33" cy="30" rx="1.4" ry="2.1"/><ellipse cx="41" cy="31" rx="1.4" ry="2.1"/>
+      <ellipse cx="29" cy="39" rx="1.4" ry="2.1"/><ellipse cx="37" cy="39" rx="1.4" ry="2.1"/>
+    </g>
+  </symbol>
+
+  <symbol id="ic-wild" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="60" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="22" cy="20" r="7" fill="#ff8fab"/>
+    <circle cx="33" cy="15" r="7.4" fill="#ffd45e"/>
+    <circle cx="44" cy="21" r="6.6" fill="#7bd88f"/>
+    <path d="M13 26h38l-2.9 29a3.2 3.2 0 0 1-3.2 2.9H19.1a3.2 3.2 0 0 1-3.2-2.9z" fill="url(#gBag)"/>
+    <path d="M13 26h38v4H13z" fill="#cf9b63"/>
+    <path d="M28 26v31" stroke="#b07d44" stroke-width="1.2" opacity=".5"/>
+    <path d="M39 26v31" stroke="#b07d44" stroke-width="1.2" opacity=".3"/>
+  </symbol>
+
+  <!-- ===== Ch2 · pantry ===== -->
+  <symbol id="ic-bread" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="20" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <path d="M9 38c0-15 9-22 23-22s23 7 23 22v4a4 4 0 0 1-4 4H13a4 4 0 0 1-4-4z" fill="url(#gBread)"/>
+    <path d="M14 30c3-6 9-9 18-9s15 3 18 9c-4-3-10-5-18-5s-14 2-18 5z" fill="#fff" opacity=".18"/>
+    <path d="M24 22c2 3 2 6 0 9M32 21c2 3 2 7 0 10M40 22c2 3 2 6 0 9" stroke="#a86a30" stroke-width="1.6" fill="none" opacity=".5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-can" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="58" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="18" y="13" width="28" height="40" rx="4" fill="url(#gCan)" stroke="#959ea3" stroke-width="1.2"/>
+    <ellipse cx="32" cy="13" rx="14" ry="3.4" fill="#e9edf0" stroke="#9aa3ab" stroke-width="1"/>
+    <rect x="18" y="24" width="28" height="18" fill="#fff" opacity=".9"/>
+    <circle cx="32" cy="33" r="5" fill="#e85a4a"/>
+    <path d="M27 33c2-3 8-3 10 0" stroke="#fff" stroke-width="1.4" fill="none"/>
+    <rect x="22" y="15" width="4" height="36" fill="#fff" opacity=".18"/>
+  </symbol>
+  <symbol id="ic-pasta" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="22" ry="4" fill="#3a2a1a" opacity=".12"/>
+    <path d="M10 40a22 22 0 0 0 44 0z" fill="#e6ebf0" stroke="#c4ccd4" stroke-width="1.5"/>
+    <ellipse cx="32" cy="40" rx="22" ry="7" fill="#f1dfa6"/>
+    <g stroke="#e8c252" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9">
+      <path d="M14 40c4-5 10-6 14-3M24 38c4-4 12-4 16 0M34 41c4-4 10-4 14-1M18 42c5-3 12-3 16 1"/>
+    </g>
+    <circle cx="26" cy="38" r="3.4" fill="#cf4530"/><circle cx="40" cy="40" r="3.4" fill="#cf4530"/>
+  </symbol>
+  <symbol id="ic-jar" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="19" y="20" width="26" height="34" rx="6" fill="url(#gJar)" stroke="#92c6d2" stroke-width="1.5"/>
+    <rect x="24" y="34" width="16" height="18" rx="4" fill="#f3b94a" opacity=".55"/>
+    <rect x="21" y="13" width="22" height="9" rx="3" fill="#cf9655"/>
+    <rect x="23" y="26" width="4" height="24" rx="2" fill="#fff" opacity=".4"/>
+  </symbol>
+  <symbol id="ic-honey" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="30.6" y="10" width="2.8" height="16" rx="1.4" fill="#9a6a30"/>
+    <ellipse cx="32" cy="24" rx="6" ry="4" fill="#c98a40"/>
+    <path d="M16 30h32l-2 18a6 6 0 0 1-6 5H24a6 6 0 0 1-6-5z" fill="url(#gHoney)"/>
+    <rect x="14" y="26" width="36" height="7" rx="3.5" fill="#f0a824"/>
+    <path d="M22 36c0 12 20 12 20 0" fill="#fff" opacity=".12"/>
+  </symbol>
+  <symbol id="ic-nuts" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="14" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M32 8c-7 0-12 5-12 11 0 4 2 6 2 9s-3 5-3 10c0 8 6 14 13 14s13-6 13-14c0-5-3-7-3-10s2-5 2-9c0-6-5-11-12-11z" fill="url(#gNut)"/>
+    <g stroke="#b07d44" stroke-width="1.2" opacity=".5" fill="none"><path d="M24 18c5 2 11 2 16 0M22 30c6 3 14 3 20 0M23 42c5 3 13 3 18 0"/></g>
+    <ellipse cx="26" cy="20" rx="3" ry="5" fill="#fff" opacity=".18"/>
+  </symbol>
+  <symbol id="ic-cookie" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="33" r="21" fill="url(#gCookie)"/>
+    <g fill="#4a2c17"><circle cx="24" cy="26" r="2.4"/><circle cx="38" cy="24" r="2.2"/><circle cx="42" cy="36" r="2.4"/><circle cx="30" cy="38" r="2.6"/><circle cx="22" cy="40" r="2.2"/><circle cx="34" cy="44" r="2.2"/><circle cx="20" cy="31" r="2"/></g>
+    <circle cx="25" cy="27" r="5" fill="#fff" opacity=".12"/>
+  </symbol>
+  <symbol id="ic-salt" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M20 26h24v22a6 6 0 0 1-6 6H26a6 6 0 0 1-6-6z" fill="#e6eaef" stroke="#b0b9c1" stroke-width="1.4"/>
+    <path d="M20 26c0-7 5-12 12-12s12 5 12 12z" fill="#c3ccd4" stroke="#b0b9c1" stroke-width="1.4"/>
+    <g fill="#8a939b"><circle cx="27" cy="20" r="1.3"/><circle cx="32" cy="18" r="1.3"/><circle cx="37" cy="20" r="1.3"/></g>
+    <rect x="24" y="34" width="16" height="16" rx="2" fill="#fff" opacity=".7"/>
+    <g fill="#cfd6dc"><circle cx="29" cy="42" r="1"/><circle cx="35" cy="40" r="1"/><circle cx="32" cy="46" r="1"/></g>
+    <rect x="23" y="28" width="3" height="24" rx="1.5" fill="#fff" opacity=".5"/>
+  </symbol>
+
+  <!-- ===== Ch3 · dairy ===== -->
+  <symbol id="ic-milk" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M20 14h24l-2 38a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4z" fill="url(#gMilk)" stroke="#bcccd6" stroke-width="1.6"/>
+    <path d="M21 30h22l-1.5 22a4 4 0 0 1-4 3.5H26.5a4 4 0 0 1-4-3.5z" fill="#fff"/>
+    <ellipse cx="32" cy="14" rx="12" ry="3" fill="#fff" stroke="#bcccd6" stroke-width="1.2"/>
+    <ellipse cx="32" cy="30" rx="11" ry="2.4" fill="#e4ecf2"/>
+    <rect x="24" y="18" width="3" height="34" rx="1.5" fill="#fff" opacity=".6"/>
+  </symbol>
+  <symbol id="ic-cheese" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="20" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <path d="M11 46 L51 24 Q54 23 54 27 V44 Q54 47 51 47 H14 Q11 47 11 44 Z" fill="url(#gCheese)"/>
+    <path d="M11 45 L51 24 53 26 13 47 Z" fill="#fff" opacity=".2"/>
+    <g fill="#e0a020"><circle cx="24" cy="44" r="3"/><circle cx="36" cy="40" r="3.6"/><circle cx="45" cy="34" r="2.4"/><circle cx="31" cy="46" r="1.8"/></g>
+  </symbol>
+  <symbol id="ic-butter" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="50" rx="22" ry="4" fill="#3a2a1a" opacity=".12"/>
+    <path d="M8 44h48a3 3 0 0 1 0 6H8a3 3 0 0 1 0-6z" fill="#e8eef2" stroke="#cdd6dc" stroke-width="1"/>
+    <path d="M18 30h22v14H18z" fill="url(#gButter)"/>
+    <path d="M18 30l6-6h22l-6 6z" fill="#fff0a8"/>
+    <path d="M40 30l6-6v14l-6 6z" fill="#e8bd45"/>
+    <rect x="22" y="34" width="3" height="8" rx="1.5" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="ic-egg" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M32 10c-9 0-16 14-16 26 0 11 7 18 16 18s16-7 16-18c0-12-7-26-16-26z" fill="url(#gEgg)" stroke="#e0cfac" stroke-width="1.4"/>
+    <ellipse cx="26" cy="30" rx="4" ry="7" fill="#fff" opacity=".4" transform="rotate(-12 26 30)"/>
+  </symbol>
+  <symbol id="ic-icecream" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="58" rx="9" ry="2.2" fill="#3a2a1a" opacity=".12"/>
+    <path d="M24 31h16l-7 25a1 1 0 0 1-2 0z" fill="#e0a960"/>
+    <path d="M25 37h14M27 45h10" stroke="#b07d44" stroke-width="1" opacity=".5"/>
+    <path d="M20 32c0-9 5-14 12-14s12 5 12 14c0 2-3 3-5 1-2 3-6 3-8 1-2 2-5 2-7 0-2 2-4 1-4-3z" fill="url(#gCream)" stroke="#eccba2" stroke-width="1.3"/>
+    <path d="M24 24c0-6 3-10 8-10s8 4 8 10c0 2-2 2-4 1-2 2-4 2-6 0-2 1-4 1-6-1z" fill="#ffecd4"/>
+    <path d="M27 17c0-4 2-7 5-7s5 3 5 7c0 2-2 2-3 1-1 1-3 1-4 0-1 1-3 0-3-1z" fill="#ffe4c6"/>
+    <path d="M30 13c0-3 1-5 2-6 1 1 2 3 2 6z" fill="#ffe4c6"/>
+    <ellipse cx="28" cy="22" rx="2" ry="3" fill="#fff" opacity=".4"/>
+  </symbol>
+  <symbol id="ic-sundae" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 36h32l-4 12a6 6 0 0 1-6 4H26a6 6 0 0 1-6-4z" fill="#d3dce4" stroke="#aebac4" stroke-width="1.4"/>
+    <ellipse cx="32" cy="36" rx="16" ry="4" fill="#e3e9ef"/>
+    <circle cx="24" cy="30" r="8" fill="#ffe6cf" stroke="#f0cca6" stroke-width="1.2"/>
+    <circle cx="40" cy="30" r="8" fill="#ffc9ab" stroke="#f0a888" stroke-width="1.2"/>
+    <circle cx="32" cy="25" r="8.5" fill="#f3d9ad" stroke="#e0bd82" stroke-width="1.2"/>
+    <circle cx="32" cy="17" r="3" fill="#e0503f"/>
+    <rect x="31" y="11" width="2" height="6" rx="1" fill="#6ea24e"/>
+  </symbol>
+  <symbol id="ic-flan" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="20" ry="3.4" fill="#3a2a1a" opacity=".12"/>
+    <ellipse cx="32" cy="48" rx="18" ry="5" fill="#e2e7ec"/>
+    <path d="M18 44c0-9 6-14 14-14s14 5 14 14a14 5 0 0 1-28 0z" fill="url(#gFlan)"/>
+    <path d="M18 44c0-9 6-14 14-14s14 5 14 14c-4-3-9-4-14-4s-10 1-14 4z" fill="#c8852f" opacity=".55"/>
+    <path d="M30 30c-2 2-2 4 0 6" stroke="#a8682a" stroke-width="2" fill="none" opacity=".4"/>
+  </symbol>
+
+  <!-- ===== Ch4 · drinks ===== -->
+  <symbol id="ic-juicebox" viewBox="0 0 64 64">
+    <ellipse cx="31" cy="57" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="18" y="22" width="26" height="32" rx="2" fill="url(#gJuice)"/>
+    <rect x="18" y="22" width="8" height="32" fill="#fff" opacity=".14"/>
+    <rect x="22" y="30" width="18" height="13" rx="2" fill="#fff" opacity=".85"/>
+    <circle cx="35" cy="33" r="3" fill="#f0662a"/>
+    <path d="M28 41c1-4 4-7 7-8" stroke="#f07f2a" stroke-width="2" fill="none"/>
+    <rect x="40" y="8" width="2.6" height="16" rx="1.3" fill="#e0503f"/>
+    <path d="M40.6 8l-4-2" stroke="#e0503f" stroke-width="2.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-soda" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="58" rx="12" ry="2.4" fill="#3a2a1a" opacity=".12"/>
+    <path d="M20 22h24l-3 30a4 4 0 0 1-4 3.6H27a4 4 0 0 1-4-3.6z" fill="url(#gSoda)"/>
+    <rect x="18" y="18" width="28" height="6" rx="3" fill="#fff"/>
+    <rect x="34" y="4" width="3" height="18" rx="1.5" fill="#e6e9ec"/>
+    <rect x="24" y="26" width="3" height="26" rx="1.5" fill="#fff" opacity=".25"/>
+  </symbol>
+  <symbol id="ic-bottle" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="11" ry="2.4" fill="#3a2a1a" opacity=".12"/>
+    <path d="M27 8h10v8c0 3 5 6 5 14v24a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4V30c0-8 5-11 5-14z" fill="url(#gBottle)"/>
+    <rect x="26" y="6" width="12" height="5" rx="1.5" fill="#d9b24a"/>
+    <rect x="24" y="38" width="16" height="14" rx="2" fill="#f3ecd8" opacity=".9"/>
+    <rect x="29" y="14" width="3" height="38" rx="1.5" fill="#fff" opacity=".18"/>
+  </symbol>
+  <symbol id="ic-mate" viewBox="0 0 64 64">
+    <ellipse cx="30" cy="57" rx="13" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="35" y="10" width="3" height="26" rx="1.5" fill="#c9cdd2" transform="rotate(12 36 22)"/>
+    <circle cx="30" cy="40" r="16" fill="url(#gMate)"/>
+    <path d="M18 30h24l-2-6H20z" fill="#7a5024"/>
+    <ellipse cx="30" cy="24" rx="12" ry="3" fill="#5a8f4e"/>
+    <ellipse cx="26" cy="38" rx="4" ry="6" fill="#fff" opacity=".15"/>
+  </symbol>
+  <symbol id="ic-ice" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="55" rx="15" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <rect x="14" y="16" width="36" height="36" rx="8" fill="url(#gIce)" stroke="#86bdd6" stroke-width="1.6"/>
+    <path d="M22 24l8 8-6 10" stroke="#fff" stroke-width="3" fill="none" opacity=".7" stroke-linecap="round"/>
+    <rect x="20" y="22" width="8" height="8" rx="3" fill="#fff" opacity=".4"/>
+  </symbol>
+  <symbol id="ic-takeout" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M18 25 C 22 11 42 11 46 25" fill="none" stroke="#c25f12" stroke-width="2" stroke-linecap="round"/>
+    <path d="M15 26h34l-3 26a4 4 0 0 1-4 3.4H22a4 4 0 0 1-4-3.4z" fill="url(#gBox)" stroke="#cdbf9e" stroke-width="1.5"/>
+    <path d="M15 26 L32 20 L49 26 Z" fill="#f3ecd9" stroke="#cdbf9e" stroke-width="1.4"/>
+    <path d="M32 20 V26" stroke="#cdbf9e" stroke-width="1.1"/>
+    <circle cx="32" cy="40" r="6" fill="#e85a4a"/>
+    <path d="M28 40c2-3 6-3 8 0" stroke="#fff" stroke-width="1.4" fill="none"/>
+  </symbol>
+
+  <!-- ===== Ch5 · deep storage / fast food ===== -->
+  <symbol id="ic-dumpling" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="50" rx="18" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <path d="M9 39 Q 32 22 55 39 Q 51 52 32 52 Q 13 52 9 39 Z" fill="url(#gDumpling)"/>
+    <path d="M9 39 Q 32 22 55 39" fill="none" stroke="#cdb27e" stroke-width="1.4" opacity=".5"/>
+    <g stroke="#cdb27e" stroke-width="1.3" opacity=".7" stroke-linecap="round"><path d="M17 35l3-4M24 31l2-4M32 29v-4M40 31l-2-4M47 35l-3-4"/></g>
+    <ellipse cx="24" cy="44" rx="6" ry="3.5" fill="#fff" opacity=".22"/>
+  </symbol>
+  <symbol id="ic-pizza" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M32 8 L52 50 a4 4 0 0 1-4 5 H16 a4 4 0 0 1-4-5 Z" fill="url(#gPizza)"/>
+    <path d="M14 50 a30 30 0 0 1 36 0 a4 4 0 0 1-2 5 H16 a4 4 0 0 1-2-5z" fill="#e0a960"/>
+    <circle cx="28" cy="30" r="3.4" fill="#d2402e"/><circle cx="38" cy="38" r="3.4" fill="#d2402e"/><circle cx="32" cy="44" r="3.2" fill="#d2402e"/><circle cx="34" cy="22" r="2" fill="#cf4530"/>
+  </symbol>
+  <symbol id="ic-hotdog" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="50" rx="22" ry="3.4" fill="#3a2a1a" opacity=".12"/>
+    <rect x="8" y="30" width="48" height="16" rx="8" fill="url(#gBun)"/>
+    <rect x="10" y="24" width="44" height="12" rx="6" fill="url(#gSausage)"/>
+    <rect x="8" y="20" width="48" height="12" rx="6" fill="url(#gBun)"/>
+    <path d="M14 26c6 4 12-4 18 0s12 4 18 0" stroke="#f2c200" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-burger" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="20" ry="3.2" fill="#3a2a1a" opacity=".12"/>
+    <path d="M12 23a20 13 0 0 1 40 0z" fill="url(#gBun)"/>
+    <g fill="#fff"><circle cx="24" cy="16" r=".9"/><circle cx="32" cy="14" r=".9"/><circle cx="40" cy="16" r=".9"/></g>
+    <rect x="12" y="23" width="40" height="4" rx="2" fill="#6fae54"/>
+    <rect x="13" y="27" width="38" height="6" rx="2" fill="#ffd24a"/>
+    <rect x="11" y="32" width="42" height="7" rx="3.5" fill="#8a4a26"/>
+    <path d="M12 40h40a8 8 0 0 1-8 6H20a8 8 0 0 1-8-6z" fill="url(#gBun)"/>
+  </symbol>
+  <symbol id="ic-fries" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="14" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <g fill="#f3c44a" stroke="#e0a020" stroke-width="1"><rect x="23" y="14" width="4" height="30" rx="2"/><rect x="28" y="9" width="4" height="35" rx="2"/><rect x="33" y="12" width="4" height="32" rx="2"/><rect x="38" y="10" width="4" height="34" rx="2"/></g>
+    <path d="M18 33h28l-3 20a4 4 0 0 1-4 3.4H25a4 4 0 0 1-4-3.4z" fill="url(#gFries)"/>
+    <path d="M18 33h28v3H18z" fill="#fff" opacity=".2"/>
+  </symbol>
+  <symbol id="ic-riceball" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="55" rx="16" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M32 12c-4 0-6 3-9 9-3 7-7 14-9 19-2 5 1 8 6 8h24c5 0 8-3 6-8-2-5-6-12-9-19-3-6-5-9-9-9z" fill="url(#gRice)" stroke="#cfd3cb" stroke-width="1.5"/>
+    <rect x="22" y="40" width="20" height="13" rx="2" fill="#33352f"/>
+    <ellipse cx="27" cy="26" rx="3" ry="4" fill="#fff" opacity=".5"/>
+  </symbol>
+
+  <!-- ===== Ch6 · bakery ===== -->
+  <symbol id="ic-croissant" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="50" rx="20" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 46 C 8 30 18 16 32 16 C 46 16 56 30 48 46 C 45 41 42 42 40 39 C 36 35 28 35 24 39 C 22 42 19 41 16 46 Z" fill="url(#gBread)"/>
+    <g stroke="#a86a30" stroke-width="1.4" opacity=".5" fill="none" stroke-linecap="round"><path d="M25 20 C 23 26 23 33 26 38 M32 17 C 31 24 31 32 32 39 M39 20 C 41 26 41 33 38 38"/></g>
+    <path d="M19 40c-2-10 6-19 15-20-9 4-14 12-13 20z" fill="#fff" opacity=".15"/>
+  </symbol>
+  <symbol id="ic-baguette" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="22" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <rect x="6" y="26" width="52" height="14" rx="7" fill="url(#gBread)" transform="rotate(-18 32 33)"/>
+    <g stroke="#a86a30" stroke-width="1.6" opacity=".55" stroke-linecap="round" transform="rotate(-18 32 33)"><path d="M20 30l4 6M28 28l4 6M36 28l4 6M44 30l4 6"/></g>
+  </symbol>
+  <symbol id="ic-bagel" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="17" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="33" r="21" fill="url(#gBagel)"/>
+    <circle cx="32" cy="33" r="7" fill="#f7efe1"/>
+    <circle cx="32" cy="33" r="7" fill="none" stroke="#b07d44" stroke-width="1.4" opacity=".5"/>
+    <g fill="#e8d6a8"><ellipse cx="24" cy="24" rx="1.4" ry="1"/><ellipse cx="40" cy="25" rx="1.4" ry="1"/><ellipse cx="44" cy="36" rx="1.4" ry="1"/><ellipse cx="22" cy="38" rx="1.4" ry="1"/><ellipse cx="32" cy="18" rx="1.4" ry="1"/></g>
+    <circle cx="24" cy="26" r="5" fill="#fff" opacity=".12"/>
+  </symbol>
+  <symbol id="ic-cupcake" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M18 34h28l-3 18a4 4 0 0 1-4 3.4H25a4 4 0 0 1-4-3.4z" fill="#e08a64"/>
+    <g stroke="#c86245" stroke-width="1" opacity=".5"><path d="M24 35v20M30 35v20M36 35v20M42 35v20"/></g>
+    <path d="M16 34c0-8 6-12 16-12s16 4 16 12z" fill="url(#gFrost)"/>
+    <circle cx="24" cy="26" r="6" fill="url(#gFrost)"/><circle cx="40" cy="26" r="6" fill="url(#gFrost)"/><circle cx="32" cy="20" r="7" fill="#ffd0de"/>
+    <circle cx="32" cy="13" r="3" fill="#e0503f"/>
+  </symbol>
+  <symbol id="ic-cakeslice" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="52" rx="22" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <path d="M9 48 L48 24 a3 3 0 0 1 3 2.6 V45 a3 3 0 0 1-3 3 H12 a3 3 0 0 1-3-3 Z" fill="#f7dcab"/>
+    <path d="M30 39 H51 V42 H30 Z" fill="#fff1d6"/>
+    <path d="M9 47 L48 24 51 27 12 50 Z" fill="url(#gFrost)"/>
+    <path d="M48 25 a3 3 0 0 1 3 2.6 V32 l-3 1 Z" fill="#ff9ab8"/>
+    <circle cx="43" cy="23" r="3.8" fill="#e0503f"/>
+    <path d="M41 20h4l-2 3z" fill="#6ea24e"/>
+    <circle cx="42" cy="22" r="1" fill="#fff" opacity=".5"/>
+  </symbol>
+  <symbol id="ic-donut" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="17" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="34" r="21" fill="#e0a960"/>
+    <circle cx="32" cy="34" r="20" fill="url(#gFrost)"/>
+    <circle cx="32" cy="34" r="7.5" fill="#e0a960"/>
+    <circle cx="32" cy="34" r="6" fill="#f7efe1"/>
+    <g stroke-width="2.4" stroke-linecap="round"><path d="M22 24l2 3" stroke="#5ec0e8"/><path d="M40 22l-1 3" stroke="#ffd45e"/><path d="M44 34l-3 1" stroke="#7bd88f"/><path d="M24 42l3-1" stroke="#ff8fab"/><path d="M36 44l1-3" stroke="#b197fc"/></g>
+    <circle cx="24" cy="27" r="5" fill="#fff" opacity=".15"/>
+  </symbol>
+  <symbol id="ic-pretzel" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="18" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <g fill="none" stroke="url(#gPretzel)" stroke-width="6.5" stroke-linecap="round">
+      <path d="M16 24 C 14 13 28 11 32 22 C 36 11 50 13 48 24"/>
+      <path d="M16 24 C 8 34 18 50 32 50 C 46 50 56 34 48 24"/>
+      <path d="M24 19 C 34 29 30 44 41 46"/>
+      <path d="M40 19 C 30 29 34 44 23 46"/>
+    </g>
+    <g fill="#f0e2c0"><circle cx="22" cy="18" r="1"/><circle cx="42" cy="18" r="1"/><circle cx="32" cy="46" r="1"/></g>
+  </symbol>
+
+  <!-- ===== Ch7 · stockroom / household ===== -->
+  <symbol id="ic-lotion" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="12" ry="2.4" fill="#3a2a1a" opacity=".12"/>
+    <path d="M30 16h6v-3a2 2 0 0 0-2-2h-8a2 2 0 0 0 0 4h4z" fill="#aebfc6"/>
+    <rect x="28" y="16" width="8" height="9" rx="2" fill="#cfe0e6"/>
+    <rect x="21" y="24" width="22" height="30" rx="6" fill="url(#gLotion)" stroke="#86bdae" stroke-width="1.5"/>
+    <rect x="25" y="34" width="14" height="14" rx="3" fill="#fff" opacity=".7"/>
+    <rect x="24" y="28" width="3" height="22" rx="1.5" fill="#fff" opacity=".4"/>
+  </symbol>
+  <symbol id="ic-soap" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="50" rx="18" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <g fill="#cdeee8" stroke="#9fd9cf" stroke-width="1"><circle cx="24" cy="22" r="5"/><circle cx="34" cy="17" r="6"/><circle cx="43" cy="23" r="4"/><circle cx="30" cy="25" r="3.5"/></g>
+    <circle cx="33" cy="15" r="1.6" fill="#fff" opacity=".7"/>
+    <rect x="14" y="32" width="36" height="16" rx="8" fill="url(#gSoap)"/>
+    <ellipse cx="22" cy="38" rx="6" ry="3" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="ic-toiletpaper" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <rect x="14" y="22" width="36" height="28" rx="6" fill="#fff" stroke="#d3d9de" stroke-width="1.5"/>
+    <ellipse cx="32" cy="22" rx="18" ry="6" fill="#f6f9fb" stroke="#d3d9de" stroke-width="1.4"/>
+    <ellipse cx="32" cy="22" rx="6.5" ry="2.6" fill="#decba6"/>
+    <path d="M25 46 h14 v10 a2.5 2.5 0 0 1-2.5 2.5 h-9 A2.5 2.5 0 0 1 25 56 Z" fill="#fff" stroke="#d8dde2" stroke-width="1.2"/>
+    <path d="M25 51 h14 M25 56 h14" stroke="#e6ebef" stroke-width="1"/>
+  </symbol>
+  <symbol id="ic-sponge" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="18" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <path d="M12 30h40v12a8 8 0 0 1-8 8H20a8 8 0 0 1-8-8z" fill="#4aa05a"/>
+    <path d="M12 30c0-8 4-12 20-12s20 4 20 12z" fill="url(#gSpongeT)"/>
+    <g fill="#e8c84a" opacity=".7"><circle cx="22" cy="24" r="2"/><circle cx="32" cy="22" r="2.4"/><circle cx="42" cy="25" r="2"/><circle cx="27" cy="28" r="1.6"/><circle cx="38" cy="29" r="1.6"/></g>
+  </symbol>
+  <symbol id="ic-basket" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="18" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <path d="M18 30 C 20 14 44 14 46 30" fill="none" stroke="#b07d44" stroke-width="3" stroke-linecap="round"/>
+    <path d="M14 30h36l-3 20a4 4 0 0 1-4 3.4H21a4 4 0 0 1-4-3.4z" fill="url(#gBasket)"/>
+    <g stroke="#8a5a2b" stroke-width="1" opacity=".5"><path d="M20 36h24M19 42h26M22 48h20"/><path d="M26 32v20M34 32v21M42 32v19"/></g>
+    <rect x="12" y="28" width="40" height="5" rx="2.5" fill="#c2904f"/>
+  </symbol>
+  <symbol id="ic-bucket" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M18 26a14 14 0 0 1 28 0" fill="none" stroke="#9aa3ab" stroke-width="2.4"/>
+    <path d="M16 26h32l-4 26a4 4 0 0 1-4 3.4H24a4 4 0 0 1-4-3.4z" fill="url(#gBucket)"/>
+    <ellipse cx="32" cy="26" rx="16" ry="4" fill="#f0705e"/>
+    <rect x="22" y="32" width="3" height="20" rx="1.5" fill="#fff" opacity=".25"/>
+  </symbol>
+  <symbol id="ic-broom" viewBox="0 0 64 64">
+    <ellipse cx="24" cy="56" rx="14" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M40 8 L44 11 L25 39 L21 36 Z" fill="#a8743a"/>
+    <path d="M16 35 L29 42 L25 56 Q19 58 12 53 Z" fill="url(#gStraw)"/>
+    <path d="M18 37 L27 42" stroke="#8a5a2b" stroke-width="1.6"/>
+    <g stroke="#c89a44" stroke-width="1.2" fill="none"><path d="M15 40l-1 13M19 42l-1 12M23 44l-1 10"/></g>
+  </symbol>
+
+  <!-- ===== Ch9 · produce ===== -->
+  <symbol id="ic-carrot" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="11" ry="2.4" fill="#3a2a1a" opacity=".12"/>
+    <path d="M32 54c-3 0-12-22-9-30 2-5 14-5 16 0 3 8-4 30-7 30z" fill="url(#gCarrot)"/>
+    <g stroke="#e07a1a" stroke-width="1.2" opacity=".5"><path d="M27 28c4 2 8 2 11 0M28 36c3 1 6 1 9 0M30 44h4"/></g>
+    <g fill="url(#gLeaf)"><path d="M32 24c-2-8-8-10-12-9 2 5 6 8 12 9z"/><path d="M32 24c0-9-4-12-8-13 0 6 3 10 8 13z"/><path d="M32 24c2-8 8-10 12-9-2 5-6 8-12 9z"/></g>
+  </symbol>
+  <symbol id="ic-tomato" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="15" ry="2.8" fill="#3a2a1a" opacity=".12"/>
+    <circle cx="32" cy="37" r="19" fill="url(#gTomato)"/>
+    <circle cx="24" cy="30" r="5.5" fill="#fff" opacity=".2"/>
+    <g fill="url(#gLeaf)"><path d="M32 20l-5-6-1 7zM32 20l5-6 1 7zM32 20l-7-2 4 5zM32 20l7-2-4 5z"/></g>
+    <circle cx="32" cy="20" r="2.4" fill="#5a9440"/>
+  </symbol>
+  <symbol id="ic-broccoli" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="56" rx="15" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M28 40h8v14a4 4 0 0 1-8 0z" fill="#bcd89a"/>
+    <g fill="url(#gBroc)"><circle cx="22" cy="28" r="9"/><circle cx="32" cy="22" r="10"/><circle cx="42" cy="28" r="9"/><circle cx="28" cy="34" r="8"/><circle cx="38" cy="34" r="8"/></g>
+    <g fill="#5a9440" opacity=".5"><circle cx="20" cy="26" r="2"/><circle cx="30" cy="20" r="2"/><circle cx="40" cy="26" r="2"/><circle cx="34" cy="31" r="2"/></g>
+  </symbol>
+
+  <!-- ===== Ch10 · tea / closing ===== -->
+  <symbol id="ic-tea" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="18" ry="3" fill="#3a2a1a" opacity=".12"/>
+    <g stroke="#bcd89a" stroke-width="1.6" fill="none" opacity=".7" stroke-linecap="round"><path d="M26 24c-2-3 2-5 0-8M34 24c-2-3 2-5 0-8"/></g>
+    <path d="M16 30h28l-2 14a8 8 0 0 1-8 6H26a8 8 0 0 1-8-6z" fill="#fff" stroke="#d2dbe0" stroke-width="1.5"/>
+    <path d="M44 32h4a6 6 0 0 1 0 12h-3" fill="none" stroke="#cdd6dc" stroke-width="3"/>
+    <ellipse cx="30" cy="31" rx="13" ry="3.4" fill="url(#gTea)"/>
+    <path d="M44 49a18 6 0 0 1-28 0z" fill="#e6ebef" stroke="#cdd6dc" stroke-width="1.2"/>
+  </symbol>
+  <symbol id="ic-pie" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="54" rx="22" ry="3.4" fill="#3a2a1a" opacity=".12"/>
+    <path d="M10 40h44a4 4 0 0 1-4 8H14a4 4 0 0 1-4-8z" fill="#d89a4e"/>
+    <path d="M10 40a22 12 0 0 1 44 0z" fill="url(#gBread)"/>
+    <g stroke="#a86a30" stroke-width="2" opacity=".5" fill="none"><path d="M20 38l24-8M28 40l20-10M16 33l30-6M24 28l8 14M34 27l6 13"/></g>
+    <path d="M14 40h36" stroke="#b07d44" stroke-width="1.4" opacity=".5"/>
+  </symbol>
+  <symbol id="ic-teapot" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="52" rx="20" ry="3.2" fill="#3a2a1a" opacity=".12"/>
+    <path d="M47 28c9 1 11 14 1 16" fill="none" stroke="#cf6f50" stroke-width="4" stroke-linecap="round"/>
+    <path d="M16 30 L6 23 9 29 17 35 Z" fill="url(#gTeapot)"/>
+    <path d="M14 34a18 15 0 0 1 36 0c0 9-8 15-18 15s-18-6-18-15z" fill="url(#gTeapot)"/>
+    <path d="M22 23a10 6 0 0 1 20 0z" fill="#d8825f"/>
+    <rect x="30.5" y="14" width="3" height="5" fill="#d8825f"/>
+    <circle cx="32" cy="13" r="3.4" fill="#f0a98a"/>
+    <ellipse cx="25" cy="33" rx="5" ry="7" fill="#fff" opacity=".18"/>
+  </symbol>
+
+  <!-- ===== gimmick markers (badges + shelf tags) ===== -->
+  <symbol id="ic-mk-reserved" viewBox="0 0 64 64">
+    <rect x="29.5" y="30" width="5" height="28" rx="2.5" fill="#9a6a3a"/>
+    <rect x="11" y="9" width="42" height="27" rx="6" fill="#fdf3df" stroke="#d6a85e" stroke-width="3"/>
+    <g stroke="#cf9a52" stroke-width="3.4" stroke-linecap="round"><path d="M21 19h22M21 27h15"/></g>
+  </symbol>
+  <symbol id="ic-mk-box" viewBox="0 0 64 64">
+    <path d="M32 10 L54 21 L32 32 L10 21 Z" fill="#dcab6c"/>
+    <path d="M10 21 L32 32 L32 55 L10 44 Z" fill="#b07d44"/>
+    <path d="M54 21 L32 32 L32 55 L54 44 Z" fill="#c69453"/>
+    <path d="M32 10 L32 32" stroke="#9a6a3a" stroke-width="1.6" opacity=".5"/>
+    <path d="M22 38 L42 38" stroke="#8a5a2b" stroke-width="2.4" opacity=".45"/>
+    <path d="M21 16 L43 27" stroke="#c79a5a" stroke-width="2" opacity=".5"/>
+  </symbol>
+  <symbol id="ic-mk-lock" viewBox="0 0 64 64">
+    <path d="M22 30 V21 a10 10 0 0 1 20 0 V30" fill="none" stroke="#9aa3ab" stroke-width="5.5"/>
+    <path d="M22 30 V21 a10 10 0 0 1 20 0 V30" fill="none" stroke="#c3cad1" stroke-width="2"/>
+    <rect x="15" y="29" width="34" height="27" rx="6" fill="url(#gLock)"/>
+    <circle cx="32" cy="40" r="3.6" fill="#9a6a1a"/>
+    <rect x="30.2" y="41" width="3.6" height="8" rx="1.8" fill="#9a6a1a"/>
+    <rect x="19" y="32" width="4" height="20" rx="2" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="ic-mk-snow" viewBox="0 0 64 64">
+    <g stroke="#74c2e6" stroke-width="3.6" stroke-linecap="round">
+      <path d="M32 8 V56 M11.6 20 L52.4 44 M52.4 20 L11.6 44"/>
+      <path d="M32 16 l-5-5 M32 16 l5-5 M32 48 l-5 5 M32 48 l5 5"/>
+      <path d="M18.6 24 l-6.8-1.8 M18.6 24 l1.8-6.8 M45.4 40 l6.8 1.8 M45.4 40 l-1.8 6.8"/>
+      <path d="M45.4 24 l6.8-1.8 M45.4 24 l-1.8-6.8 M18.6 40 l-6.8 1.8 M18.6 40 l1.8 6.8"/>
+    </g>
+  </symbol>
+
+  <!-- ===== UI line icons (inherit button color via currentColor) ===== -->
+  <symbol id="ic-ui-menu" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></g></symbol>
+  <symbol id="ic-ui-reset" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M17.6 3.4l-.3 4.3-4.3-.3"/></g></symbol>
+  <symbol id="ic-ui-install" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M7 10l5 5 5-5M5 19h14"/></g></symbol>
+  <symbol id="ic-ui-cart" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 11.3a1.6 1.6 0 0 0 1.6 1.3h7.9a1.6 1.6 0 0 0 1.6-1.3L21 7.5H6"/><circle cx="9.5" cy="20" r="1.4"/><circle cx="17.5" cy="20" r="1.4"/></g></symbol>
+
+  <!-- ===== result-card illustrations (cozy, colored) ===== -->
+  <symbol id="ic-card-win" viewBox="0 0 64 64">
+    <path d="M9 55 L29 31 L35 37 Z" fill="#f2a85d"/>
+    <path d="M9 55 L29 31 L20 29 Z" fill="#e0762f"/>
+    <path d="M9 55 L18 41 L23 46 Z" fill="#ffd9a8" opacity=".5"/>
+    <circle cx="41" cy="19" r="3.2" fill="#ff8fab"/>
+    <rect x="46" y="27" width="5" height="5" rx="1.2" fill="#ffd45e" transform="rotate(20 48.5 29.5)"/>
+    <circle cx="53" cy="15" r="2.6" fill="#7bd88f"/>
+    <rect x="35" y="11" width="4.4" height="4.4" rx="1" fill="#66d9e8" transform="rotate(-15 37 13)"/>
+    <circle cx="51" cy="38" r="2.6" fill="#b197fc"/>
+    <path d="M34 32 q7-5 12-2" fill="none" stroke="#ffd45e" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M37 37 q7 0 10 5" fill="none" stroke="#7bd88f" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-card-trophy" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="58" rx="14" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 14h-4a6 6 0 0 0 8 8z M48 14h4a6 6 0 0 1-8 8z" fill="none" stroke="#e0a020" stroke-width="3.5"/>
+    <path d="M19 11h26v9a13 13 0 0 1-26 0z" fill="url(#gLock)"/>
+    <rect x="28" y="32" width="8" height="9" fill="#d8a02a"/>
+    <path d="M22 47h20l-2-7H24z" fill="#d9a24a"/>
+    <rect x="19" y="49" width="26" height="6" rx="2.5" fill="#c98a30"/>
+    <path d="M27 17l3 3 5-6" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+  </symbol>
+  <symbol id="ic-card-time" viewBox="0 0 64 64">
+    <path d="M17 9h30M17 55h30" stroke="#9a6a3a" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M21 11c0 13 11 15 11 21 0-6 11-8 11-21z" fill="#e7d3ac"/>
+    <path d="M21 53c0-13 11-15 11-21 0 6 11 8 11 21z" fill="#e7d3ac"/>
+    <path d="M25 15c0 8 7 11 7 14 0-3 7-6 7-14z" fill="#f2bf52"/>
+    <path d="M28 50c0-5 4-7 4-9 0 2 4 4 4 9z" fill="#f2bf52"/>
+    <rect x="31" y="31" width="2" height="9" fill="#f2bf52"/>
+  </symbol>
+  <symbol id="ic-card-stuck" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="14" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 18h10a4 4 0 0 1 8 0h10v10a4 4 0 0 0 0 8v10H16V34a4 4 0 0 1 0-8z" fill="#69a37e" stroke="#4e8064" stroke-width="1.6"/>
+    <circle cx="24" cy="28" r="2.4" fill="#fff" opacity=".35"/>
+  </symbol>
+  <symbol id="ic-card-think" viewBox="0 0 64 64">
+    <path d="M12 14h40a6 6 0 0 1 6 6v15a6 6 0 0 1-6 6H30l-11 9 1-9h-8a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z" fill="#efe2cd" stroke="#d6bd92" stroke-width="2"/>
+    <path d="M25 24a7 7 0 0 1 13.5 2.5c0 4-5.5 4.5-5.5 8" fill="none" stroke="#9a7e5a" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="33" cy="40" r="2.2" fill="#9a7e5a"/>
+  </symbol>
+
+  <!-- ===== clear-burst sparks ===== -->
+  <symbol id="ic-spark" viewBox="0 0 24 24"><path d="M12 1 C 13 7 17 11 23 12 C 17 13 13 17 12 23 C 11 17 7 13 1 12 C 7 11 11 7 12 1 Z" fill="#ffd45e"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 2 L14.6 8.6 L21.5 9.2 L16.2 13.8 L17.9 20.5 L12 16.8 L6.1 20.5 L7.8 13.8 L2.5 9.2 L9.4 8.6 Z" fill="#ffcf5e"/></symbol>
+<!--SPRITE-END-->
+  <g font-family="sans-serif">
+    <g><rect x="16" y="78" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-apple" x="32" y="94" width="74" height="74"/><text x="69" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">apple</text></g>
+    <g><rect x="138" y="78" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-banana" x="154" y="94" width="74" height="74"/><text x="191" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">banana</text></g>
+    <g><rect x="260" y="78" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-grapes" x="276" y="94" width="74" height="74"/><text x="313" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">grapes</text></g>
+    <g><rect x="382" y="78" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-orange" x="398" y="94" width="74" height="74"/><text x="435" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">orange</text></g>
+    <g><rect x="504" y="78" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-kiwi" x="520" y="94" width="74" height="74"/><text x="557" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">kiwi</text></g>
+    <g><rect x="626" y="78" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-peach" x="642" y="94" width="74" height="74"/><text x="679" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">peach</text></g>
+    <g><rect x="16" y="210" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-watermelon" x="32" y="226" width="74" height="74"/><text x="69" y="332" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">watermelon</text></g>
+    <g><rect x="138" y="210" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-wild" x="154" y="226" width="74" height="74"/><text x="191" y="332" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">wild</text></g>
+    <g><rect x="260" y="210" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-bread" x="276" y="226" width="74" height="74"/><text x="313" y="332" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">bread</text></g>
+    <g><rect x="382" y="210" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-can" x="398" y="226" width="74" height="74"/><text x="435" y="332" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">can</text></g>
+    <g><rect x="504" y="210" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-pasta" x="520" y="226" width="74" height="74"/><text x="557" y="332" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">pasta</text></g>
+    <g><rect x="626" y="210" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-jar" x="642" y="226" width="74" height="74"/><text x="679" y="332" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">jar</text></g>
+    <g><rect x="16" y="342" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-honey" x="32" y="358" width="74" height="74"/><text x="69" y="464" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">honey</text></g>
+    <g><rect x="138" y="342" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-nuts" x="154" y="358" width="74" height="74"/><text x="191" y="464" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">nuts</text></g>
+    <g><rect x="260" y="342" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-cookie" x="276" y="358" width="74" height="74"/><text x="313" y="464" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">cookie</text></g>
+    <g><rect x="382" y="342" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-salt" x="398" y="358" width="74" height="74"/><text x="435" y="464" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">salt</text></g>
+    <g><rect x="504" y="342" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-milk" x="520" y="358" width="74" height="74"/><text x="557" y="464" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">milk</text></g>
+    <g><rect x="626" y="342" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-cheese" x="642" y="358" width="74" height="74"/><text x="679" y="464" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">cheese</text></g>
+    <g><rect x="16" y="474" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-butter" x="32" y="490" width="74" height="74"/><text x="69" y="596" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">butter</text></g>
+    <g><rect x="138" y="474" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-egg" x="154" y="490" width="74" height="74"/><text x="191" y="596" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">egg</text></g>
+    <g><rect x="260" y="474" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-icecream" x="276" y="490" width="74" height="74"/><text x="313" y="596" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">icecream</text></g>
+    <g><rect x="382" y="474" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-sundae" x="398" y="490" width="74" height="74"/><text x="435" y="596" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">sundae</text></g>
+    <g><rect x="504" y="474" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-flan" x="520" y="490" width="74" height="74"/><text x="557" y="596" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">flan</text></g>
+    <g><rect x="626" y="474" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-juicebox" x="642" y="490" width="74" height="74"/><text x="679" y="596" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">juicebox</text></g>
+    <g><rect x="16" y="606" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-soda" x="32" y="622" width="74" height="74"/><text x="69" y="728" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">soda</text></g>
+    <g><rect x="138" y="606" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-bottle" x="154" y="622" width="74" height="74"/><text x="191" y="728" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">bottle</text></g>
+    <g><rect x="260" y="606" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-mate" x="276" y="622" width="74" height="74"/><text x="313" y="728" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">mate</text></g>
+    <g><rect x="382" y="606" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-ice" x="398" y="622" width="74" height="74"/><text x="435" y="728" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">ice</text></g>
+    <g><rect x="504" y="606" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-takeout" x="520" y="622" width="74" height="74"/><text x="557" y="728" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">takeout</text></g>
+    <g><rect x="626" y="606" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-dumpling" x="642" y="622" width="74" height="74"/><text x="679" y="728" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">dumpling</text></g>
+    <g><rect x="16" y="738" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-pizza" x="32" y="754" width="74" height="74"/><text x="69" y="860" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">pizza</text></g>
+    <g><rect x="138" y="738" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-hotdog" x="154" y="754" width="74" height="74"/><text x="191" y="860" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">hotdog</text></g>
+    <g><rect x="260" y="738" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-burger" x="276" y="754" width="74" height="74"/><text x="313" y="860" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">burger</text></g>
+    <g><rect x="382" y="738" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-fries" x="398" y="754" width="74" height="74"/><text x="435" y="860" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">fries</text></g>
+    <g><rect x="504" y="738" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-riceball" x="520" y="754" width="74" height="74"/><text x="557" y="860" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">riceball</text></g>
+    <g><rect x="626" y="738" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-croissant" x="642" y="754" width="74" height="74"/><text x="679" y="860" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">croissant</text></g>
+    <g><rect x="16" y="870" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-baguette" x="32" y="886" width="74" height="74"/><text x="69" y="992" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">baguette</text></g>
+    <g><rect x="138" y="870" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-bagel" x="154" y="886" width="74" height="74"/><text x="191" y="992" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">bagel</text></g>
+    <g><rect x="260" y="870" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-cupcake" x="276" y="886" width="74" height="74"/><text x="313" y="992" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">cupcake</text></g>
+    <g><rect x="382" y="870" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-cakeslice" x="398" y="886" width="74" height="74"/><text x="435" y="992" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">cakeslice</text></g>
+    <g><rect x="504" y="870" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-donut" x="520" y="886" width="74" height="74"/><text x="557" y="992" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">donut</text></g>
+    <g><rect x="626" y="870" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-pretzel" x="642" y="886" width="74" height="74"/><text x="679" y="992" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">pretzel</text></g>
+    <g><rect x="16" y="1002" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-lotion" x="32" y="1018" width="74" height="74"/><text x="69" y="1124" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">lotion</text></g>
+    <g><rect x="138" y="1002" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-soap" x="154" y="1018" width="74" height="74"/><text x="191" y="1124" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">soap</text></g>
+    <g><rect x="260" y="1002" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-toiletpaper" x="276" y="1018" width="74" height="74"/><text x="313" y="1124" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">toiletpaper</text></g>
+    <g><rect x="382" y="1002" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-sponge" x="398" y="1018" width="74" height="74"/><text x="435" y="1124" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">sponge</text></g>
+    <g><rect x="504" y="1002" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-basket" x="520" y="1018" width="74" height="74"/><text x="557" y="1124" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">basket</text></g>
+    <g><rect x="626" y="1002" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-bucket" x="642" y="1018" width="74" height="74"/><text x="679" y="1124" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">bucket</text></g>
+    <g><rect x="16" y="1134" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-broom" x="32" y="1150" width="74" height="74"/><text x="69" y="1256" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">broom</text></g>
+    <g><rect x="138" y="1134" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-carrot" x="154" y="1150" width="74" height="74"/><text x="191" y="1256" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">carrot</text></g>
+    <g><rect x="260" y="1134" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-tomato" x="276" y="1150" width="74" height="74"/><text x="313" y="1256" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">tomato</text></g>
+    <g><rect x="382" y="1134" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-broccoli" x="398" y="1150" width="74" height="74"/><text x="435" y="1256" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">broccoli</text></g>
+    <g><rect x="504" y="1134" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-tea" x="520" y="1150" width="74" height="74"/><text x="557" y="1256" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">tea</text></g>
+    <g><rect x="626" y="1134" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-pie" x="642" y="1150" width="74" height="74"/><text x="679" y="1256" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">pie</text></g>
+    <g><rect x="16" y="1266" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-teapot" x="32" y="1282" width="74" height="74"/><text x="69" y="1388" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">teapot</text></g>
+    <g><rect x="138" y="1266" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-mk-reserved" x="154" y="1282" width="74" height="74"/><text x="191" y="1388" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">mk-reserved</text></g>
+    <g><rect x="260" y="1266" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-mk-box" x="276" y="1282" width="74" height="74"/><text x="313" y="1388" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">mk-box</text></g>
+    <g><rect x="382" y="1266" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-mk-lock" x="398" y="1282" width="74" height="74"/><text x="435" y="1388" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">mk-lock</text></g>
+    <g><rect x="504" y="1266" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-mk-snow" x="520" y="1282" width="74" height="74"/><text x="557" y="1388" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">mk-snow</text></g>
+    <g><rect x="626" y="1266" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-ui-menu" x="642" y="1282" width="74" height="74"/><text x="679" y="1388" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">ui-menu</text></g>
+    <g><rect x="16" y="1398" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-ui-reset" x="32" y="1414" width="74" height="74"/><text x="69" y="1520" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">ui-reset</text></g>
+    <g><rect x="138" y="1398" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-ui-install" x="154" y="1414" width="74" height="74"/><text x="191" y="1520" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">ui-install</text></g>
+    <g><rect x="260" y="1398" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-ui-cart" x="276" y="1414" width="74" height="74"/><text x="313" y="1520" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">ui-cart</text></g>
+    <g><rect x="382" y="1398" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-card-win" x="398" y="1414" width="74" height="74"/><text x="435" y="1520" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">card-win</text></g>
+    <g><rect x="504" y="1398" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-card-trophy" x="520" y="1414" width="74" height="74"/><text x="557" y="1520" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">card-trophy</text></g>
+    <g><rect x="626" y="1398" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-card-time" x="642" y="1414" width="74" height="74"/><text x="679" y="1520" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">card-time</text></g>
+    <g><rect x="16" y="1530" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-card-stuck" x="32" y="1546" width="74" height="74"/><text x="69" y="1652" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">card-stuck</text></g>
+    <g><rect x="138" y="1530" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-card-think" x="154" y="1546" width="74" height="74"/><text x="191" y="1652" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">card-think</text></g>
+    <g><rect x="260" y="1530" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-spark" x="276" y="1546" width="74" height="74"/><text x="313" y="1652" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">spark</text></g>
+    <g><rect x="382" y="1530" width="106" height="106" rx="16" fill="#fffaf1"/><use href="#ic-star" x="398" y="1546" width="74" height="74"/><text x="435" y="1652" text-anchor="middle" font-size="12" font-weight="700" fill="#4a3a2a">star</text></g>
+  </g>
+</svg>

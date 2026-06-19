@@ -234,12 +234,14 @@ The hidden-layer mechanic was redesigned per user request. **Old:** a slot held 
 - [`top-shelf-engagement-ethics.md`](top-shelf-engagement-ethics.md) — **research-backed catalog of engagement/retention mechanics with an ethical verdict for each (engaging vs compulsive/dark-pattern), and the one actionable ethics test to apply to any new feature.** Use it to keep the game "sticky" through craft (mastery, autonomy, honest feedback) without crossing into compulsion. Names explicitly the two newly-considered-and-rejected mechanics: competition/leaderboards and penalty-bearing streaks.
 
 ### Maintenance notes
+- **Art is now 100% bespoke inline SVG (no emoji anywhere on screen).** ~70 icons live in one hidden `<svg>` sprite of `<symbol>`s near the top of `index.html`, drawn via `<use href="#ic-…">` and a `glyphHTML()` helper (1.25em sizing). Covers groceries, gimmick markers (`ic-mk-*`), UI chrome (`ic-ui-*`), result cards (`ic-card-*`), and clear-burst sparks. Department palettes in `DEPTS` are now icon-key strings, not emoji. Only remaining emoji are in code comments.
+- **Icon set backup/working-copy workflow** lives in **`icons/`** (`set-A.svg` = frozen backup, `set-B.svg` = working copy, `iconset.mjs` = export/apply tool, `README.md` = how-to). The game keeps its sprite **inline**; `node icons/iconset.mjs apply B` pushes `set-B.svg` into `index.html` (lossless round-trip), `apply A` restores the backup. **Edit set-B, never set-A.** Applying doesn't bump the SW cache — do that + deploy separately.
 - Game file is **`index.html`** (was `top-shelf.html`). `sw.js`, `manifest.webmanifest`, `tests/harness.js` reference it.
 - **`tests/harness.js`** evals the engine slice and times `buildLevel`+`solve` for every level: `node tests/harness.js [lo] [hi]` (1-based). It reports solvable/greedy-easy/shelf-count/gen-time per level. **Run after any change to defs, generation, or the engine.** All 100 currently: solvable, **≤6 shelves**, greedy-hard except breathers/finale/intro.
 - **`tests/proto-layers.js`** — standalone prototype that validated the sealed-layers generation (keep as reference if revisiting that mechanic).
 - **`tests/gen-icon.js`** — regenerates the app icons (dependency-free PNG rasterizer).
 - **In-memory board cache** (`buildLevelCached` + `_boardCache`): boards build once per session, cloned per use. Clone is essential — `updateShutters` mutates `.locked` in place; sharing the cached board would corrupt replays (tested). If you precompute/bake boards later, preserve clone-on-use.
-- **SW cache** is at **`topshelf-v8`** — bump it on every HTML/asset change or returning players get the stale copy.
+- **SW cache** is at **`topshelf-v14`** — bump it on every HTML/asset change or returning players get the stale copy.
 - **Headless eval gotcha:** append test code to the *same* `eval` string as the engine slice (strict-mode `const`/`let` don't leak out of `eval`). Engine slice = from `"use strict";` to the `Persistence` comment.
 
 ---
