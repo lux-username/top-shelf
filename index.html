@@ -43,6 +43,8 @@
   .gicon{ width:1.25em; height:1.25em; display:block; pointer-events:none; }
   /* inline icon for the menu legend (flows with text) */
   .lgi{ width:1.35em; height:1.35em; display:inline-block; vertical-align:-.4em; }
+  /* UI line icon inside header/banner buttons (uses currentColor) */
+  .btnic{ width:1.4em; height:1.4em; display:block; }
   html,body{ margin:0; height:100%; }
   body{
     font-family:"Nunito",system-ui,sans-serif;
@@ -355,7 +357,7 @@
     animation:cardin .3s cubic-bezier(.2,1.1,.4,1);
   }
   @keyframes cardin{ from{ transform:translateY(14px) scale(.96); opacity:0;} to{ transform:none; opacity:1;} }
-  .card .emoji{ font-size:3rem; line-height:1; }
+  .card .emoji{ font-size:3rem; line-height:1; display:flex; justify-content:center; }
   .card h2{ font-family:"Fraunces",serif; font-weight:700; font-size:1.6rem; margin:.5rem 0 .35rem; }
   .card p{ color:var(--ink-soft); font-size:.98rem; line-height:1.45; margin:.2rem 0 1.1rem; }
   .btn{
@@ -1052,17 +1054,68 @@
       <path d="M45.4 24 l6.8-1.8 M45.4 24 l-1.8-6.8 M18.6 40 l-6.8 1.8 M18.6 40 l1.8 6.8"/>
     </g>
   </symbol>
+
+  <!-- ===== UI line icons (inherit button color via currentColor) ===== -->
+  <symbol id="ic-ui-menu" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></g></symbol>
+  <symbol id="ic-ui-reset" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M17.6 3.4l-.3 4.3-4.3-.3"/></g></symbol>
+  <symbol id="ic-ui-install" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M7 10l5 5 5-5M5 19h14"/></g></symbol>
+  <symbol id="ic-ui-cart" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 11.3a1.6 1.6 0 0 0 1.6 1.3h7.9a1.6 1.6 0 0 0 1.6-1.3L21 7.5H6"/><circle cx="9.5" cy="20" r="1.4"/><circle cx="17.5" cy="20" r="1.4"/></g></symbol>
+
+  <!-- ===== result-card illustrations (cozy, colored) ===== -->
+  <symbol id="ic-card-win" viewBox="0 0 64 64">
+    <path d="M9 55 L29 31 L35 37 Z" fill="#f2a85d"/>
+    <path d="M9 55 L29 31 L20 29 Z" fill="#e0762f"/>
+    <path d="M9 55 L18 41 L23 46 Z" fill="#ffd9a8" opacity=".5"/>
+    <circle cx="41" cy="19" r="3.2" fill="#ff8fab"/>
+    <rect x="46" y="27" width="5" height="5" rx="1.2" fill="#ffd45e" transform="rotate(20 48.5 29.5)"/>
+    <circle cx="53" cy="15" r="2.6" fill="#7bd88f"/>
+    <rect x="35" y="11" width="4.4" height="4.4" rx="1" fill="#66d9e8" transform="rotate(-15 37 13)"/>
+    <circle cx="51" cy="38" r="2.6" fill="#b197fc"/>
+    <path d="M34 32 q7-5 12-2" fill="none" stroke="#ffd45e" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M37 37 q7 0 10 5" fill="none" stroke="#7bd88f" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="ic-card-trophy" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="58" rx="14" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 14h-4a6 6 0 0 0 8 8z M48 14h4a6 6 0 0 1-8 8z" fill="none" stroke="#e0a020" stroke-width="3.5"/>
+    <path d="M19 11h26v9a13 13 0 0 1-26 0z" fill="url(#gLock)"/>
+    <rect x="28" y="32" width="8" height="9" fill="#d8a02a"/>
+    <path d="M22 47h20l-2-7H24z" fill="#d9a24a"/>
+    <rect x="19" y="49" width="26" height="6" rx="2.5" fill="#c98a30"/>
+    <path d="M27 17l3 3 5-6" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+  </symbol>
+  <symbol id="ic-card-time" viewBox="0 0 64 64">
+    <path d="M17 9h30M17 55h30" stroke="#9a6a3a" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M21 11c0 13 11 15 11 21 0-6 11-8 11-21z" fill="#e7d3ac"/>
+    <path d="M21 53c0-13 11-15 11-21 0 6 11 8 11 21z" fill="#e7d3ac"/>
+    <path d="M25 15c0 8 7 11 7 14 0-3 7-6 7-14z" fill="#f2bf52"/>
+    <path d="M28 50c0-5 4-7 4-9 0 2 4 4 4 9z" fill="#f2bf52"/>
+    <rect x="31" y="31" width="2" height="9" fill="#f2bf52"/>
+  </symbol>
+  <symbol id="ic-card-stuck" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="14" ry="2.6" fill="#3a2a1a" opacity=".12"/>
+    <path d="M16 18h10a4 4 0 0 1 8 0h10v10a4 4 0 0 0 0 8v10H16V34a4 4 0 0 1 0-8z" fill="#69a37e" stroke="#4e8064" stroke-width="1.6"/>
+    <circle cx="24" cy="28" r="2.4" fill="#fff" opacity=".35"/>
+  </symbol>
+  <symbol id="ic-card-think" viewBox="0 0 64 64">
+    <path d="M12 14h40a6 6 0 0 1 6 6v15a6 6 0 0 1-6 6H30l-11 9 1-9h-8a6 6 0 0 1-6-6V20a6 6 0 0 1 6-6z" fill="#efe2cd" stroke="#d6bd92" stroke-width="2"/>
+    <path d="M25 24a7 7 0 0 1 13.5 2.5c0 4-5.5 4.5-5.5 8" fill="none" stroke="#9a7e5a" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="33" cy="40" r="2.2" fill="#9a7e5a"/>
+  </symbol>
+
+  <!-- ===== clear-burst sparks ===== -->
+  <symbol id="ic-spark" viewBox="0 0 24 24"><path d="M12 1 C 13 7 17 11 23 12 C 17 13 13 17 12 23 C 11 17 7 13 1 12 C 7 11 11 7 12 1 Z" fill="#ffd45e"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 2 L14.6 8.6 L21.5 9.2 L16.2 13.8 L17.9 20.5 L12 16.8 L6.1 20.5 L7.8 13.8 L2.5 9.2 L9.4 8.6 Z" fill="#ffcf5e"/></symbol>
 </svg>
 
 <div id="app">
   <header>
-    <button class="iconbtn" id="menuBtn" aria-label="Menu">☰</button>
+    <button class="iconbtn" id="menuBtn" aria-label="Menu"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-menu"></use></svg></button>
     <div class="brand">
       <div class="name">Top Shelf</div>
       <div class="sub" id="levelLabel">Level 1 · Grocery Sort</div>
     </div>
-    <button class="installbtn" id="installBtn" aria-label="Add to Home Screen" title="Add to Home Screen">📲 Install</button>
-    <button class="iconbtn" id="resetBtn" aria-label="Reset this board" title="Reset board">↺</button>
+    <button class="installbtn" id="installBtn" aria-label="Add to Home Screen" title="Add to Home Screen"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-install"></use></svg> Install</button>
+    <button class="iconbtn" id="resetBtn" aria-label="Reset this board" title="Reset board"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-reset"></use></svg></button>
   </header>
 
   <div class="blurb" id="blurb"></div>
@@ -1079,7 +1132,7 @@
 <!-- result card -->
 <div class="scrim" id="scrim">
   <div class="card" id="card">
-    <div class="emoji" id="cardEmoji">🎉</div>
+    <div class="emoji" id="cardEmoji"></div>
     <h2 id="cardTitle">Nicely sorted!</h2>
     <p id="cardBody"></p>
     <button class="btn" id="cardPrimary">Next level</button>
@@ -1130,7 +1183,7 @@
 <!-- install / add-to-home-screen helper (auto-hides once installed) -->
 <div class="installbar" id="installbar">
   <div class="inner">
-    <div class="ico">🛒</div>
+    <div class="ico"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-cart"></use></svg></div>
     <div class="txt" id="installTxt">Add Top Shelf to your home screen<span>Play it like an app — works offline.</span></div>
     <button class="act" id="installAct">Add</button>
     <button class="x" id="installX" aria-label="Not now">×</button>
@@ -2118,6 +2171,7 @@ const ICON_KEYS = new Set([
   "lotion","soap","toiletpaper","sponge","basket","bucket","broom",
   "carrot","tomato","broccoli","tea","pie","teapot",
   "mk-reserved","mk-box","mk-lock","mk-snow",
+  "card-win","card-trophy","card-time","card-stuck","card-think","spark","star",
 ]);
 function glyphHTML(key){
   return ICON_KEYS.has(key)
@@ -2205,7 +2259,7 @@ function burstShelf(i, big){
   const n = big ? 12 : 7;
   for(let k = 0; k < n; k++){
     const s = document.createElement("div");
-    s.className = "spark"; s.textContent = k % 3 === 0 ? "⭐" : "✨";
+    s.className = "spark"; s.innerHTML = glyphHTML(k % 3 === 0 ? "star" : "spark");
     s.style.left = cx + "px"; s.style.top = cy + "px";
     s.style.setProperty("--dx", ((Math.random() * 2 - 1) * (big ? 110 : 80)).toFixed(0) + "px");
     s.style.setProperty("--dy", (-(30 + Math.random() * (big ? 90 : 60))).toFixed(0) + "px");
@@ -2277,7 +2331,7 @@ function finishWin(){
   if(!last) save.unlocked = Math.max(save.unlocked, G.index + 2);
   persist();
   showCard({
-    emoji: last ? "🏆" : "🎉",
+    emoji: last ? "card-trophy" : "card-win",
     title: last ? "All shelves stocked!" : "Nicely sorted!",
     body: last
       ? "You've cleared every level. Thanks for keeping the store tidy — come back and re-sort any time."
@@ -2294,7 +2348,7 @@ function finishDead(kind){
   stopTimer();
   if(kind === "hard"){
     showCard({
-      emoji: "🧩",
+      emoji: "card-stuck",
       title: "No moves left",
       body: "The board can't be solved from here — every shelf is blocked. No penalty; the same board is waiting whenever you'd like another go.",
       primary: "Reset board",
@@ -2302,7 +2356,7 @@ function finishDead(kind){
     });
   }else{
     showCard({
-      emoji: "🤔",
+      emoji: "card-think",
       title: "Stuck — but not your fault",
       body: "There are still moves, but none of them lead to a win from here. Reset to take a fresh run at the same board.",
       primary: "Reset board",
@@ -2315,7 +2369,7 @@ function finishTimeUp(){
   G.ended = true;
   stopTimer();
   showCard({
-    emoji: "⏳",
+    emoji: "card-time",
     title: "Time's up",
     body: "No worries — nothing lost. The same board is right here for another try. (Prefer no clock? Switch the Timer to Casual in the menu.)",
     primary: "Try again",
@@ -2503,7 +2557,7 @@ const cardSecondary = document.getElementById("cardSecondary");
 
 function showCard({ emoji, title, body, primary, onPrimary, secondary, onSecondary }){
   G.over = true;
-  cardEmoji.textContent = emoji;
+  cardEmoji.innerHTML = glyphHTML(emoji);
   cardTitle.textContent = title;
   cardBody.textContent = body;
   cardPrimary.textContent = primary;
@@ -2565,7 +2619,8 @@ function buildLevelGrid(){
     const chapterReached = PLAYTEST || start + 1 <= save.unlocked;     // any level in this chapter open?
     const head = document.createElement("div");
     head.className = "chaphead" + (chapterReached ? "" : " locked");
-    head.innerHTML = `<b>${chapterReached ? dept.name : "🔒 " + dept.name}</b><span>${start + 1}–${start + 10}</span>`;
+    const lockSvg = '<svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-lock"></use></svg> ';
+    head.innerHTML = `<b>${chapterReached ? dept.name : lockSvg + dept.name}</b><span>${start + 1}–${start + 10}</span>`;
     levelGrid.appendChild(head);
 
     const grid = document.createElement("div");
