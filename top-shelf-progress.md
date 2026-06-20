@@ -6,6 +6,20 @@ The whole game lives in one file: **`index.html`** (~1490 lines, single self-con
 
 ---
 
+## Session update — 2026-06-19 (read me first — release prep + license)
+
+Release-readiness pass. **SW cache bumped v22 → v23.** Committed + pushed to `main` (commit `992ed65`); GitHub Pages rebuilt and is live.
+
+1. **SHIPPED WITH PROGRESSION LOCKS — `PLAYTEST = false` now.** This is the big one: the live game was previously running with `PLAYTEST = true` (all 100 levels open, no progression). Now levels unlock as you finish them, as designed. Browser-verified: only Level 1 enabled on a fresh save, 2–100 disabled. **If you ever need free level navigation for testing, flip it back to `true` — but don't ship it that way.**
+2. **LICENSE added — PolyForm Noncommercial 1.0.0** (`LICENSE`, `Copyright 2026 Lukas Martinson`). **Decision + rationale (don't re-litigate):** the user wants (a) **no one ever puts ads on it**, (b) to **retain the ability to monetize later** (a paid sequel and/or app-store releases of this game), (c) some portfolio value. Key facts that drove the choice: *no OSI-approved open-source license can forbid ads* (Open Source Definition §6 bars field-of-use restrictions — MIT/GPL/AGPL all permit ads); a **license is an outbound grant and never binds the owner**, so PolyForm does NOT restrict Lukas's own future paid/app-store plans — only third parties. PolyForm Noncommercial bars commercial use by others (ads = commercial → prohibited) while keeping the source public to read/learn from. AGPL-3.0 was the considered alternative (deters ads via forced-open but can't ban them); rejected because it doesn't actually prohibit ads. The user also noted this is a vibe-coded project — anyone could re-derive a replica from an LLM in an afternoon — so open-source *reuse* value is low, making the noncommercial trade cheap. **Label it "source-available / noncommercial," NOT "open source"** (the README License section already does this). To keep full relicensing/monetization freedom, **stay sole copyright holder** — use a CLA or rewrite/decline any outside contributions.
+3. **Social-share meta added** — Open Graph + Twitter Card tags in `<head>` (title/description/url + `og:image` → `icon-512.png`). Shared links now unfurl with a preview (matters because distribution is link-sharing). *Optional later polish:* swap `og:image` for a 1200×630 landscape shot for richer Twitter/Discord cards (square icon works for now).
+4. **`<noscript>` fallback** — styled "needs JavaScript" message instead of a blank page.
+5. **README polish** — `▶ Play it live` link at top, gameplay **`screenshot.png`** (captured at iPhone viewport via Playwright), and an honest **License** section.
+
+Verified: `node tests/harness.js` = all 100 OK, page loads with 0 console errors, progression locks render correctly. **All release-readiness items are now closed.** Remaining open work is the can't-do-solo set (real illustrated art vs. bespoke SVGs, drag-feel tuning on physical iPhone, optional endless/daily mode) — none block portfolio/release.
+
+---
+
 ## Session update — 2026-06-18 (read me first)
 
 Five changes shipped this session (SW cache bumped **v8 → v9**):
@@ -242,7 +256,7 @@ The hidden-layer mechanic was redesigned per user request. **Old:** a slot held 
 - **`tests/proto-layers.js`** — standalone prototype that validated the sealed-layers generation (keep as reference if revisiting that mechanic).
 - **`tests/gen-icon.js`** — regenerates the app icons (dependency-free PNG rasterizer).
 - **In-memory board cache** (`buildLevelCached` + `_boardCache`): boards build once per session, cloned per use. Clone is essential — `updateShutters` mutates `.locked` in place; sharing the cached board would corrupt replays (tested). If you precompute/bake boards later, preserve clone-on-use.
-- **SW cache** is at **`topshelf-v22`** — bump it on every HTML/asset change or returning players get the stale copy.
+- **SW cache** is at **`topshelf-v23`** — bump it on every HTML/asset change or returning players get the stale copy.
 - **Headless eval gotcha:** append test code to the *same* `eval` string as the engine slice (strict-mode `const`/`let` don't leak out of `eval`). Engine slice = from `"use strict";` to the `Persistence` comment.
 
 ---
