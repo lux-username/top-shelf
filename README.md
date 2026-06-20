@@ -1,5 +1,8 @@
 # Top Shelf: Grocery Sort
 
+**▶ [Play it live](https://lux-username.github.io/top-shelf/)** — runs in any browser,
+installs to your phone home screen, plays fully offline.
+
 A cozy grocery-sorting puzzle. **No ads, no purchases, no lives — ever.** Sort each
 shelf so all three slots hold the same grocery; cleared shelves become breathing room.
 100 hand-tuned levels across ten departments, a generous (optional) timer, and unlimited
@@ -7,6 +10,10 @@ retries with stable boards so a good plan always pays off.
 
 Built as a single, dependency-free web app that installs to a phone home screen (PWA) and
 plays fully offline.
+
+<p align="center">
+  <img src="screenshot.png" alt="Top Shelf gameplay — sorting fruit across wooden shelves" width="320" />
+</p>
 
 ## Files
 
@@ -67,3 +74,10 @@ node tests/harness.js 51 60    # a range (1-based, inclusive)
 
 Every level must print `OK` and generate quickly. Run this after editing level defs or
 the generator.
+
+## License
+
+**Source-available, free to play, noncommercial** — [PolyForm Noncommercial
+1.0.0](LICENSE). The code is public to read, learn from, and modify for any
+noncommercial purpose. Commercial use — including running ads or selling it — is not
+permitted. All commercial rights are reserved by the author.

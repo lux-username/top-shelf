@@ -14,6 +14,19 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <title>Top Shelf — Grocery Sort</title>
+<!-- Social-share preview (link unfurls in iMessage, Slack, Discord, Twitter, …) -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Top Shelf" />
+<meta property="og:title" content="Top Shelf — Grocery Sort" />
+<meta property="og:description" content="A cozy grocery-sorting puzzle. No ads, no purchases, no lives — ever. 100 hand-tuned levels, plays fully offline." />
+<meta property="og:url" content="https://lux-username.github.io/top-shelf/" />
+<meta property="og:image" content="https://lux-username.github.io/top-shelf/icon-512.png" />
+<meta property="og:image:width" content="512" />
+<meta property="og:image:height" content="512" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Top Shelf — Grocery Sort" />
+<meta name="twitter:description" content="A cozy grocery-sorting puzzle. No ads, no purchases, no lives — ever. 100 hand-tuned levels, plays fully offline." />
+<meta name="twitter:image" content="https://lux-username.github.io/top-shelf/icon-512.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -492,6 +505,12 @@
 </script>
 </head>
 <body>
+<noscript>
+  <div style="max-width:34ch;margin:18vh auto;padding:0 1.5rem;text-align:center;font-family:'Nunito',system-ui,sans-serif;color:#5a4632;line-height:1.5">
+    <h1 style="font-family:'Fraunces',Georgia,serif;font-weight:600">Top Shelf</h1>
+    <p>This cozy grocery-sorting puzzle needs JavaScript to play. Please enable it and reload.</p>
+  </div>
+</noscript>
 <!-- ===================================================================
      Bespoke grocery icon sprite (soft & cozy). One hidden master SVG of
      <symbol>s referenced by <use>; rendered at 1em so each icon drops into
@@ -2652,7 +2671,7 @@ function featBadge(def){ const k = featKey(def); return k ? glyphHTML(k) : ""; }
 
 /* PLAYTEST MODE: when true, every level is selectable (free navigation), ignoring
    progression locks. Set to false to ship with locks (unlock-as-you-finish). */
-const PLAYTEST = true;
+const PLAYTEST = false;
 
 /* Level picker, grouped by department. Levels unlock as you finish them: a level
    is playable once reached (i + 1 <= unlocked); later levels show a lock —
