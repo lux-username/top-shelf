@@ -136,6 +136,14 @@
   .timerfill.crit{ background:linear-gradient(90deg,var(--bad),#e29c8c); }
   .timertxt{ font-weight:800; font-size:.82rem; color:var(--ink-soft); min-width:52px; text-align:right; font-variant-numeric:tabular-nums; }
   .timertxt .inf{ font-size:1.2rem; line-height:1; }
+  /* Tidy-mode move-vs-par tracker (shown in place of the clock). Soft palette colors
+     keep the red gentle — a tidiness cue, never an alarm. */
+  .movestxt{ flex:1; font-weight:800; font-size:.98rem; color:var(--ink-soft); text-align:center; font-variant-numeric:tabular-nums; transition:color .3s ease; }
+  .movestxt b{ font-size:1.12rem; }
+  .movestxt .par{ font-weight:700; opacity:.72; font-size:.82rem; }
+  .movestxt.good{ color:var(--good); }
+  .movestxt.warn{ color:var(--warn); }
+  .movestxt.crit{ color:var(--bad); }
 
   /* ---------- board ---------- */
   #board{
@@ -1192,8 +1200,9 @@
   <div class="blurb" id="blurb"></div>
 
   <div class="timerwrap" id="timerwrap">
-    <div class="timerbar"><div class="timerfill" id="timerfill"></div></div>
+    <div class="timerbar" id="timerbar"><div class="timerfill" id="timerfill"></div></div>
     <div class="timertxt" id="timertxt">0:00</div>
+    <div class="movestxt" id="movestxt" style="display:none"></div>
   </div>
 
   <div id="board"></div>
@@ -1216,11 +1225,11 @@
   <div class="panel">
     <div class="grab"></div>
     <div class="row col">
-      <div class="txt"><b>Timer</b><span>Casual has no clock. Easy is gentle. Hard is a tighter sprint.</span></div>
+      <div class="txt"><b>Challenge</b><span>Zen has no clock. Timed is a gentle clock. Tidy drops the clock and tracks your moves against par.</span></div>
       <div class="seg" id="timerSeg">
-        <button data-mode="casual">Casual</button>
-        <button data-mode="easy">Easy</button>
-        <button data-mode="hard">Hard</button>
+        <button data-mode="zen">Zen</button>
+        <button data-mode="timed">Timed</button>
+        <button data-mode="tidy">Tidy</button>
       </div>
     </div>
     <div class="row">
@@ -1234,6 +1243,10 @@
     <div class="row" id="installRow" style="display:none">
       <div class="txt"><b>Add to Home Screen</b><span>Install it like an app — fullscreen &amp; offline.</span></div>
       <button class="act" id="installRowBtn">Add</button>
+    </div>
+    <div class="row" id="tourRow">
+      <div class="txt"><b>Take a quick tour</b><span>Three sample shelves — gentle to fiendish. Doesn't affect your progress.</span></div>
+      <button class="act" id="tourBtn">Tour</button>
     </div>
     <h3>Levels</h3>
     <div class="feat-legend">
@@ -1397,8 +1410,13 @@ function legalMoves(b){
 function applyMove(b, mv, clearedOut){
   const nb = cloneBoard(b);
   const t = nb[mv.fs][mv.ss].shift();
-  const e = nb[mv.ts].findIndex(sl => sl.length === 0);
-  nb[mv.ts][e].push(t);
+  const dst = nb[mv.ts];
+  // honor an explicit target slot (a UI drop onto a specific empty slot); the solver
+  // omits it and falls back to the first empty slot. Slot position is irrelevant to
+  // clearing/solving (canonical sorts slots), so this is purely where the tile lands.
+  const e = (mv.ts2 != null && dst[mv.ts2] && dst[mv.ts2].length === 0)
+    ? mv.ts2 : dst.findIndex(sl => sl.length === 0);
+  dst[e].push(t);
   resolveClears(nb, clearedOut);
   return nb;
 }
@@ -1843,16 +1861,14 @@ const L = (kinds, empty, o = {}) =>
 
 /* Base (Easy-mode) timer: thinking room scales with the work (layered levels hold
    far more items in their buried rows), but kept tighter than before so even the
-   gentle clock has a little pulse. `time` is the EASY duration; Casual removes the
-   clock entirely and Hard runs a much shorter sprint (see durationFor). */
+   gentle clock has a little pulse. `time` is the Timed-mode duration; Zen and Tidy
+   ignore it (no clock). */
 const mkTime = d => {
   const items = d.layers ? d.kinds * (d.depth || 2) * 3 : d.kinds * 3;
   let t = items * 6.5;
   if (d.feature) t += 25;
   return Math.min(240, Math.max(60, Math.round(t)));
 };
-/* Hard mode is a much shorter sprint over the same board. */
-const HARD_TIME_FACTOR = 0.55;
 
 /* Difficulty now comes from TIGHT space (empty 0-1), DEEP back rows (depth 2-3),
    and constraints + the greedy difficulty floor — NOT from type count. Boards are
@@ -2014,27 +2030,42 @@ const CH10 = [
   L(3, 3, { role: "finale", blurb: "Closing time — leave it neat." }),
 ];
 
+/* PAR — the "tidy" target move-count per level (Tidy mode + the win card show it).
+   Frozen, computed offline by tests/gen-pars.js: exact shortest-path BFS where
+   tractable, memory-bounded beam search for the deep/combo boards (those are
+   achievable upper bounds, not guaranteed optimal — beating par is a bonus). A
+   "move" = one commitMove (cascades bundled), matching the in-game counter. Slot
+   placement is irrelevant to par (canonical sorts slots). Re-run gen-pars.js if
+   level defs or generation change. */
+const PARS = [4,7,6,8,8,9,4,7,9,8,10,8,15,10,12,14,9,13,11,13,4,6,6,7,8,6,4,7,6,6,4,7,7,7,10,7,5,9,10,6,12,28,26,20,20,22,8,22,27,27,5,6,6,7,8,8,4,8,9,9,4,6,6,7,9,5,4,9,7,9,4,6,5,9,7,8,5,9,10,8,8,6,6,6,8,6,4,7,7,7,6,6,14,5,15,6,6,6,6,4];
+
 const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH9, CH10)
   .map((d, i) => ({ ...d,
     easy: d.role === "breather" || d.role === "finale" || d.role === "intro",
-    time: mkTime(d), chapter: Math.floor(i / 10) }));
+    time: mkTime(d), chapter: Math.floor(i / 10), par: PARS[i] }));
 
 /* =======================================================================
    Persistence (localStorage only — nothing depleting lives here)
    ======================================================================= */
 const SAVE_KEY = "topshelf.save.v1";
-const TIMER_MODES = ["casual", "easy", "hard"];
+const MODES = ["zen", "timed", "tidy"];   // challenge axes: no-clock · clock · move-vs-par
 function loadSave(){
   try{
     const s = JSON.parse(localStorage.getItem(SAVE_KEY));
     if(s && typeof s === "object"){
-      // migrate the old boolean "easy" (timer off) → the new three-way mode
-      const timer = TIMER_MODES.includes(s.timer) ? s.timer : (s.easy ? "casual" : "easy");
-      return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, timer,
+      // migrate older saves: the three-way timer (casual/easy/hard) and the even
+      // older boolean `easy` (timer off) → the new mode. casual → zen; easy/hard → timed.
+      let mode = s.mode;
+      if(!MODES.includes(mode)){
+        const t = ["casual","easy","hard"].includes(s.timer) ? s.timer : (s.easy ? "casual" : "easy");
+        mode = t === "casual" ? "zen" : "timed";
+      }
+      return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, mode,
+               best: (s.best && typeof s.best === "object") ? s.best : {},
                sfx: s.sfx !== false, music: !!s.music };
     }
   }catch(e){}
-  return { unlocked: 1, current: 0, timer: "easy", sfx: true, music: false };
+  return { unlocked: 1, current: 0, mode: "timed", best: {}, sfx: true, music: false };
 }
 function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
 let save = loadSave();
@@ -2137,8 +2168,10 @@ const blurbEl   = document.getElementById("blurb");
 const levelLabel= document.getElementById("levelLabel");
 const hintEl    = document.getElementById("hint");
 const timerWrap = document.getElementById("timerwrap");
+const timerBar  = document.getElementById("timerbar");
 const timerFill = document.getElementById("timerfill");
 const timerTxt  = document.getElementById("timertxt");
+const movesTxt  = document.getElementById("movestxt");
 
 const G = {
   index: 0,
@@ -2153,6 +2186,9 @@ const G = {
   ended: false,     // level resolved (won/dead) — board frozen
   moveToken: 0,     // bumped each move, used to cancel stale async checks
   cleared: 0,       // total shelves cleared this level (drives shutter opening)
+  moves: 0,         // committed relocations this level (cascades count as one) — vs par in Tidy
+  tour: false,      // in the sampler tour (3 showcase levels, progression untouched)
+  tourStep: 0,      // index into TOUR while touring
 };
 
 /* Open any shuttered shelf whose clear threshold has now been reached. */
@@ -2174,7 +2210,20 @@ function buildLevelCached(def, i){
   return { board: cloneBoard(c.board), emojis: c.emojis };
 }
 
-function startLevel(i){
+/* Sampler tour — three showcase levels (gentle core → one reserved sign →
+   the dispenser+3-sign set-piece peak) so anyone who picks up the phone feels
+   the RANGE in ~90s, even on a fresh save where only Level 1 is unlocked. The
+   tour never touches progression and runs clock-free. */
+const TOUR = [2, 23, 89];   // Levels 3 (core) · 24 (reserved gimmick) · 90 (combo peak)
+function startTour(){
+  closeMenu();
+  if(scrim.classList.contains("show")) hideCard();
+  G.tourStep = 0;
+  startLevel(TOUR[0], true);
+}
+
+function startLevel(i, tour){
+  G.tour = !!tour;
   G.index = i;
   G.def = LEVELS[i];
   const built = buildLevelCached(G.def, i);   // built once per session, cloned per use
@@ -2183,16 +2232,18 @@ function startLevel(i){
   G.selected = null;
   G.ended = false;
   G.cleared = 0;
+  G.moves = 0;
   G.moveToken++;             // invalidate any pending (delayed) soft-deadlock check from the last level
   G.total = durationFor(G.def);
   G.remaining = G.total;
   updateShutters();
 
-  save.current = i;
-  persist();
+  if(!G.tour){ save.current = i; persist(); }   // the tour never advances/saves progression
 
   const dept = DEPTS[Math.min(DEPTS.length - 1, G.def.chapter)];
-  levelLabel.textContent = `Level ${i + 1} · ${dept.name}`;
+  levelLabel.textContent = G.tour
+    ? `Tour ${G.tourStep + 1} of ${TOUR.length} · ${dept.name}`
+    : `Level ${i + 1} · ${dept.name}`;
   blurbEl.textContent = G.def.blurb;
   hintEl.textContent = "Drag a grocery onto a shelf with room — match three to clear it.";
   lastTileSig = null;            // fresh board → let every tile deal in
@@ -2201,7 +2252,7 @@ function startLevel(i){
   startTimer();                  // (re)start the clock — stopped by the previous level's end card
 }
 
-function resetBoard(){ startLevel(G.index); }          // same seed → identical board
+function resetBoard(){ startLevel(G.index, G.tour); }  // same seed → identical board; keep tour context
 
 /* Size every shelf so the whole board fits the screen without scrolling —
    slots are the smaller of what width and height allow, so 8-shelf levels
@@ -2291,6 +2342,7 @@ function render(){
       const back = buriedTop ? buriedTop[sl] : null;    // the sealed item that will rise here
       const slotEl = document.createElement("div");
       slotEl.className = "slot" + (back != null ? " has-back" : "");
+      slotEl.dataset.slot = sl;                          // so a drop can target this exact slot
       if(back != null){                                 // sealed, visible-but-inert next layer
         const bk = document.createElement("div");
         bk.className = "back" + (back === WILD ? " wild" : "");
@@ -2364,10 +2416,12 @@ function commitMove(mv){
   const cleared = [];                         // shelf indices that cleared this move (cascades included)
   G.board = applyMove(G.board, mv, cleared);
   G.cleared += cleared.length;                // exact shelves cleared
+  G.moves++;                                  // one committed relocation (cascades = one move)
   updateShutters();                           // open any shelf whose threshold is met
   G.selected = null;
   G.moveToken++;
   render();
+  updateTimerUI();                            // refresh the Tidy move-vs-par tracker
   if(cleared.length){ juiceClears(cleared); SFX.clear(cleared.length); }
   else { SFX.place(); }
 
@@ -2397,32 +2451,78 @@ function commitMove(mv){
 }
 
 /* Move one front item to another shelf. Frozen items can't be moved. */
-function doMove(fs, ss, ts){
+function doMove(fs, ss, ts, ts2){
   if(G.ended || fs === ts) return false;
   if(!G.board[fs][ss].length || isFrozen(G.board[fs][ss][0])) return false;
   if(!canAccept(G.board[ts], TYPE(G.board[fs][ss][0]))) return false;
-  return commitMove({ fs, ss, ts });
+  return commitMove({ fs, ss, ts, ts2 });
 }
 
 /* ---------- win / fail flows ---------- */
 function finishWin(){
+  if(G.tour) return finishTourWin();
   G.ended = true;
   stopTimer();
   SFX.win();
   const last = G.index >= LEVELS.length - 1;
   if(!last) save.unlocked = Math.max(save.unlocked, G.index + 2);
+
+  // self-record personal best (fewest moves) for this level — never comparative
+  const par = G.def.par, moves = G.moves;
+  if(!save.best) save.best = {};
+  const prev = save.best[G.index];
+  const best = (prev == null) ? moves : Math.min(prev, moves);
+  save.best[G.index] = best;
   persist();
+
+  const underPar = par && moves <= par;
+  let movesLine;
+  if(par) movesLine = underPar ? ` Tidy — solved in ${moves} (par ${par}).` : ` Solved in ${moves}; tidy is ${par}.`;
+  else    movesLine = ` Solved in ${moves} ${moves === 1 ? "move" : "moves"}.`;
+  if(best < moves) movesLine += ` Your best here: ${best}.`;
+
   showCard({
     emoji: last ? "card-trophy" : "card-win",
-    title: last ? "All shelves stocked!" : "Nicely sorted!",
-    body: last
+    title: last ? "All shelves stocked!" : (underPar ? "Tidy!" : "Nicely sorted!"),
+    body: (last
       ? "You've cleared every level. Thanks for keeping the store tidy — come back and re-sort any time."
-      : "Every shelf is monochrome. The store looks lovely.",
+      : "Every shelf is monochrome.") + movesLine,
     primary: last ? "Play again" : "Next level",
     onPrimary: () => { hideCard(); startLevel(last ? 0 : G.index + 1); },
     secondary: "Replay this level",
     onSecondary: () => { hideCard(); resetBoard(); },
   });
+}
+
+/* Tour win card — advances through the 3 showcase levels, never touches
+   progression, and ends by handing the player off to the real Level 1. */
+function finishTourWin(){
+  G.ended = true;
+  stopTimer();
+  SFX.win();
+  const step = G.tourStep;
+  const lastStep = step >= TOUR.length - 1;
+  if(!lastStep){
+    showCard({
+      emoji: "card-win",
+      title: "Nicely sorted!",
+      body: `Tour stop ${step + 1} of ${TOUR.length}. Next: a tighter shelf with a new twist.`,
+      primary: "Next tour level",
+      onPrimary: () => { hideCard(); G.tourStep = step + 1; startLevel(TOUR[G.tourStep], true); },
+      secondary: "Replay this one",
+      onSecondary: () => { hideCard(); resetBoard(); },
+    });
+  }else{
+    showCard({
+      emoji: "card-trophy",
+      title: "That's the tour!",
+      body: "From a gentle sort to a multi-gimmick puzzle — that's the range. Start from the top whenever you like.",
+      primary: "Start at Level 1",
+      onPrimary: () => { hideCard(); startLevel(0); },   // no tour flag → leaves the tour
+      secondary: "Replay this one",
+      onSecondary: () => { hideCard(); resetBoard(); },
+    });
+  }
 }
 
 function finishDead(kind){
@@ -2459,16 +2559,14 @@ function finishTimeUp(){
   });
 }
 
-/* ---------- timer ---------- */
-/* Seconds on the clock for a level under the current mode: Casual = no clock,
-   Easy = the level's base time, Hard = a much shorter sprint over the same board. */
-function durationFor(def){
-  if(save.timer === "hard") return Math.max(30, Math.round(def.time * HARD_TIME_FACTOR));
-  return def.time;                                   // easy (and the value casual ignores)
-}
+/* ---------- challenge HUD: clock (Timed) or move-vs-par (Tidy) ---------- */
+function durationFor(def){ return def.time; }        // only Timed reads it; Zen/Tidy ignore
+/* The clock runs only in Timed mode (never in Zen, Tidy, or the tour). */
+function clockActive(){ return save.mode === "timed" && !G.tour; }
+
 let timerHandle = null, lastTick = 0;
 function tickTimer(now){
-  if(G.over || G.ended || save.timer === "casual"){ lastTick = now; timerHandle = requestAnimationFrame(tickTimer); return; }
+  if(G.over || G.ended || !clockActive()){ lastTick = now; timerHandle = requestAnimationFrame(tickTimer); return; }
   if(!lastTick) lastTick = now;
   const dt = (now - lastTick) / 1000;
   lastTick = now;
@@ -2484,8 +2582,15 @@ function startTimer(){
 }
 function stopTimer(){ if(timerHandle){ cancelAnimationFrame(timerHandle); timerHandle = null; } }
 
+/* One HUD readout at a time. Tidy → move-vs-par tracker; Timed → clock; Zen/tour → ∞. */
 function updateTimerUI(){
-  if(save.timer === "casual"){
+  const tidy = save.mode === "tidy" && !G.tour;
+  movesTxt.style.display = tidy ? "" : "none";
+  timerBar.style.display = tidy ? "none" : "";
+  timerTxt.style.display = tidy ? "none" : "";
+  if(tidy){ renderMoves(); return; }
+
+  if(G.tour || save.mode === "zen"){
     timerWrap.style.opacity = ".7";
     timerFill.style.width = "100%";
     timerFill.className = "timerfill";
@@ -2498,6 +2603,23 @@ function updateTimerUI(){
   timerFill.className = "timerfill" + (frac < 0.15 ? " crit" : frac < 0.35 ? " warn" : "");
   const s = Math.ceil(G.remaining);
   timerTxt.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+
+/* Tidy-mode tracker: moves so far vs the level's par, green→orange→red as you cross
+   thresholds. Self-referential and non-comparative — it never blocks, fails, or resets;
+   it's purely a tidiness cue. Levels without a par degrade to a plain neutral counter. */
+function renderMoves(){
+  timerWrap.style.opacity = "1";
+  const par = G.def && G.def.par;
+  const m = G.moves;
+  if(par){
+    const cls = m <= par ? "good" : m <= Math.ceil(par * 1.5) ? "warn" : "crit";
+    movesTxt.className = "movestxt " + cls;
+    movesTxt.innerHTML = `<b>${m}</b> <span class="par">· par ${par}</span>`;
+  }else{
+    movesTxt.className = "movestxt";
+    movesTxt.innerHTML = `<b>${m}</b> <span class="par">move${m === 1 ? "" : "s"}</span>`;
+  }
 }
 
 /* =======================================================================
@@ -2514,16 +2636,22 @@ function shelfIndexFromPoint(x, y){
   const sh = el && el.closest && el.closest(".shelf");
   return sh ? +sh.dataset.shelf : -1;
 }
+/* which exact slot (0-2) is under the point, or null if not over a slot */
+function slotIndexFromPoint(x, y){
+  const el = document.elementFromPoint(x, y);
+  const sl = el && el.closest && el.closest(".slot");
+  return sl && sl.dataset.slot != null ? +sl.dataset.slot : null;
+}
 
 /* can shelf `idx` receive the currently-dragged item? */
 function dragAccepts(d, idx){
   return idx !== d.fs && canAccept(G.board[idx], d.type);
 }
-/* route the current tap-selection onto shelf ts */
-function moveSelectedTo(ts){
+/* route the current tap-selection onto shelf ts (optionally a specific slot) */
+function moveSelectedTo(ts, ts2){
   const sel = G.selected;
   if(!sel) return false;
-  return doMove(sel.fs, sel.ss, ts);
+  return doMove(sel.fs, sel.ss, ts, ts2);
 }
 
 function onPointerDown(e){
@@ -2534,7 +2662,7 @@ function onPointerDown(e){
   if(!tile){
     if(G.selected){
       const ts = shelfIndexFromPoint(e.clientX, e.clientY);
-      if(ts >= 0) moveSelectedTo(ts);
+      if(ts >= 0) moveSelectedTo(ts, slotIndexFromPoint(e.clientX, e.clientY));
     }
     return;
   }
@@ -2603,7 +2731,7 @@ function onPointerUp(e){
     [...boardEl.querySelectorAll(".shelf")].forEach(sh => sh.classList.remove("droppable","hover"));
     const ts = shelfIndexFromPoint(e.clientX, e.clientY);
     if(ts >= 0 && dragAccepts(d, ts)){
-      doMove(d.fs, d.ss, ts);
+      doMove(d.fs, d.ss, ts, slotIndexFromPoint(e.clientX, e.clientY));
     }else{
       SFX.invalid();
       render();                                         // snap back (restores lifted tiles)
@@ -2663,7 +2791,7 @@ const levelGrid = document.getElementById("levelGrid");
 
 function syncTimerSeg(){
   [...timerSeg.querySelectorAll("button")].forEach(b =>
-    b.classList.toggle("on", b.dataset.mode === save.timer));
+    b.classList.toggle("on", b.dataset.mode === save.mode));
 }
 
 function openMenu(){
@@ -2729,16 +2857,17 @@ function buildLevelGrid(){
 }
 
 document.getElementById("menuBtn").onclick = openMenu;
+document.getElementById("tourBtn").onclick = startTour;
 document.getElementById("resetBtn").onclick = () => { if(!G.over) resetBoard(); };
 sheet.addEventListener("click", e => { if(e.target === sheet) closeMenu(); });
 
 timerSeg.addEventListener("click", e => {
   const btn = e.target.closest("button");
-  if(!btn || !TIMER_MODES.includes(btn.dataset.mode)) return;
-  save.timer = btn.dataset.mode;
+  if(!btn || !MODES.includes(btn.dataset.mode)) return;
+  save.mode = btn.dataset.mode;
   syncTimerSeg();
   persist();
-  // re-base the running clock for this level under the new mode
+  // re-base the HUD for this level under the new mode (clock ↔ move tracker ↔ ∞)
   G.total = durationFor(G.def);
   G.remaining = Math.min(G.remaining, G.total);
   updateTimerUI();
@@ -2760,7 +2889,7 @@ musicToggle.onclick = () => {
 };
 
 document.getElementById("resetProgress").onclick = () => {
-  save = { unlocked: 1, current: 0, timer: save.timer, sfx: save.sfx, music: save.music };
+  save = { unlocked: 1, current: 0, mode: save.mode, best: {}, sfx: save.sfx, music: save.music };
   persist();
   closeMenu();
   startLevel(0);
