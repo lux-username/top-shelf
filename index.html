@@ -11,6 +11,9 @@
 <meta name="apple-mobile-web-app-title" content="Top Shelf" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
 <title>Top Shelf — Grocery Sort</title>
@@ -257,8 +260,11 @@
     cursor:grab;
     z-index:2;
     transition:transform .12s cubic-bezier(.2,1.3,.5,1), box-shadow .1s ease;
-    animation:drop .26s cubic-bezier(.2,1.2,.4,1);
   }
+  /* drop-in plays only on tiles whose content actually changed this render
+     (initial deal, a tile landing, buried tiles rising) — not on every
+     re-render, which would blink the whole board on each move. */
+  .tile.dropin{ animation:drop .26s cubic-bezier(.2,1.2,.4,1); }
   .tile:active{ cursor:grabbing; }
   .tile.selected{
     transform:translateY(-6px) scale(1.04);
@@ -276,8 +282,9 @@
     box-shadow:
       0 3px 0 #e7d4b3, 0 5px 12px var(--tile-shadow),
       0 0 0 2px rgba(255,255,255,.85), 0 0 14px 2px rgba(177,151,252,.55);
-    animation:drop .26s cubic-bezier(.2,1.2,.4,1), wildglow 2.4s ease-in-out infinite;
+    animation:wildglow 2.4s ease-in-out infinite;
   }
+  .tile.wild.dropin{ animation:drop .26s cubic-bezier(.2,1.2,.4,1), wildglow 2.4s ease-in-out infinite; }
   @keyframes wildglow{
     0%,100%{ box-shadow:0 3px 0 #e7d4b3, 0 5px 12px var(--tile-shadow), 0 0 0 2px rgba(255,255,255,.85), 0 0 12px 1px rgba(177,151,252,.45); }
     50%{ box-shadow:0 3px 0 #e7d4b3, 0 5px 12px var(--tile-shadow), 0 0 0 2px rgba(255,255,255,.95), 0 0 20px 4px rgba(255,143,171,.6); }
@@ -2188,6 +2195,7 @@ function startLevel(i){
   levelLabel.textContent = `Level ${i + 1} · ${dept.name}`;
   blurbEl.textContent = G.def.blurb;
   hintEl.textContent = "Drag a grocery onto a shelf with room — match three to clear it.";
+  lastTileSig = null;            // fresh board → let every tile deal in
   render();
   updateTimerUI();
   startTimer();                  // (re)start the clock — stopped by the previous level's end card
@@ -2244,8 +2252,13 @@ function glyphHTML(key){
 }
 const keyOf = item => item === WILD ? "wild" : G.emojis[TYPE(item)];
 
+/* Per-slot signature of the visible (front) tile, used to decide which tiles
+   are genuinely new this render and so should replay the drop-in animation.
+   lastTileSig is null on the first render of a level → the whole board deals in. */
+let lastTileSig = null;
 function render(){
   boardEl.innerHTML = "";
+  const tileSig = new Map();
   G.board.forEach((shelf, si) => {
     const shEl = document.createElement("div");
     shEl.className = "shelf"
@@ -2290,8 +2303,12 @@ function render(){
       }
       if(slot.length){
         const front = slot[0];
+        const sig = keyOf(front) + (isFrozen(front) ? "#" : "");
+        const key = si + ":" + sl;
+        tileSig.set(key, sig);
+        const isNew = lastTileSig === null || lastTileSig.get(key) !== sig;   // changed since last render → drop in
         const tile = document.createElement("div");
-        tile.className = "tile" + (front === WILD ? " wild" : "") + (isFrozen(front) ? " frozen" : "");
+        tile.className = "tile" + (front === WILD ? " wild" : "") + (isFrozen(front) ? " frozen" : "") + (isNew ? " dropin" : "");
         tile.innerHTML = glyphHTML(keyOf(front));
         tile.dataset.shelf = si;
         tile.dataset.slot = sl;
@@ -2304,6 +2321,7 @@ function render(){
     });
     boardEl.appendChild(shEl);
   });
+  lastTileSig = tileSig;
   fitBoard();
 }
 
