@@ -3032,7 +3032,7 @@ function featBadge(def){ const k = featKey(def); return k ? glyphHTML(k) : ""; }
 
 /* PLAYTEST MODE: when true, every level is selectable (free navigation), ignoring
    progression locks. Set to false to ship with locks (unlock-as-you-finish). */
-const PLAYTEST = false;
+const PLAYTEST = true;
 
 /* Level picker, grouped by department. Levels unlock as you finish them: a level
    is playable once reached (i + 1 <= unlocked); later levels show a lock —
