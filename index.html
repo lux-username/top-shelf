@@ -526,6 +526,59 @@
     flex:none; border:none; cursor:pointer; background:none; color:var(--ink-soft);
     font-size:1.25rem; font-weight:800; padding:2px 6px; line-height:1;
   }
+  /* ===== Conveyor mode ("The Belt") ===== */
+  .conveyor{
+    position:fixed; inset:0; z-index:40; background:var(--cream);
+    display:flex; flex-direction:column; align-items:center;
+    padding:env(safe-area-inset-top) 12px 12px; overflow:hidden;
+  }
+  .conveyor[hidden]{ display:none; }
+  .cvtop{ width:100%; max-width:560px; display:flex; align-items:center; justify-content:space-between; padding:8px 2px 4px; }
+  .cvexit{
+    display:inline-flex; align-items:center; gap:6px; font-family:"Nunito"; font-weight:800; font-size:.9rem;
+    color:var(--ink); background:var(--paper); border:none; border-radius:11px; padding:8px 12px; cursor:pointer;
+    box-shadow:0 2px 0 var(--slot-edge),0 3px 8px var(--shadow);
+  }
+  .cvexit .btnic{ width:18px; height:18px; }
+  .cvscore{ font-family:"Nunito"; font-weight:700; color:var(--ink-soft); font-size:.95rem; }
+  .cvscore b{ font-family:"Fraunces"; font-size:1.4rem; color:var(--ink); }
+  .cvboard{
+    flex:1; width:100%; max-width:560px; display:flex; flex-direction:column; justify-content:center;
+    gap:var(--gap,12px); padding:8px 0;
+  }
+  .cvbeltwrap{
+    width:100%; max-width:560px; position:relative; margin-top:6px;
+    background:linear-gradient(180deg,#3f3f46,#2e2e34); border-radius:16px;
+    padding:14px 10px 12px; box-shadow:inset 0 2px 6px rgba(0,0,0,.4),0 6px 14px var(--shadow);
+  }
+  .cvbeltlabel{ position:absolute; top:-9px; left:14px; font-family:"Nunito"; font-weight:800; font-size:.66rem;
+    letter-spacing:.08em; text-transform:uppercase; color:#fff; background:var(--accent-2); padding:2px 9px; border-radius:99px; }
+  .cvbelt{ display:flex; gap:8px; align-items:center; min-height:calc(var(--cvslot,58px) + 6px);
+    background:repeating-linear-gradient(90deg,#54545c 0 16px,#4a4a52 16px 32px); border-radius:10px; padding:5px 6px; overflow:hidden; }
+  .cvbelt .cvitem{
+    width:var(--cvslot,58px); height:var(--cvslot,58px); flex:none; border-radius:11px;
+    background:radial-gradient(120% 120% at 50% 18%,#fffdf8,#fff1dc);
+    display:grid; place-items:center; box-shadow:0 2px 5px rgba(0,0,0,.3); cursor:grab;
+    animation:cvarrive .28s ease-out;
+  }
+  .cvbelt .cvitem.lift{ opacity:.35; }
+  .cvbelt .cvitem.crowd{ box-shadow:0 0 0 3px var(--bad),0 2px 5px rgba(0,0,0,.3); }   /* belt nearly full */
+  @keyframes cvarrive{ from{ transform:translateX(40px) scale(.8); opacity:0; } to{ transform:none; opacity:1; } }
+  .cvhint{ width:100%; max-width:560px; text-align:center; font-family:"Nunito"; color:var(--ink-soft); font-size:.82rem; margin-top:8px; }
+  /* conveyor shelves reuse the wooden .shelf look via .cvshelf */
+  .cvshelf{
+    position:relative; display:flex; justify-content:center; align-items:center; gap:var(--gap,12px);
+    padding:10px 12px 14px; border-radius:16px;
+    background:linear-gradient(180deg,#caa06f 0%,var(--wood) 60%,var(--wood-dark) 100%);
+    box-shadow:0 5px 0 var(--wood-edge),0 9px 16px var(--shadow),inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .cvshelf.drop{ box-shadow:0 5px 0 var(--wood-edge),0 9px 16px var(--shadow),inset 0 0 0 3px var(--accent); }
+  .cvslot{ position:relative; width:var(--cvslot,58px); height:var(--cvslot,58px); flex:none; border-radius:13px;
+    background:radial-gradient(120% 120% at 50% 18%,#fbf2e1,#f3e7d2 70%);
+    box-shadow:inset 0 2px 6px rgba(130,89,47,.28),inset 0 -1px 0 rgba(255,255,255,.4); display:grid; place-items:center; }
+  .cvtile{ width:88%; height:88%; border-radius:11px; background:linear-gradient(180deg,var(--paper),#fff3e0);
+    display:grid; place-items:center; box-shadow:0 2px 5px var(--tile-shadow); cursor:grab; animation:cvarrive .2s ease-out; }
+  .cvtile svg, .cvitem svg{ width:62%; height:62%; }
 </style>
 <script>
   /* Register the service worker for offline play + installability. No-op on
@@ -1272,6 +1325,10 @@
       <div class="txt"><b>Take a quick tour</b><span>Three sample shelves — gentle to fiendish. Doesn't affect your progress.</span></div>
       <button class="act" id="tourBtn">Tour</button>
     </div>
+    <div class="row" id="beltRow">
+      <div class="txt"><b>The Belt</b><span>A free-play conveyor — sort groceries as they roll in. No levels, no fail you can't shrug off.</span></div>
+      <button class="act" id="beltBtn">Play</button>
+    </div>
     <h3>Levels</h3>
     <div class="feat-legend">
       <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-reserved"/></svg> reserved &nbsp;
@@ -1287,6 +1344,20 @@
     </div>
     <button class="linkbtn" id="resetProgress">Reset all progress</button>
   </div>
+</div>
+
+<!-- conveyor mode ("The Belt") — a self-contained real-time sorting screen -->
+<div class="conveyor" id="conveyor" hidden>
+  <div class="cvtop">
+    <button class="cvexit" id="cvExit"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-menu"></use></svg> Menu</button>
+    <div class="cvscore"><b id="cvSorted">0</b> sorted&nbsp;·&nbsp;best <span id="cvBest">0</span></div>
+  </div>
+  <div class="cvboard" id="cvBoard"></div>
+  <div class="cvbeltwrap">
+    <div class="cvbeltlabel">incoming</div>
+    <div class="cvbelt" id="cvBelt"></div>
+  </div>
+  <div class="cvhint">Drag groceries off the belt onto a shelf — match three to clear it. Keep the belt from backing up.</div>
 </div>
 
 <!-- install / add-to-home-screen helper (auto-hides once installed) -->
@@ -2194,10 +2265,11 @@ function loadSave(){
       }
       return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, mode,
                best: (s.best && typeof s.best === "object") ? s.best : {},
+               bestBelt: s.bestBelt|0 || 0,
                sfx: s.sfx !== false, music: !!s.music };
     }
   }catch(e){}
-  return { unlocked: 1, current: 0, mode: "timed", best: {}, sfx: true, music: false };
+  return { unlocked: 1, current: 0, mode: "timed", best: {}, bestBelt: 0, sfx: true, music: false };
 }
 function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
 let save = loadSave();
@@ -3032,7 +3104,7 @@ musicToggle.onclick = () => {
 };
 
 document.getElementById("resetProgress").onclick = () => {
-  save = { unlocked: 1, current: 0, mode: save.mode, best: {}, sfx: save.sfx, music: save.music };
+  save = { unlocked: 1, current: 0, mode: save.mode, best: {}, bestBelt: 0, sfx: save.sfx, music: save.music };
   persist();
   closeMenu();
   startLevel(0);
@@ -3122,6 +3194,175 @@ document.getElementById("installX").onclick = () => {
   try{ localStorage.setItem(INSTALL_DISMISS, "1"); }catch(e){}
 };
 document.getElementById("installRowBtn").onclick = () => { closeMenu(); triggerInstall(); };
+
+/* =======================================================================
+   The Belt — a self-contained real-time conveyor mode. Reuses ONLY the pure
+   shelf helpers (canAccept / resolveClears / shelfMonochrome / TYPE / glyphHTML);
+   its own state (CV), render, feed loop, and pointer handling, so it never
+   touches the puzzle game's G. Cozy framing: overflow just resets, your best is
+   a private record, no lives. Items feed as complete triples so nothing is ever
+   un-sortable — only space/time pressure can end a run.
+   ======================================================================= */
+const CV = { on:false, board:null, belt:[], cap:7, sorted:0, kinds:4, shelves:5,
+             emojis:[], bag:[], interval:2200, last:0, raf:null, ended:false };
+const CV_KEYS = ["apple","carrot","tomato","cheese","soda","bread","grapes","banana"];
+const cvBoardEl = document.getElementById("cvBoard");
+const cvBeltEl  = document.getElementById("cvBelt");
+const cvScreen  = document.getElementById("conveyor");
+
+const cvRandInt = n => Math.floor(Math.random() * n);
+function cvShuffle(a){ for(let i = a.length - 1; i > 0; i--){ const j = cvRandInt(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function cvRefillBag(){                                   // shuffled complete triples → always sortable
+  const add = [];
+  for(let r = 0; r < 3; r++) for(let t = 0; t < CV.kinds; t++) add.push(t, t, t);
+  CV.bag.push(...cvShuffle(add));
+}
+function cvDraw(){ if(!CV.bag.length) cvRefillBag(); return CV.bag.shift(); }
+
+function startConveyor(){
+  closeMenu();
+  Object.assign(CV, { on:true, ended:false, kinds:4, shelves:5, cap:7,
+    board:Array.from({ length:5 }, () => [[],[],[]]), belt:[], bag:[], sorted:0, interval:2200, last:0 });
+  CV.emojis = CV_KEYS.slice(0, CV.kinds);
+  document.getElementById("cvBest").textContent = save.bestBelt || 0;
+  document.getElementById("cvSorted").textContent = "0";
+  if(typeof installBar !== "undefined" && installBar) installBar.classList.remove("show");  // free the bottom for the belt
+  cvScreen.hidden = false;
+  for(let k = 0; k < 3; k++) cvSpawn(true);              // seed a few so it isn't empty
+  cvRender();
+  if(CV.raf) cancelAnimationFrame(CV.raf);
+  CV.raf = requestAnimationFrame(cvTick);
+}
+function exitConveyor(){ CV.on = false; if(CV.raf){ cancelAnimationFrame(CV.raf); CV.raf = null; } cvScreen.hidden = true; }
+
+function cvSpawn(silent){
+  if(CV.ended) return;
+  if(CV.belt.length >= CV.cap){ if(!silent) cvOverflow(); return; }
+  CV.belt.push(cvDraw());
+  if(!silent){ cvRender(); SFX.place(); }
+}
+function cvTick(now){
+  CV.raf = requestAnimationFrame(cvTick);
+  if(!CV.on || CV.ended) return;
+  if(!CV.last) CV.last = now;
+  CV.interval = Math.max(950, 2200 - CV.sorted * 9);     // gently speeds up as you sort more
+  if(now - CV.last >= CV.interval){ CV.last = now; cvSpawn(false); }
+}
+function cvResolve(){
+  const cleared = [];
+  const n = resolveClears(CV.board, cleared);
+  if(n > 0){
+    CV.sorted += n * 3;
+    document.getElementById("cvSorted").textContent = CV.sorted;
+    SFX.clear(n);
+  }
+}
+function cvPlaceFromBelt(bi, ts){
+  const t = CV.belt[bi];
+  if(t == null || !canAccept(CV.board[ts], t)) return false;
+  CV.belt.splice(bi, 1);
+  CV.board[ts][CV.board[ts].findIndex(sl => sl.length === 0)].push(t);
+  cvResolve(); cvRender(); return true;
+}
+function cvMove(fs, ss, ts){
+  if(fs === ts || !CV.board[fs][ss].length) return false;
+  const t = CV.board[fs][ss][0];
+  if(!canAccept(CV.board[ts], TYPE(t))) return false;
+  CV.board[fs][ss].shift();
+  CV.board[ts][CV.board[ts].findIndex(sl => sl.length === 0)].push(t);
+  cvResolve(); cvRender(); return true;
+}
+function cvOverflow(){
+  CV.ended = true;
+  if(CV.raf){ cancelAnimationFrame(CV.raf); CV.raf = null; }
+  if(CV.sorted > (save.bestBelt || 0)){ save.bestBelt = CV.sorted; persist(); }
+  SFX.invalid();
+  showCard({
+    emoji:"card-stuck", title:"The belt backed up!",
+    body:`You sorted ${CV.sorted} ${CV.sorted === 1 ? "grocery" : "groceries"}. Best: ${save.bestBelt || 0}. No harm done — give it another roll?`,
+    primary:"Sort again", onPrimary:() => { hideCard(); startConveyor(); },
+    secondary:"Back to menu", onSecondary:() => { hideCard(); exitConveyor(); openMenu(); },
+  });
+}
+
+function cvFit(){
+  const n = CV.shelves;
+  const fromW = (Math.min(cvBoardEl.clientWidth, 560) - 24 - 2 * 12) / 3;
+  const fromH = (cvBoardEl.clientHeight - n * 24 - (n - 1) * 12) / n;
+  const slot = Math.max(40, Math.min(fromW, fromH, 92));
+  document.documentElement.style.setProperty("--cvslot", slot + "px");
+}
+function cvRender(){
+  cvBoardEl.innerHTML = "";
+  CV.board.forEach((shelf, si) => {
+    const sh = document.createElement("div"); sh.className = "cvshelf"; sh.dataset.cvshelf = si;
+    shelf.forEach((slot, sl) => {
+      const slotEl = document.createElement("div"); slotEl.className = "cvslot"; slotEl.dataset.cvslot = sl;
+      if(slot.length){
+        const tile = document.createElement("div"); tile.className = "cvtile";
+        tile.innerHTML = glyphHTML(CV.emojis[slot[0]]);
+        tile.dataset.cvshelf = si; tile.dataset.cvslot = sl;
+        slotEl.appendChild(tile);
+      }
+      sh.appendChild(slotEl);
+    });
+    cvBoardEl.appendChild(sh);
+  });
+  cvBeltEl.innerHTML = "";
+  CV.belt.forEach((t, bi) => {
+    const it = document.createElement("div");
+    it.className = "cvitem" + (CV.belt.length >= CV.cap - 1 ? " crowd" : "");
+    it.innerHTML = glyphHTML(CV.emojis[t]); it.dataset.cvbelt = bi;
+    cvBeltEl.appendChild(it);
+  });
+  cvFit();
+}
+
+/* conveyor drag — belt item OR shelf tile → shelf */
+let cvDrag = null;
+function cvShelfFromPoint(x, y){ const el = document.elementFromPoint(x, y); const sh = el && el.closest && el.closest(".cvshelf"); return sh ? +sh.dataset.cvshelf : -1; }
+function cvPointerDown(e){
+  if(!CV.on || CV.ended) return;
+  SFX.firstGesture();
+  const beltItem = e.target.closest && e.target.closest(".cvitem");
+  const tile = e.target.closest && e.target.closest(".cvtile");
+  if(beltItem) cvDrag = { kind:"belt", bi:+beltItem.dataset.cvbelt, el:beltItem, type:CV.belt[+beltItem.dataset.cvbelt], startX:e.clientX, startY:e.clientY, moved:false, ghost:null };
+  else if(tile) cvDrag = { kind:"shelf", fs:+tile.dataset.cvshelf, ss:+tile.dataset.cvslot, el:tile, type:TYPE(CV.board[+tile.dataset.cvshelf][+tile.dataset.cvslot][0]), startX:e.clientX, startY:e.clientY, moved:false, ghost:null };
+  else return;
+  window.addEventListener("pointermove", cvPointerMove, { passive:false });
+  window.addEventListener("pointerup", cvPointerUp);
+}
+function cvPointerMove(e){
+  const d = cvDrag; if(!d) return;
+  if(!d.moved){
+    if(Math.hypot(e.clientX - d.startX, e.clientY - d.startY) < 8) return;
+    d.moved = true; d.el.classList.add("lift");
+    const g = document.createElement("div"); g.className = "ghost"; g.innerHTML = glyphHTML(CV.emojis[d.type]);
+    document.body.appendChild(g); d.ghost = g;
+  }
+  e.preventDefault();
+  d.ghost.style.left = e.clientX + "px"; d.ghost.style.top = e.clientY + "px";
+  const ts = cvShelfFromPoint(e.clientX, e.clientY);
+  [...cvBoardEl.querySelectorAll(".cvshelf")].forEach(sh =>
+    sh.classList.toggle("drop", +sh.dataset.cvshelf === ts && ts >= 0 && canAccept(CV.board[ts], d.type)));
+}
+function cvPointerUp(e){
+  const d = cvDrag; if(!d) return;
+  window.removeEventListener("pointermove", cvPointerMove);
+  window.removeEventListener("pointerup", cvPointerUp);
+  cvDrag = null;
+  if(d.ghost) d.ghost.remove();
+  [...cvBoardEl.querySelectorAll(".cvshelf")].forEach(sh => sh.classList.remove("drop"));
+  if(!d.moved){ cvRender(); return; }
+  const ts = cvShelfFromPoint(e.clientX, e.clientY);
+  const ok = ts >= 0 && (d.kind === "belt" ? cvPlaceFromBelt(d.bi, ts) : cvMove(d.fs, d.ss, ts));
+  if(!ok){ SFX.invalid(); cvRender(); }
+}
+cvBoardEl.addEventListener("pointerdown", cvPointerDown);
+cvBeltEl.addEventListener("pointerdown", cvPointerDown);
+document.getElementById("beltBtn").onclick = startConveyor;
+document.getElementById("cvExit").onclick = () => { exitConveyor(); openMenu(); };
+window.addEventListener("resize", () => { if(CV.on) cvFit(); });
 
 /* =======================================================================
    Boot
