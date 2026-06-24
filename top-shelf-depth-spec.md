@@ -222,7 +222,7 @@ thing," and the biggest build.
 |---|---|---|---|
 | **1 ✅ DONE** | Sampler/Tour | small | **Built + browser-verified (2026-06-24).** Menu "Take a quick tour" → 3 showcase levels (3 / 24 / 90), clock-free, progression untouched, exits to Level 1. SW cache → v25. |
 | **2 ✅ DONE** | Par + live move tracker + per-level best | medium | **Built + browser-verified (2026-06-24).** `save.timer`→`save.mode` (zen·timed·tidy, Hard retired) + `save.best`, with migration. `G.moves` counter; Tidy HUD `N · par M` green→orange→red; win card "Tidy!/par/best". Par baked as `PARS[]` (offline `tests/gen-pars.js`: exact BFS + beam for deep boards). SW cache → v26. |
-| **3** | One new gimmick (Linked shelves) | larger | More literal "features"; a full teaching chapter. Prototype-then-author. |
+| **3 ✅ DONE** | One new gimmick (Linked shelves) | larger | **Built + browser-verified (2026-06-24).** Two shelves tethered by a coloured ring must clear with the SAME grocery, together. Engine: clear-together `resolveClears` + link-encoded `canonical` (fuzz-verified vs brute force). `buildLinkedLevel` (reverse-scramble). New "Paired Aisles" chapter (10 levels) **before Rush Hour → arc is now 110 levels** (Rush Hour 91–100, Closing Time 101–110). Pars rebaked (110). SW cache → v27. Conveyor (Phase 4) still pending. |
 | **4** | Conveyor mode | largest | Whole new sub-engine + mode. Biggest payoff, biggest build; do last. |
 
 Phases 1–2 are ~a day, violate zero principles, and hit both halves of the diagnosis. 3–4 are

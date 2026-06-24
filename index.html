@@ -225,6 +225,23 @@
     box-shadow:0 1px 3px rgba(0,0,0,.25);
   }
 
+  /* LINKED ("paired") shelf: a coloured ring marks its group; its twin must clear
+     with the SAME grocery (they clear together). A finished shelf still waiting for
+     its pair pulses gently. */
+  .shelf.linked{ box-shadow:0 5px 0 var(--wood-edge), 0 9px 16px var(--shadow), inset 0 0 0 3px var(--link,#5b8def); }
+  .shelf .linkbadge{
+    position:absolute; top:6px; right:8px; z-index:5;
+    width:26px; height:16px; border-radius:8px;
+    background:#fff; color:var(--link,#5b8def);
+    display:grid; place-items:center; box-shadow:0 1px 3px rgba(0,0,0,.22);
+  }
+  .shelf .linkbadge svg{ width:18px; height:11px; }
+  .shelf.linked.primed{ animation:linkpulse 1.1s ease-in-out infinite; }
+  @keyframes linkpulse{
+    0%,100%{ box-shadow:0 5px 0 var(--wood-edge),0 9px 16px var(--shadow),inset 0 0 0 3px var(--link,#5b8def); }
+    50%    { box-shadow:0 5px 0 var(--wood-edge),0 9px 16px var(--shadow),inset 0 0 0 6px var(--link,#5b8def); }
+  }
+
   .slot{
     position:relative;
     width:var(--slot,90px); height:var(--slot,90px); flex:none;
@@ -1129,6 +1146,13 @@
     <circle cx="32" cy="32" r="2.8" fill="#9ad3ee"/>
   </symbol>
 
+  <symbol id="ic-mk-link" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round">
+      <rect x="10" y="24" width="26" height="16" rx="8"/>
+      <rect x="28" y="24" width="26" height="16" rx="8"/>
+    </g>
+  </symbol>
+
   <!-- ===== UI line icons (inherit button color via currentColor) ===== -->
   <symbol id="ic-ui-menu" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></g></symbol>
   <symbol id="ic-ui-reset" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M17.6 3.4l-.3 4.3-4.3-.3"/></g></symbol>
@@ -1254,7 +1278,8 @@
       <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-wild"/></svg> wildcard &nbsp;
       <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-box"/></svg> dispenser &nbsp;
       <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-lock"/></svg> shutter &nbsp;
-      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-snow"/></svg> frozen</div>
+      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-snow"/></svg> frozen &nbsp;
+      <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-link"/></svg> linked</div>
     <div id="levelGrid"></div>
     <div class="menutext">
       <b>No ads. No purchases. No lives.</b> Ever. Unlimited retries, and every board
@@ -1322,7 +1347,7 @@ function shuffle(arr, rand){
      .dispenser   take-only delivery pallet — nothing can be placed onto it
      .locked      shuttered shelf — closed right now (opens after N clears)
      .lockedUntil clears needed before this shelf opens */
-const SHELF_ATTRS = ["label", "dispenser", "locked", "lockedUntil", "buried"];
+const SHELF_ATTRS = ["label", "dispenser", "locked", "lockedUntil", "buried", "link"];
 const cloneShelf = sh => {
   const n = sh.map(sl => sl.slice());
   for(const k of SHELF_ATTRS) if(sh[k] != null) n[k] = (k === "buried") ? sh[k].map(r => r.slice()) : sh[k];
@@ -1361,26 +1386,53 @@ function shelfMonochrome(sh){
          frontsMatch(sh[0][0], sh[1][0], sh[2][0]);
 }
 const hasMonochromeFull = b => b.some(shelfMonochrome);
+/* the resolved colour of a shelf — first non-wild front (or WILD if all wild).
+   Used to test whether LINKED shelves match each other. */
+function shelfColor(sh){
+  for(const sl of sh){ if(sl.length){ const t = TYPE(sl[0]); if(t !== WILD) return t; } }
+  return WILD;
+}
+/* are all shelves in link group `id` monochrome AND the same colour (i.e. about to
+   clear together)? Drives the "primed/waiting" UI cue. */
+function linkGroupReady(b, id){
+  const g = b.filter(sh => sh.link === id);
+  const col = shelfColor(g[0]);
+  return g.every(sh => shelfMonochrome(sh) && shelfColor(sh) === col);
+}
 
-/* Collect every monochrome shelf, cascading as back rows advance. If `out` is
-   given, push each cleared shelf's index (UI uses this to animate clears). */
+/* Remove a shelf's three matched fronts; SEALED LAYERS: if the active layer is now
+   empty and a buried row waits, raise that whole row (may itself match → cascade). */
+function clearShelf(sh, idx, out){
+  for(const sl of sh) sl.shift();
+  if(sh.buried && sh.buried.length && sh.every(sl => sl.length === 0)){
+    const row = sh.buried.shift();
+    for(let s = 0; s < 3; s++) sh[s].push(row[s]);
+  }
+  if(out) out.push(idx);
+}
+
+/* Collect every clearable monochrome shelf, cascading as back rows advance. If `out`
+   is given, push each cleared shelf's index (UI uses this to animate clears). */
 function resolveClears(b, out){
   let cleared = 0, changed = true;
   while(changed){
     changed = false;
     for(let i = 0; i < b.length; i++){
       const sh = b[i];
-      if(shelfMonochrome(sh)){
-        for(const sl of sh) sl.shift();                       // remove the three matched fronts
-        // SEALED LAYERS: if the active layer is now empty and a buried row waits,
-        // the whole row rises to become the new active layer (may itself match →
-        // cascade/combo). (Flat shelves have no .buried — they just stay empty.)
-        if(sh.buried && sh.buried.length && sh.every(sl => sl.length === 0)){
-          const row = sh.buried.shift();
-          for(let s = 0; s < 3; s++) sh[s].push(row[s]);
-        }
+      if(!shelfMonochrome(sh)) continue;
+      if(sh.link != null){
+        // LINKED shelves clear only as a group, and only when EVERY member is
+        // monochrome with the SAME colour — until then a finished member just waits
+        // for its pair. (One linked shelf never clears alone.)
+        const group = [];
+        for(let j = 0; j < b.length; j++) if(b[j].link === sh.link) group.push(j);
+        const col = shelfColor(sh);
+        if(!group.every(j => shelfMonochrome(b[j]) && shelfColor(b[j]) === col)) continue;
+        for(const j of group) clearShelf(b[j], j, out);
+        cleared += group.length; changed = true;
+      }else{
+        clearShelf(sh, i, out);
         cleared++; changed = true;
-        if(out) out.push(i);
       }
     }
   }
@@ -1427,7 +1479,8 @@ function canonical(b){
   const cell = x => isFrozen(x) ? "F" + x.t : "" + x;   // frozen items distinct from movable singles
   const shelves = b.map(sh =>
     (sh.label != null ? "L" + sh.label : "") + (sh.dispenser ? "D" : "") +
-    (sh.lockedUntil != null ? (sh.locked ? "K" : "k") : "") + ":" +
+    (sh.lockedUntil != null ? (sh.locked ? "K" : "k") : "") +
+    (sh.link != null ? "G" + sh.link : "") + ":" +
     sh.map(sl => sl.map(cell).join(".")).sort().join("|") +
     // buried rows: order matters (b[0] rises next); items within a row don't.
     (sh.buried && sh.buried.length ? ";B" + sh.buried.map(r => r.map(cell).slice().sort().join(".")).join(";") : ""));
@@ -1806,6 +1859,65 @@ function buildFrozenLevel(def, levelIndex){
   return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
 }
 
+/* LINKED shelves: N pairs of shelves that must each be cleared with the SAME grocery
+   (they clear together — see resolveClears). Built by reverse-scramble from a solved
+   seed where each pair shares a colour, so a winning solution that re-gathers both to
+   that colour exists by construction; a link-aware solver + greedy floor gate it.
+   Flat (no buried) and wildcard-free in v1. `def.links` = number of pairs (default 1). */
+/* One free reverse-scramble step: move a front item to an empty slot on another
+   shelf. Every such move is reversible (move it back), so the forward replay
+   reconstructs the solved seed — solvability is preserved. Unlike inverseMove this
+   does NOT keep a no-monochrome invariant (we WANT to break the all-mono seed apart);
+   `preferBreak` targets a still-monochrome-full shelf to undo frame-one clears. */
+function linkedScatter(board, rand, preferBreak){
+  let order = board.map((_, i) => i);
+  shuffle(order, rand);
+  if(preferBreak) order = order.filter(i => shelfMonochrome(board[i])).concat(order);
+  for(const si of order){
+    for(let ss = 0; ss < 3; ss++){
+      if(!board[si][ss].length) continue;
+      const t = board[si][ss][0];
+      const dests = [];
+      for(let j = 0; j < board.length; j++){
+        if(j === si || (board[j].label != null && board[j].label !== t) || board[j].dispenser) continue;
+        const de = board[j].findIndex(sl => sl.length === 0);
+        if(de >= 0) dests.push([j, de]);
+      }
+      if(!dests.length) continue;
+      const [dj, de] = dests[(rand() * dests.length) | 0];
+      board[si][ss].shift(); board[dj][de].push(t);
+      return true;
+    }
+  }
+  return false;
+}
+
+function buildLinkedLevel(def, levelIndex){
+  const K = def.kinds, empty = def.empty, pairs = def.links || 1;
+  const mono = t => [[t], [t], [t]];
+  const build = (rand) => {
+    const board = [];
+    for(let p = 0; p < pairs; p++){ board.push(mono(p)); board.push(mono(p)); }  // each pair, one colour
+    for(let c = pairs; c < K; c++) board.push(mono(c));                            // the unpaired colours
+    for(let e = 0; e < empty; e++) board.push([[], [], []]);
+    for(let p = 0; p < pairs; p++){ board[2 * p].link = p; board[2 * p + 1].link = p; }
+    const scatter = 14 + ((rand() * 14) | 0);
+    for(let m = 0; m < scatter; m++) linkedScatter(board, rand, false);
+    for(let g = 0; g < 30 && hasMonochromeFull(board); g++) linkedScatter(board, rand, true);  // no frame-one clears
+    return board;
+  };
+  let fallback = null;
+  for(let attempt = 0; attempt < 100; attempt++){
+    const rand = mulberry32((levelIndex + 1) * 7333 + attempt * 17 + 1);
+    const board = build(rand);
+    if(hasMonochromeFull(board) || legalMoves(board).length === 0) continue;
+    if(!solve(board, 200000).solvable) continue;          // link-aware (resolveClears) verification
+    if(!fallback) fallback = board;                        // first solvable = safety net
+    if(!greedySolvable(board)) return { board, emojis: paletteFor(levelIndex, K) };   // hard + solvable
+  }
+  return { board: fallback || build(mulberry32((levelIndex + 1) * 99991)), emojis: paletteFor(levelIndex, K) };
+}
+
 /* Single entry point: produce {board, emojis} for a level. Routes by feature. */
 function buildLevel(def, levelIndex){
   if(def.feature === "wildcard"){
@@ -1824,6 +1936,7 @@ function buildLevel(def, levelIndex){
   if(def.feature === "dispenser") return buildDispenserLevel(def, levelIndex);
   if(def.feature === "shutter")   return buildShutterLevel(def, levelIndex);
   if(def.feature === "frozen")    return buildFrozenLevel(def, levelIndex);
+  if(def.feature === "linked")    return buildLinkedLevel(def, levelIndex);
   if(def.layers && !def.feature && !def.reserved)    // plain layered → sealed-buried mechanic
     return { board: genLayered(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
   return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
@@ -1849,6 +1962,7 @@ const DEPTS = [
   { name: "Mixed Bags",       pal: ["croissant","baguette","bagel","cupcake","cakeslice","donut","pancakes"] },
   { name: "The Stockroom",    pal: ["lotion","soap","toiletpaper","sponge","basket","bucket","broom"] },
   { name: "The Freezer Aisle", pal: ["icecream","sundae","cupcake","dumpling","pizza","hotdog","ice"] },
+  { name: "Paired Aisles",    pal: ["tomato","carrot","cheese","grapes","soda","cookie","bread"] },
   { name: "Rush Hour",        pal: ["apple","carrot","bread","milk","cheese","banana","tomato","broccoli"] },
   { name: "Closing Time",     pal: ["tea","cookie","pie","flan","teapot","honey","cakeslice"] },
 ];
@@ -1994,6 +2108,24 @@ const CH8 = [
   L(4, 2, { feature: "frozen", frozen: 3, role: "setpiece", blurb: "Deep freeze — three iced tiles to work around." }),
 ];
 
+/* ---- Chapter (Paired Aisles) · LINKED shelves — two shelves tethered by a coloured
+   ring must be cleared with the SAME grocery; they clear together. Taught in isolation
+   here (one new thing), just before the Rush Hour combine-zone. Difficulty climbs from
+   one roomy pair → a second colour to route → TWO pairs → two pairs on a tight aisle.
+   `links` = number of pairs. Shelf budget: 2*links + (kinds-links) + empty <= 6. */
+const CH_LINKED = [
+  L(2, 2, { feature: "linked", links: 1, role: "intro", blurb: "Two shelves tied together — fill both with the same grocery to clear them." }),
+  L(3, 2, { feature: "linked", links: 1, blurb: "A third grocery to route around the pair." }),
+  L(2, 3, { feature: "linked", links: 1, blurb: "Roomy — but both tied shelves still have to match." }),
+  L(3, 2, { feature: "linked", links: 1, blurb: "Tighter now. Keep the pair the same colour." }),
+  L(2, 2, { feature: "linked", links: 2, blurb: "Two pairs to satisfy this time." }),
+  L(2, 2, { feature: "linked", links: 2, blurb: "Both pairs, both colours — plan the whole board." }),
+  L(2, 2, { feature: "linked", links: 1, role: "breather", blurb: "Just one pair, plenty of room." }),
+  L(3, 1, { feature: "linked", links: 2, blurb: "Two pairs and barely any slack." }),
+  L(3, 1, { feature: "linked", links: 2, blurb: "Tied shelves everywhere, no room to waste." }),
+  L(3, 1, { feature: "linked", links: 2, role: "setpiece", blurb: "Closing the loop — two pairs on one tight aisle. Match them all." }),
+];
+
 /* ---- Chapter 9 · Rush Hour — the climax: every feature learned, now COMBINED with
    reserved signs so two gimmicks share one board (a pallet AND a sign, a shutter
    AND signs, a frozen item AND a sign, a mixed bag AND a sign…). Peaks ~90. Each
@@ -2037,9 +2169,9 @@ const CH10 = [
    "move" = one commitMove (cascades bundled), matching the in-game counter. Slot
    placement is irrelevant to par (canonical sorts slots). Re-run gen-pars.js if
    level defs or generation change. */
-const PARS = [4,7,6,8,8,9,4,7,9,8,10,8,15,10,12,14,9,13,11,13,4,6,6,7,8,6,4,7,6,6,4,7,7,7,10,7,5,9,10,6,12,28,26,20,20,22,8,22,27,27,5,6,6,7,8,8,4,8,9,9,4,6,6,7,9,5,4,9,7,9,4,6,5,9,7,8,5,9,10,8,8,6,6,6,8,6,4,7,7,7,6,6,14,5,15,6,6,6,6,4];
+const PARS = [4,7,6,8,8,9,4,7,9,8,10,8,15,10,12,14,9,13,11,13,4,6,6,7,8,6,4,7,6,6,4,7,7,7,10,7,5,9,10,6,12,28,26,20,20,22,8,22,27,27,5,6,6,7,8,8,4,8,9,9,4,6,6,7,9,5,4,9,7,9,4,6,5,9,7,8,5,9,10,8,3,5,3,6,4,6,4,7,7,7,8,5,9,9,8,7,4,9,6,7,6,8,14,5,9,8,5,6,8,6];
 
-const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH9, CH10)
+const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH_LINKED, CH9, CH10)
   .map((d, i) => ({ ...d,
     easy: d.role === "breather" || d.role === "finale" || d.role === "intro",
     time: mkTime(d), chapter: Math.floor(i / 10), par: PARS[i] }));
@@ -2214,7 +2346,7 @@ function buildLevelCached(def, i){
    the dispenser+3-sign set-piece peak) so anyone who picks up the phone feels
    the RANGE in ~90s, even on a fresh save where only Level 1 is unlocked. The
    tour never touches progression and runs clock-free. */
-const TOUR = [2, 23, 89];   // Levels 3 (core) · 24 (reserved gimmick) · 90 (combo peak)
+const TOUR = [2, 84, 99];   // Levels 3 (core) · 85 (linked pairs) · 100 (multi-gimmick peak)
 function startTour(){
   closeMenu();
   if(scrim.classList.contains("show")) hideCard();
@@ -2307,6 +2439,7 @@ const keyOf = item => item === WILD ? "wild" : G.emojis[TYPE(item)];
    are genuinely new this render and so should replay the drop-in animation.
    lastTileSig is null on the first render of a level → the whole board deals in. */
 let lastTileSig = null;
+const LINK_HUES = ["#5b8def", "#c77dde", "#3fb6a8"];   // distinct accent per link group
 function render(){
   boardEl.innerHTML = "";
   const tileSig = new Map();
@@ -2315,8 +2448,17 @@ function render(){
     shEl.className = "shelf"
       + (shelf.label != null ? " reserved" : "")
       + (shelf.dispenser ? " dispenser" : "")
-      + (shelf.locked ? " locked" : "");
+      + (shelf.locked ? " locked" : "")
+      + (shelf.link != null ? " linked" : "");
     shEl.dataset.shelf = si;
+    if(shelf.link != null){                              // paired shelf — clears with its twin
+      shEl.style.setProperty("--link", LINK_HUES[shelf.link % LINK_HUES.length]);
+      if(shelfMonochrome(shelf) && !linkGroupReady(G.board, shelf.link)) shEl.classList.add("primed");
+      const badge = document.createElement("div");
+      badge.className = "linkbadge";
+      badge.innerHTML = glyphHTML("mk-link");
+      shEl.appendChild(badge);
+    }
     if(shelf.label != null){                            // reserved-shelf sign
       const sign = document.createElement("div");
       sign.className = "sign";
@@ -2811,7 +2953,8 @@ function featKey(def){
        : def.feature === "wildcard"  ? "wild"
        : def.feature === "dispenser" ? "mk-box"
        : def.feature === "shutter"   ? "mk-lock"
-       : def.feature === "frozen"    ? "mk-snow" : "";
+       : def.feature === "frozen"    ? "mk-snow"
+       : def.feature === "linked"    ? "mk-link" : "";
 }
 function featBadge(def){ const k = featKey(def); return k ? glyphHTML(k) : ""; }
 
