@@ -22,7 +22,8 @@ plays fully offline.
 | `index.html` | The whole game — one self-contained file (logic, levels, styles). |
 | `manifest.webmanifest` | PWA manifest (name, icons, install behavior). |
 | `sw.js` | Service worker — offline caching + installability. |
-| `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | App icons. |
+| `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | App / home-screen icons (three-item scene). |
+| `favicon.ico`, `favicon-16.png`, `favicon-32.png`, `favicon-48.png` | Browser-tab favicons (single hero apple). |
 | `tests/harness.js` | Node script that verifies every level is solvable and fast. |
 | `tests/gen-icon.js` | Regenerates the app icons (no dependencies). |
 | `*.md` (handoff / progress / level-design) | Design + engineering notes. |

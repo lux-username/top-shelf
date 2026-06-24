@@ -1,7 +1,7 @@
 /* Top Shelf service worker — makes the game installable and fully offline.
    App shell is cached on install; Google Fonts are runtime-cached on first
    online load. Bump CACHE to ship an update. */
-const CACHE = "topshelf-v23";
+const CACHE = "topshelf-v24";
 const SHELL = [
   "./",
   "./index.html",
@@ -9,6 +9,9 @@ const SHELL = [
   "./icon-192.png",
   "./icon-512.png",
   "./apple-touch-icon.png",
+  "./favicon.ico",
+  "./favicon-16.png",
+  "./favicon-32.png",
 ];
 
 self.addEventListener("install", e => {
