@@ -6,12 +6,20 @@ The whole game lives in one file: **`index.html`** (~3470 lines, single self-con
 
 ---
 
-## CURRENT STATE — 2026-07-08 (v35, read me FIRST) 🔝
+## CURRENT STATE — 2026-07-08 (v36, read me FIRST) 🔝
 
 > This banner is the authoritative snapshot. The dated session logs below are **history** — accurate
 > for their day but superseded on the points here. The "more challenge / more features" work since
-> 2026-06-23 is tracked in **`top-shelf-depth-spec.md`** (Phases 1–6) and the auto-memory
+> 2026-06-23 is tracked in **`top-shelf-depth-spec.md`** (Phases 1–7) and the auto-memory
 > `depth-features-work.md`; this banner summarizes where that landed.
+
+- **Difficulty is a RAMP, not a flat lift, and hard boards still give early wins (v36).** The 2-ply
+  floor (below) targets tier-2 only in the **meat of the later chapters**; teaching chapters (CH1–3),
+  each chapter's intro/develop levels, and the Closing Time finale stay **tier-1** (frequent wins
+  while learning) — a rising sawtooth. Generation also **prefers boards that clear a shelf within ~4
+  moves** (reward cadence: the feedback unit is the shelf-clear, not the level-win), so hard boards
+  aren't setup-heavy slogs. Helpers: `targetTier`, `movesToFirstClear`/`earlyClear`, shared
+  `gradeBoard`. **`save.current` resumes on exit** (boot restore is PLAYTEST-aware).
 
 - **NO TIMER — the game is now untimed (Timed mode retired 2026-07-08).** Playtest signal was
   "too easy"; the fix is harder *puzzles*, not a clock, and the clock read as "arcade" not "cozy."
@@ -54,7 +62,7 @@ The whole game lives in one file: **`index.html`** (~3470 lines, single self-con
   real-time mode; module fully removed (design in git history `168f13c`).
 - **Multipack is GONE** (frozen ❄️ replaced it, 2026-06-18). **Ignore every `pack`/`isPack`/
   `doPackMove`/`{t,p}` reference in the Code-map / Gotchas below — those functions no longer exist.**
-- **SW cache is `topshelf-v35`.** **`PLAYTEST` is still `true`** (all levels open, for testing) at
+- **SW cache is `topshelf-v36`.** **`PLAYTEST` is still `true`** (all levels open, for testing) at
   `index.html:3249` — **flip to `false` to ship** progression locks. Art is 100% bespoke inline SVG
   (no emoji on screen). Verified: `node tests/harness.js` = all **110** OK (default now covers every
   level); iPhone-viewport browser check, 0 console errors.

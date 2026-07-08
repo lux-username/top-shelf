@@ -226,6 +226,30 @@ thing," and the biggest build.
 | **4 ❌ CUT** | Conveyor mode ("The Belt") | largest | Built + verified, then **REMOVED after playtest (2026-06-24)** — the user didn't like the real-time mode. Entire self-contained module deleted (own `CV` state, feed loop, render, pointer handling, the screen + CSS, the menu entry, `save.bestBelt`). The puzzle game was untouched by it, so removal was clean (−244 lines). The `ic-ui-*`/shelf helpers it reused remain. If ever revisited, the design is in git history (commit `168f13c`). |
 | **5 ✅ DONE** | Feel/juice pass + "Your Shop" meta | medium | **Built + browser-verified (2026-07-07). From the "more fun/engaging" brainstorm (Tier 1 minus undo, + Tier 2 #8).** SW cache → **v34**. See below. |
 | **6 ✅ DONE** | Harder puzzles + drop the clock | medium | **Built + browser-verified (2026-07-08). Playtest signal: "too easy."** SW cache → **v35**. See below. |
+| **7 ✅ DONE** | Difficulty ramp + reward cadence + resume | medium | **Built + browser-verified (2026-07-08). Refines Phase 6 after a design discussion.** SW cache → **v36**. See below. |
+
+### Phase 7 detail — ramp the floor, protect reward cadence, resume on exit (2026-07-08)
+Phase 6 applied the 2-ply floor **uniformly**, which flattened the teaching curve. A design
+discussion surfaced two corrections + one requested feature:
+- **Ramp the floor (`targetTier`).** Difficulty is a rising sawtooth, not a flat lift. The hard
+  tier-2 floor now targets only the **meat of the later chapters**; the teaching chapters (**CH1–3**),
+  each chapter's **intro/develop** levels, and the **Closing Time finale** target **tier-1** (old
+  quality — frequent wins while a mechanic is being learned). Gentle levels prefer tier-1 *exactly*
+  (the grader hits the target tier, not just ≥ it); strict levels prefer tier-2. **Result: 52 tier-2
+  levels, concentrated in the back half; teaching + finale are tier-1.** (Only L13, L101 overshoot to
+  tier-2 — no tier-1 board exists for those defs.)
+- **Protect reward cadence (`movesToFirstClear`/`earlyClear`).** *Key insight from the discussion:*
+  in a cozy game, too-hard hurts engagement not via anxiety but by **starving positive feedback** —
+  and the feedback unit here is the **individual shelf clear**, not the level-win. So among boards
+  that meet the tier target, generation now **prefers ones where a shelf clears within ~4 moves**, so
+  even hard boards hand the player an early win. **Result: 71/71 non-layered hard boards clear within
+  4 moves; none take >6.** (Sealed-layers boards skip the probe — their cadence is the per-layer
+  rhythm the mechanic already provides.) All wired through a shared `gradeBoard()`; cost bounded
+  (metCount + attempt caps) so first-load generation stays snappy (worst level ~1.9s, cached).
+- **Resume on exit (requested).** `save.current` was already written on every `startLevel`; the boot
+  restore was hardened to be **PLAYTEST-aware** so a freely-navigated level actually resumes (it was
+  clamping to `unlocked-1`, which under PLAYTEST bounced you to L1). Now returns you to the level you
+  were on — matters more now that levels take longer. **PARS rebaked** for the reseeded boards.
 
 ### Phase 6 detail — harder boards + untimed (2026-07-08)
 Playtesters (all but one) found the game too easy. Two separable changes (the timer is the *least*

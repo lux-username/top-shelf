@@ -1824,6 +1824,79 @@ function hardnessTier(board){
   return !greedySolvable(board, 2) ? 2 : !greedySolvable(board, 1) ? 1 : 0;
 }
 
+/* DIFFICULTY RAMP — the tier a level should aim for. Cozy engagement needs a steady
+   drip of positive feedback (every shelf clear is a small "win"), so the hard 2-ply
+   floor is NOT applied uniformly: early/teaching levels stay at tier-1 (old quality,
+   frequent wins while a mechanic is still being learned) and only the meat of the
+   later chapters targets tier-2. This follows the rising sawtooth (level-design §1)
+   and re-gentles at each chapter's start so a new gimmick is introduced softly.
+   Breather/intro/finale (def.easy) have no floor at all. Tunable by playtest. */
+function targetTier(def, levelIndex){
+  if(def.easy) return 0;
+  const chapter = Math.floor(levelIndex / 10);
+  const last = Math.floor((LEVELS.length - 1) / 10);
+  const pos = levelIndex % 10;
+  if(chapter <= 2) return 1;        // CH1–3: learn the verb + first gimmicks → keep wins frequent
+  if(chapter === last) return 1;    // Closing Time: calm wind-down
+  if(pos <= 1) return 1;            // each chapter's intro/develop beat → gentle re-entry
+  return 2;                         // twist / set-piece / mid-late → strict (harder)
+}
+
+/* REWARD CADENCE — fewest moves until ANY shelf clears (a positive feedback beat).
+   A hard board that clears nothing for a long time starves the feedback loop even
+   though nothing is lost (a disengagement risk distinct from anxiety). We use this
+   to PREFER hard boards that still hand the player an early win. Bounded BFS;
+   returns maxDepth+1 if no clear is reachable within the budget. */
+function movesToFirstClear(board, maxDepth, cap){
+  const total = bd => bd.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0) + (sh.buried ? sh.buried.length * 3 : 0), 0);
+  const start = total(board);
+  let frontier = [board];
+  const seen = new Set([canonical(board)]);
+  let nodes = 0;
+  for(let d = 1; d <= maxDepth; d++){
+    const next = [];
+    for(const b of frontier){
+      for(const mv of legalMoves(b)){
+        if(++nodes > cap) return maxDepth + 1;
+        const nb = applyMove(b, mv);
+        if(total(nb) < start) return d;              // a shelf cleared at depth d
+        const k = canonical(nb);
+        if(seen.has(k)) continue;
+        seen.add(k);
+        next.push(nb);
+      }
+    }
+    if(!next.length) break;
+    frontier = next;
+  }
+  return maxDepth + 1;
+}
+const EARLY_CLEAR_MOVES = 4;   // "early win" = a shelf can be cleared within this many moves
+function earlyClear(board){
+  // Sealed-layers boards clear by LAYER — an early flat clear rarely exists and the
+  // probe would just grind to its cap; their reward cadence is the per-layer rhythm,
+  // which the mechanic already provides. Skip the probe there.
+  if(board.some(sh => sh.buried && sh.buried.length)) return true;
+  return movesToFirstClear(board, EARLY_CLEAR_MOVES, 600) <= EARLY_CLEAR_MOVES;
+}
+
+/* Shared grade used by EVERY generator on a validated (solvable) board: honors the
+   difficulty ramp (targetTier) and the reward-cadence preference (earlyClear).
+   `ship` = ready to use as-is (meets the level's tier target AND gives an early win).
+   `score` ranks fallbacks: higher tier wins (so we never regress below old quality),
+   and within a tier an early-clear board is preferred. */
+function gradeBoard(board, def, levelIndex){
+  const target = def.easy ? 0 : targetTier(def, levelIndex);
+  if(target === 0) return { ship: true, score: 1e9, tier: 0, target, hits: true };   // easy: any solvable board
+  const tier = hardnessTier(board);
+  const hits = tier === target;                      // hit the RAMP target EXACTLY: gentle levels prefer
+                                                     // tier-1 (cap difficulty while learning), strict prefer tier-2
+  const notTrivial = tier >= 1;                      // never ship below old-game quality (tier 0)
+  const early = notTrivial ? earlyClear(board) : false;   // reward-cadence: an early win is available
+  const score = (hits ? 1000 : 0) + (notTrivial ? 100 : 0) + (early ? 10 : 0) + tier;
+  return { ship: hits && early, score, tier, target, hits };
+}
+
 /* Build, validate, enforce the difficulty floor, and fall back to gentler params
    only if generation genuinely fails. Difficulty comes from screen-free levers
    (tight space, deep back-rows, constraints) plus the greedy floor — NOT from
@@ -1844,11 +1917,12 @@ function generateBoard(def, levelIndex){
     { K: Math.max(3, def.kinds - 1), empty: def.empty, layers: def.layers, extra: Math.max(1, def.extra - 1), reserved: 0,                 depth: Math.min(depth, 2) },
     { K: Math.max(3, def.kinds - 1), empty: def.empty + 1, layers: false,    extra: 0,                          reserved: 0,                 depth: 1 },
   ];
-  // Tiered selection: prefer a tier-2 board (defeats the 1-move-lookahead planner);
-  // keep the hardest board seen as the fallback so we NEVER ship below tier 1 (old
-  // quality) for a hard level. Once a tier-1 board is in hand we hunt only a short
-  // extra window for a tier-2 (they're rarer), which bounds generation cost.
-  let best = null, bestTier = -1;
+  // Ramped selection with a reward-cadence preference (see gradeBoard). Ship a board
+  // that meets the level's tier target AND gives an early clear; otherwise keep the
+  // best-scoring board (highest tier, early-clear preferred) so we NEVER ship below
+  // old quality. Don't relax to an easier rung once a target-meeting board is in hand.
+  const target = wantHard ? targetTier(def, levelIndex) : 0;
+  let best = null, bestScore = -1, bestTier = -1, metCount = 0;
   for(const cfg of ladders){
     for(let attempt = 0; attempt < 40; attempt++){
       const seed = (levelIndex + 1) * 1_000_003 + attempt * 7919 + (cfg.layers ? 11 : 0) + cfg.depth * 101 + cfg.reserved * 31;
@@ -1862,12 +1936,17 @@ function generateBoard(def, levelIndex){
       if(legalMoves(board).length === 0) continue;
       if(!solve(board, 250_000).solvable) continue;
       if(!wantHard) return board;                          // breather/intro/finale → first solvable, stays gentle
-      const tier = hardnessTier(board);
-      if(tier === 2) return board;                         // hardest available → ship immediately
-      if(tier > bestTier){ bestTier = tier; best = board; }
-      if(bestTier >= 1 && attempt >= 10) break;            // a solid (≥old-quality) board in hand; stop hunting
+      const g = gradeBoard(board, def, levelIndex);
+      if(g.ship) return board;                             // meets difficulty target AND gives an early win
+      if(g.score > bestScore){ bestScore = g.score; bestTier = g.tier; best = board; }
+      if(g.hits) metCount++;
+      // Stop when we've seen a few target-meeting boards (cadence satisfied enough),
+      // OR we've spent a fair number of attempts and already hold an acceptable
+      // (≥ old-quality) board — so a rare tier-2 hunt can't grind the full rung.
+      if(metCount >= 3 || (bestTier >= 1 && attempt >= 10)) break;
     }
-    if(best && bestTier >= 1) return best;                 // ≥ old-game quality on this rung → don't relax further
+    if(bestTier >= target) return best;                    // meets the ramp's target on this rung → don't relax
+    if(bestTier >= 1) return best;                         // else ≥ old-game quality → don't relax further
   }
   if(best) return best;                                    // only trivial boards existed — hardest of them
   // Should never happen; degrade to a trivially solvable starter.
@@ -1887,7 +1966,8 @@ function genLayered(def, levelIndex){
   const K = def.kinds, E = def.empty, depth = def.depth || 2;
   const wantHard = !def.easy;
   const rows = K * depth;
-  let best = null, bestTier = -1;
+  const target = wantHard ? targetTier(def, levelIndex) : 0;
+  let best = null, bestScore = -1, bestTier = -1, metCount = 0;
   for(let attempt = 0; attempt < 80; attempt++){
     const rand = mulberry32((levelIndex + 1) * 1_000_003 + attempt * 7919 + depth * 101 + K * 31);
     const rowTypes = []; for(let r = 0; r < rows; r++) rowTypes.push(r % K);
@@ -1909,10 +1989,11 @@ function genLayered(def, levelIndex){
     if(legalMoves(board).length === 0) continue;                      // must be playable (needs E>=1)
     if(!solve(board, 100000).solvable) continue;
     if(!wantHard) return board;                                       // breather/intro → first solvable
-    const tier = hardnessTier(board);                                 // prefer tier-2; keep best as fallback
-    if(tier === 2) return board;
-    if(tier > bestTier){ bestTier = tier; best = board; }
-    if(bestTier >= 1 && attempt >= 14) break;
+    const g = gradeBoard(board, def, levelIndex);                     // ramp + reward-cadence preference
+    if(g.ship) return board;
+    if(g.score > bestScore){ bestScore = g.score; bestTier = g.tier; best = board; }
+    if(g.hits) metCount++;
+    if(metCount >= 3 || (bestTier >= 1 && attempt >= 14)) break;      // enough; ship best (bounds cost)
   }
   if(best) return best;                                               // keep the LAYERED board (≥ old quality)
   return generateBoard({ ...def, layers: false, depth: 1 }, levelIndex);  // only if nothing solvable — gentle flat fallback (rare)
@@ -1950,8 +2031,7 @@ function injectWildcards(board, count, rand){
    so we solver-gate each candidate and keep the first that stays winnable
    (trying several shelves/seeds), falling back to no dispenser if none fit. */
 function buildDispenserLevel(def, levelIndex){
-  const wantHard = !def.easy;
-  let fallback = null;                                    // first solvable, if none also needs planning
+  let best = null, bestScore = -1;                        // ramp + cadence; clone since the board is mutated
   for(let attempt = 0; attempt < 40; attempt++){
     const board = generateBoard(def, levelIndex + attempt * 1000);
     const cands = board.map((_, idx) => idx)
@@ -1960,14 +2040,14 @@ function buildDispenserLevel(def, levelIndex){
     for(const idx of cands.slice(0, 4)){
       board[idx].dispenser = true;
       if(legalMoves(board).length > 0 && solve(board, 250000).solvable){
-        if(!wantHard || hardnessTier(board) >= 1)         // solvable AND needs planning → ship
-          return { board, emojis: paletteFor(levelIndex, def.kinds) };
-        if(!fallback) fallback = { board: cloneBoard(board), emojis: paletteFor(levelIndex, def.kinds) };
+        const g = gradeBoard(board, def, levelIndex);
+        if(g.ship) return { board, emojis: paletteFor(levelIndex, def.kinds) };   // meets target + early win
+        if(g.score > bestScore){ bestScore = g.score; best = { board: cloneBoard(board), emojis: paletteFor(levelIndex, def.kinds) }; }
       }
       delete board[idx].dispenser;
     }
   }
-  return fallback || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+  return best || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
 }
 
 /* SHUTTER: designate a STOCKED shelf as a locked back room — its groceries are
@@ -2010,8 +2090,7 @@ function buildShutterLevel(def, levelIndex){
    shelf that's already monochrome-full (it would auto-clear). */
 function buildFrozenLevel(def, levelIndex){
   const want = def.frozen || 1;
-  const wantHard = !def.easy;
-  let fallback = null;
+  let best = null, bestScore = -1;
   for(let attempt = 0; attempt < 60; attempt++){
     const board = generateBoard(def, levelIndex + attempt * 1000);
     const order = shuffle(board.map((_, i) => i), mulberry32(levelIndex * 911 + attempt + 1));
@@ -2031,12 +2110,12 @@ function buildFrozenLevel(def, levelIndex){
     // freezes fast — keeping first-load generation snappy even when freezing is
     // tight. (Frozen only removes moves from an already-verified base board.)
     if(!hasMonochromeFull(board) && legalMoves(board).length > 0 && solve(board, 120000).solvable){
-      if(!wantHard || hardnessTier(board) >= 1)           // solvable AND needs planning → ship
-        return { board, emojis: paletteFor(levelIndex, def.kinds) };
-      if(!fallback) fallback = { board: cloneBoard(board), emojis: paletteFor(levelIndex, def.kinds) };
+      const g = gradeBoard(board, def, levelIndex);
+      if(g.ship) return { board, emojis: paletteFor(levelIndex, def.kinds) };     // meets target + early win
+      if(g.score > bestScore){ bestScore = g.score; best = { board: cloneBoard(board), emojis: paletteFor(levelIndex, def.kinds) }; }
     }
   }
-  return fallback || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+  return best || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
 }
 
 /* LINKED shelves: N pairs of shelves that must each be cleared with the SAME grocery
@@ -2086,17 +2165,19 @@ function buildLinkedLevel(def, levelIndex){
     for(let g = 0; g < 30 && hasMonochromeFull(board); g++) linkedScatter(board, rand, true);  // no frame-one clears
     return board;
   };
-  let best = null, bestTier = -1, fallback = null;
+  const target = def.easy ? 0 : targetTier(def, levelIndex);
+  let best = null, bestScore = -1, bestTier = -1, fallback = null, metCount = 0;
   for(let attempt = 0; attempt < 100; attempt++){
     const rand = mulberry32((levelIndex + 1) * 7333 + attempt * 17 + 1);
     const board = build(rand);
     if(hasMonochromeFull(board) || legalMoves(board).length === 0) continue;
     if(!solve(board, 200000).solvable) continue;          // link-aware (resolveClears) verification
     if(!fallback) fallback = board;                        // first solvable = safety net
-    const tier = hardnessTier(board);                      // prefer tier-2; never regress below tier-1
-    if(tier === 2) return { board, emojis: paletteFor(levelIndex, K) };
-    if(tier > bestTier){ bestTier = tier; best = board; }
-    if(bestTier >= 1 && attempt >= 16) break;
+    const g = gradeBoard(board, def, levelIndex);          // ramp + reward-cadence preference
+    if(g.ship) return { board, emojis: paletteFor(levelIndex, K) };
+    if(g.score > bestScore){ bestScore = g.score; bestTier = g.tier; best = board; }
+    if(g.hits) metCount++;
+    if(metCount >= 3 || (bestTier >= 1 && attempt >= 14)) break;   // enough; ship best (bounds cost)
   }
   return { board: best || fallback || build(mulberry32((levelIndex + 1) * 99991)), emojis: paletteFor(levelIndex, K) };
 }
@@ -2341,7 +2422,7 @@ const CH10 = [
    "move" = one commitMove (cascades bundled), matching the in-game counter. Slot
    placement is irrelevant to par (canonical sorts slots). Re-run gen-pars.js if
    level defs or generation change. */
-const PARS = [4,7,6,8,8,9,4,7,9,8,10,8,15,10,12,14,9,15,11,13,4,8,6,7,8,6,4,7,6,6,4,7,7,7,10,7,5,9,10,6,12,28,26,28,20,22,8,22,27,25,5,6,6,7,8,8,4,8,9,9,4,6,6,7,9,5,4,9,7,9,4,6,5,9,7,8,5,9,10,8,4,5,4,5,4,5,4,7,7,7,8,5,9,9,8,7,4,7,6,8,6,8,14,5,12,8,5,6,8,6];
+const PARS = [4,7,6,8,8,9,4,7,9,8,10,10,15,13,12,15,9,13,12,13,4,6,6,7,8,6,4,7,6,6,4,7,9,9,10,9,5,11,10,11,12,22,26,28,20,22,8,22,27,25,5,6,6,7,8,8,4,8,9,9,4,6,6,7,9,5,4,9,7,9,4,6,8,9,9,7,5,9,10,8,3,4,4,5,4,5,4,6,7,7,8,5,9,9,9,7,4,7,6,8,6,8,14,5,9,6,5,6,8,6];
 
 const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH_LINKED, CH9, CH10)
   .map((d, i) => ({ ...d,
@@ -3425,8 +3506,13 @@ document.getElementById("installRowBtn").onclick = () => { closeMenu(); triggerI
 /* =======================================================================
    Boot
    ======================================================================= */
-const firstLevel = Math.min(save.current, save.unlocked - 1, LEVELS.length - 1);
-startLevel(Math.max(0, firstLevel));   // startLevel starts the timer + fits the board
+/* Resume where you left off: startLevel() persists save.current on every level, so
+   on boot we return the player to that level (important now that levels take longer).
+   Clamp to what's actually reachable — all levels under PLAYTEST, else up to the
+   highest unlocked — as a safety net against a stale/edited save. */
+const maxReachable = PLAYTEST ? LEVELS.length - 1 : save.unlocked - 1;
+const firstLevel = Math.min(save.current, maxReachable, LEVELS.length - 1);
+startLevel(Math.max(0, firstLevel));   // fits the board + updates the HUD
 refreshInstallUI();                    // offer install if eligible (iOS path fires here; Android via event)
 </script>
 </body>

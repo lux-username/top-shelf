@@ -139,10 +139,20 @@ verification 0-3.** Cozy is **not** the same as easy. A cozy game can be genuine
   as our "no depleting resources, ever" rule — research independently confirms it's not just
   ethics, it's *what makes the game feel good.* Don't add stars/coins later "for engagement."
 - **No failure that costs the player anything.** Soft-fail resets, no lives — already correct.
+- **Reward cadence — the second way too-hard breaks engagement (added 2026-07-08).** Coziness (no
+  punishment) protects against *anxiety*, but a too-hard board disengages the player a second way:
+  it **starves the positive-feedback loop.** To stay engaged a player needs a steady drip of wins,
+  and in a sort puzzle the feedback unit is the **individual shelf clear**, not the level-win. A
+  board where you must set up a long sequence before *anything* clears feels bad even with zero
+  stakes. **Design consequence:** prefer hard boards that still yield an *early* clear (Top Shelf's
+  generator now scores boards on "moves to first clear" and prefers ≤4). Hardness should live in the
+  *full* solution's insight, not in a long feedback-free opening. (Sealed-layers boards are exempt —
+  their cadence is the per-layer clear rhythm the mechanic already provides.)
 
 So coziness constrains difficulty's *shape*, not its *height*: pressure must always be **opt-in and
 consequence-free**, but the puzzles themselves can get genuinely hard. The relaxation comes from
-*how* you can fail (freely, repeatably, on your own schedule), not from never being challenged.
+*how* you can fail (freely, repeatably, on your own schedule), not from never being challenged —
+**and from a steady cadence of small wins even inside a hard board.**
 
 **Flow + cozy together → the design constraint:** keep challenge tracking the player's rising skill
 (so they're never bored), but make every pressure source dismissible (so they're never anxious).
