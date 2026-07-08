@@ -224,9 +224,36 @@ thing," and the biggest build.
 | **2 ✅ DONE** | Par + live move tracker + per-level best | medium | **Built + browser-verified (2026-06-24).** `save.timer`→`save.mode` (zen·timed·tidy, Hard retired) + `save.best`, with migration. `G.moves` counter; Tidy HUD `N · par M` green→orange→red; win card "Tidy!/par/best". Par baked as `PARS[]` (offline `tests/gen-pars.js`: exact BFS + beam for deep boards). SW cache → v26. |
 | **3 ✅ DONE** | One new gimmick (Linked shelves) | larger | **Built + browser-verified (2026-06-24).** Two shelves tethered by a coloured ring must clear with the SAME grocery, together. Engine: clear-together `resolveClears` + link-encoded `canonical` (fuzz-verified vs brute force). `buildLinkedLevel` (reverse-scramble). New "Paired Aisles" chapter (10 levels) **before Rush Hour → arc is now 110 levels** (Rush Hour 91–100, Closing Time 101–110). Pars rebaked (110). SW cache → v27. Conveyor (Phase 4) still pending. |
 | **4 ❌ CUT** | Conveyor mode ("The Belt") | largest | Built + verified, then **REMOVED after playtest (2026-06-24)** — the user didn't like the real-time mode. Entire self-contained module deleted (own `CV` state, feed loop, render, pointer handling, the screen + CSS, the menu entry, `save.bestBelt`). The puzzle game was untouched by it, so removal was clean (−244 lines). The `ic-ui-*`/shelf helpers it reused remain. If ever revisited, the design is in git history (commit `168f13c`). |
+| **5 ✅ DONE** | Feel/juice pass + "Your Shop" meta | medium | **Built + browser-verified (2026-07-07). From the "more fun/engaging" brainstorm (Tier 1 minus undo, + Tier 2 #8).** SW cache → **v34**. See below. |
 
-Phases 1–2 are ~a day, violate zero principles, and hit both halves of the diagnosis. 3–4 are
-the "if they still want more *stuff*" follow-on.
+### Phase 5 detail — feel & the shop-wakes-up meta (2026-07-07)
+The brainstorm's diagnosis: *"that's it?" is mostly a spectacle + first-impression gap, not a
+mechanics gap* (ethics doc §5.1 "make competence *felt*"). Shipped, all green-list, zero sacred-rule
+violations:
+- **Cascade choreography.** `juiceClears` now **staggers** each cleared shelf ~70ms apart (was
+  simultaneous), matching the rising musical run already in `SFX.clear()`, so a combo reads as a
+  phrase resolving. `clearShelf` records the cleared grocery into `out.keys` (guarded so the solver's
+  hot path skips it) and each shelf gives a **grocery "poof"** (`.poof`) + a warm **"sigh"** swell
+  (`.shelf.sigh`) under the existing spark/flash.
+- **Placement micro-feel.** Non-clearing drops pulse the receiving shelf (`.shelf.recv` via
+  `pulseShelf`).
+- **Sound + haptics + ambient beds.** `SFX.setDept(chapter)` swaps the ambient music to a
+  **per-department scale + timbre** (`DEPT_BEDS[11]`), called from `startLevel`. `SFX.haptic()`
+  (navigator.vibrate, Android-only, gated by the sfx toggle) fires on clears/cascades.
+- **Gentle nudge (opt-in hint).** New header 💡 button → `hintMove()` picks a genuinely useful move
+  (prefers a clearing move, else the first that keeps the board solvable via a budgeted `solve`;
+  wildcard falls back to any legal move) and **glows the source shelf** (`.shelf.nudge`) + dashes the
+  target — never plays the move (preserves the "aha"). Unlimited, free, no resource. Auto-fades 3.2s.
+- **Your Shop (Tier 2 #8).** A cosmetic storefront overlay (`#shopScrim`) with **11 cubbies**, one per
+  department, that light up as each aisle is finished. `deptDone(c)` = all 10 of a chapter's levels
+  have a `save.best` entry (derived from existing save — **no new stars/coins/streak fields**; §4
+  extrinsic-hoard guard). Plant appears ≥3 depts, shop cat ≥6, **OPEN sign lights at 11/11**. Entry
+  point: menu "Your shop" + a **dept-completion win card** ("Aisle stocked! … See your shop") that
+  pops the just-finished cubby. Purely abundance/peak-end.
+
+Phases 1–2 are ~a day, violate zero principles, and hit both halves of the diagnosis. 3–5 are
+the "if they still want more *stuff*" follow-on. (Note: **undo** and an **endless/Corner-Shop mode**
+were on the brainstorm's Tier-1/Tier-2 lists but deliberately **not** built this pass.)
 
 ## Side fix shipped alongside Phase 2 (2026-06-24)
 **Drop lands in the slot you target.** Previously `applyMove` always placed a dropped item in

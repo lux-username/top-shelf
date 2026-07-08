@@ -370,6 +370,41 @@
     65%{ transform:translate(-50%,-58%) scale(1); opacity:1; }
     100%{ transform:translate(-50%,-92%) scale(1); opacity:0; }
   }
+  /* the "sigh": a cleared shelf takes a warm breath — a gentle swell + settle,
+     layered under the brighter .flash glow. Reads as relief, not a zap. */
+  .shelf.sigh{ animation:shelfsigh .62s cubic-bezier(.25,1.2,.4,1); }
+  @keyframes shelfsigh{
+    0%{ transform:none; } 35%{ transform:translateY(-3px) scale(1.015); }
+    70%{ transform:translateY(1px) scale(.997); } 100%{ transform:none; }
+  }
+  /* the grocery's little "poof" of relief as its shelf clears */
+  .poof{
+    position:fixed; z-index:905; pointer-events:none; line-height:1;
+    font-size:calc(var(--slot,90px) * .5);
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.22));
+    animation:poofrise .6s ease-out forwards;
+  }
+  .poof .gicon{ width:calc(var(--slot,90px) * .5); height:calc(var(--slot,90px) * .5); }
+  @keyframes poofrise{
+    0%{ transform:translate(-50%,-50%) scale(.5) rotate(0); opacity:0; }
+    30%{ transform:translate(-50%,-70%) scale(1.15) rotate(var(--pr,0)); opacity:1; }
+    100%{ transform:translate(-50%,-135%) scale(.85) rotate(var(--pr,0)); opacity:0; }
+  }
+  /* a soft "caught it" pulse on the shelf a tile just landed on (non-clearing) */
+  .shelf.recv{ animation:shelfrecv .34s ease; }
+  @keyframes shelfrecv{
+    0%{ box-shadow:0 5px 0 var(--wood-edge),0 9px 16px var(--shadow); }
+    40%{ box-shadow:0 5px 0 var(--wood-edge),0 0 0 3px rgba(255,247,225,.5),0 10px 18px var(--shadow); }
+    100%{ box-shadow:0 5px 0 var(--wood-edge),0 9px 16px var(--shadow); }
+  }
+  /* gentle nudge: a warm glowing ring on the shelf a hint points to. Opt-in,
+     never plays the move — just says "look here." Source glows; target dims in. */
+  .shelf.nudge{ animation:nudgeglow 1.1s ease-in-out infinite; z-index:3; }
+  @keyframes nudgeglow{
+    0%,100%{ box-shadow:0 5px 0 var(--wood-edge),0 9px 16px var(--shadow),0 0 0 3px rgba(240,170,90,.55); }
+    50%{ box-shadow:0 5px 0 var(--wood-edge),0 0 20px 4px rgba(240,170,90,.7),0 0 0 5px rgba(240,170,90,.85); }
+  }
+  .shelf.nudge-to{ outline:3px dashed rgba(240,170,90,.7); outline-offset:3px; }
 
   .ghost{
     position:fixed; z-index:999; pointer-events:none;
@@ -420,6 +455,77 @@
     box-shadow:0 4px 0 var(--slot-edge),0 8px 14px var(--shadow);
   }
   .btn.ghostbtn:active{ box-shadow:0 1px 0 var(--slot-edge),0 3px 8px var(--shadow); }
+
+  /* ---------- Your Shop: a storefront that fills in as departments complete ---------- */
+  .shopcard{ max-width:440px; position:relative; padding-top:20px; }
+  .shopx{
+    position:absolute; top:10px; right:12px; z-index:2;
+    border:none; background:transparent; cursor:pointer;
+    font-size:1.5rem; line-height:1; color:var(--ink-soft); width:32px; height:32px; border-radius:50%;
+  }
+  .shopx:hover{ background:var(--cream-2); }
+  .shopscene{
+    position:relative; border-radius:16px; overflow:hidden;
+    background:linear-gradient(180deg,#fbf1de 0%, #f3e3c6 100%);
+    box-shadow:inset 0 2px 10px rgba(120,89,47,.18);
+    padding:0 0 8px;
+  }
+  .awning{
+    position:relative; height:30px;
+    background:repeating-linear-gradient(90deg,#d9694f 0 22px,#f4ede0 22px 44px);
+    box-shadow:inset 0 -2px 5px rgba(0,0,0,.18);
+    display:grid; place-items:center;
+  }
+  .awning::after{ /* scalloped lower edge */
+    content:""; position:absolute; left:0; right:0; bottom:-9px; height:10px;
+    background:radial-gradient(circle at 11px -1px,#d9694f 9px,transparent 10px) 0 0/22px 12px repeat-x;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.15));
+  }
+  .opensign{
+    font-family:"Nunito"; font-weight:900; font-size:.72rem; letter-spacing:1.5px;
+    color:#7a3b2e; background:rgba(255,255,255,.55); padding:1px 9px; border-radius:5px;
+    opacity:.5; transition:opacity .4s ease, box-shadow .4s ease, color .4s ease;
+  }
+  .shopscene.allopen .opensign{
+    opacity:1; color:#2f7d4f; background:#fffbe9;
+    box-shadow:0 0 10px 2px rgba(120,200,140,.75), 0 0 0 1px rgba(120,200,140,.5);
+  }
+  .cubbies{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:7px;
+    padding:18px 12px 10px;
+  }
+  .cubby{
+    position:relative; aspect-ratio:1/1; border-radius:11px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    background:#e7d9c0; box-shadow:inset 0 -3px 0 rgba(140,104,58,.28), inset 0 2px 4px rgba(255,255,255,.4);
+    color:var(--ink-soft); transition:transform .3s ease;
+  }
+  .cubby .cico{ font-size:1.4rem; line-height:1; filter:grayscale(1) opacity(.32); }
+  .cubby .cico .gicon{ width:30px; height:30px; }
+  .cubby .clbl{ font-family:"Nunito"; font-weight:800; font-size:.5rem; text-align:center; line-height:1.05; padding:0 3px; opacity:.55; }
+  .cubby .clock{ position:absolute; top:4px; right:5px; font-size:.6rem; opacity:.5; }
+  .cubby.done{
+    background:linear-gradient(180deg,#fff6e4,#ffe9c6);
+    box-shadow:inset 0 -3px 0 rgba(200,150,80,.4), 0 2px 6px rgba(150,100,40,.18), 0 0 0 1.5px rgba(220,170,90,.6);
+    color:var(--ink);
+  }
+  .cubby.done .cico{ filter:none; }
+  .cubby.done .clbl{ opacity:.9; }
+  .cubby.just{ animation:cubbypop .6s cubic-bezier(.2,1.3,.4,1); }
+  @keyframes cubbypop{ 0%{ transform:scale(.6); } 55%{ transform:scale(1.14); } 100%{ transform:scale(1); } }
+  .counter{
+    position:relative; height:26px; margin:2px 10px 0; border-radius:7px 7px 4px 4px;
+    background:linear-gradient(180deg,#b98a56,#9c7043);
+    box-shadow:0 3px 0 #7d5836, inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .critter{
+    position:absolute; bottom:14px; font-size:1.3rem; line-height:1; opacity:0;
+    transform:translateY(6px) scale(.7); transition:opacity .5s ease, transform .5s cubic-bezier(.2,1.3,.4,1);
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.2));
+  }
+  .critter.plant{ left:16px; }
+  .critter.cat{ right:20px; font-size:1.5rem; }
+  .critter.show{ opacity:1; transform:translateY(0) scale(1); }
 
   /* ---------- menu sheet ---------- */
   .sheet{
@@ -1211,6 +1317,13 @@
     <circle cx="14" cy="53" r="2" fill="#efe2cd" stroke="#d6bd92" stroke-width="1.4"/>
   </symbol>
 
+  <!-- ===== gentle-nudge lightbulb ===== -->
+  <symbol id="ic-ui-bulb" viewBox="0 0 24 24">
+    <path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8.9.9 1.5l.2 1.2h5l.2-1.2c.1-.6.4-1.1.9-1.5A6 6 0 0 0 12 3Z"
+          fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M9.5 19.2h5M10.2 21.2h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+
   <!-- ===== clear-burst sparks ===== -->
   <symbol id="ic-spark" viewBox="0 0 24 24"><path d="M12 1 C 13 7 17 11 23 12 C 17 13 13 17 12 23 C 11 17 7 13 1 12 C 7 11 11 7 12 1 Z" fill="#ffd45e"/></symbol>
   <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 2 L14.6 8.6 L21.5 9.2 L16.2 13.8 L17.9 20.5 L12 16.8 L6.1 20.5 L7.8 13.8 L2.5 9.2 L9.4 8.6 Z" fill="#ffcf5e"/></symbol>
@@ -1224,6 +1337,7 @@
       <div class="sub" id="levelLabel">Level 1 · Grocery Sort</div>
     </div>
     <button class="installbtn" id="installBtn" aria-label="Add to Home Screen" title="Add to Home Screen"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-install"></use></svg> Install</button>
+    <button class="iconbtn" id="hintBtn" aria-label="Show a gentle nudge" title="Show a gentle nudge"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-bulb"></use></svg></button>
     <button class="iconbtn" id="resetBtn" aria-label="Reset this board" title="Reset board"><svg class="btnic" viewBox="0 0 24 24"><use href="#ic-ui-reset"></use></svg></button>
   </header>
 
@@ -1278,6 +1392,10 @@
       <div class="txt"><b>Take a quick tour</b><span>Three sample shelves — gentle to fiendish. Doesn't affect your progress.</span></div>
       <button class="act" id="tourBtn">Tour</button>
     </div>
+    <div class="row" id="shopRow">
+      <div class="txt"><b>Your shop</b><span id="shopRowSub">Finish a department to stock its aisle — the store fills in as you go.</span></div>
+      <button class="act" id="shopBtn">Visit</button>
+    </div>
     <h3>Levels</h3>
     <div class="feat-legend">
       <svg class="lgi" viewBox="0 0 64 64"><use href="#ic-mk-reserved"/></svg> reserved &nbsp;
@@ -1292,6 +1410,27 @@
       stays the same when you reset — so a good plan always pays off.
     </div>
     <button class="linkbtn" id="resetProgress">Reset all progress</button>
+  </div>
+</div>
+
+<!-- "Your Shop" — a cosmetic storefront that fills in as you finish departments.
+     Purely earned-by-play abundance: no stars, no coins, no comparison. -->
+<div class="scrim shopscrim" id="shopScrim">
+  <div class="card shopcard">
+    <button class="x shopx" id="shopClose" aria-label="Close">×</button>
+    <div class="shopscene" id="shopScene">
+      <div class="awning" id="shopAwning">
+        <span class="opensign" id="shopOpenSign">OPEN</span>
+      </div>
+      <div class="cubbies" id="shopCubbies"></div>
+      <div class="counter">
+        <span class="critter plant" id="shopPlant">🪴</span>
+        <span class="critter cat" id="shopCat">🐈</span>
+      </div>
+    </div>
+    <h2 id="shopTitle">Your Corner Shop</h2>
+    <p id="shopCaption">Finish a department to stock its aisle.</p>
+    <button class="btn" id="shopDone">Back to sorting</button>
   </div>
 </div>
 
@@ -1409,12 +1548,15 @@ function linkGroupReady(b, id){
 /* Remove a shelf's three matched fronts; SEALED LAYERS: if the active layer is now
    empty and a buried row waits, raise that whole row (may itself match → cascade). */
 function clearShelf(sh, idx, out){
+  // capture the cleared grocery ONLY when a UI collector wants it (out.keys); the
+  // solver passes no `out`, so its hot path skips this entirely.
+  const col = (out && out.keys) ? shelfColor(sh) : WILD;
   for(const sl of sh) sl.shift();
   if(sh.buried && sh.buried.length && sh.every(sl => sl.length === 0)){
     const row = sh.buried.shift();
     for(let s = 0; s < 3; s++) sh[s].push(row[s]);
   }
-  if(out) out.push(idx);
+  if(out){ out.push(idx); if(out.keys) out.keys[idx] = (col === WILD ? "wild" : G.emojis[col]); }
 }
 
 /* Collect every clearable monochrome shelf, cascading as back rows advance. If `out`
@@ -2263,16 +2405,34 @@ const SFX = (() => {
     o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.03);
   }
   const on = () => save.sfx !== false && !!ctx;
+  /* Per-department ambient beds: each aisle gets its own gentle scale + timbre, so
+     the background loop quietly changes character as you move through the shop's day
+     (bright & open up front, warmer & lower in the back rooms, airy in the freezer).
+     Pure synthesis — no asset files. Falls back to the calm default before any level. */
+  const DEPT_BEDS = [
+    { s:[261.6,329.6,392.0,440.0,523.3], w:"sine"     },  // Opening Up — bright major, open
+    { s:[196.0,233.1,261.6,311.1,349.2], w:"triangle" },  // The Back Shelves — warm, lower
+    { s:[220.0,261.6,293.7,349.2,392.0], w:"sine"     },  // Reserved Homes — mellow
+    { s:[174.6,207.7,261.6,311.1,392.0], w:"triangle" },  // The Loading Dock — deep, roomy
+    { s:[164.8,196.0,246.9,293.7,329.6], w:"sine"     },  // Deep Storage — cool, low
+    { s:[293.7,349.2,392.0,466.2,523.3], w:"sine"     },  // Mixed Bags — sweet, up high
+    { s:[196.0,246.9,293.7,392.0,440.0], w:"triangle" },  // The Stockroom — plain, tidy
+    { s:[329.6,392.0,493.9,587.3,659.3], w:"sine"     },  // The Freezer Aisle — airy, glassy
+    { s:[233.1,277.2,349.2,415.3,466.2], w:"sine"     },  // Paired Aisles — twinned intervals
+    { s:[261.6,311.1,392.0,440.0,523.3], w:"triangle" },  // Rush Hour — busier, brighter
+    { s:[196.0,246.9,293.7,329.6,392.0], w:"sine"     },  // Closing Time — settling down
+  ];
+  let bed = { s:[196.0, 220.0, 261.6, 293.7, 329.6, 392.0], w:"sine" };   // calm default
   function music(playing){
     ensure(); resume();
     if(musicTimer){ clearTimeout(musicTimer); musicTimer = null; }
     if(!playing || !ctx) return;
-    const scale = [196.0, 220.0, 261.6, 293.7, 329.6, 392.0];   // low + calm
+    const scale = bed.s, wave = bed.w;
     const step = () => {
       if(!save.music || !ctx){ musicTimer = null; return; }
       const f = scale[(Math.random() * scale.length) | 0];
       const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = "sine"; o.frequency.value = f;
+      o.type = wave; o.frequency.value = f;
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(0.05, t + 0.5);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
@@ -2294,6 +2454,21 @@ const SFX = (() => {
       for(let i = 0; i < n; i++) tone(base * Math.pow(2, steps[i] / 12), 0.45, "sine", 0.20, i * 0.07);
     },
     win(){ ensure(); resume(); if(on()) [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, 0.5, "sine", 0.22, i * 0.13)); },
+    /* Swap the ambient bed to a department's flavour. If the music is already
+       playing, restart the loop so the new scale takes effect immediately. */
+    setDept(c){
+      const next = DEPT_BEDS[c] || bed;
+      if(next === bed) return;
+      bed = next;
+      if(save.music && musicTimer) music(true);
+    },
+    /* A soft haptic tick for genuine moments (clears/win). Gated by the sound
+       toggle since it's the same "feedback on/off" intent; Android honours
+       navigator.vibrate, iOS Safari ignores it — pure progressive enhancement. */
+    haptic(pattern){
+      if(save.sfx === false) return;
+      try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+    },
     music,
   };
 })();
@@ -2379,10 +2554,12 @@ function startLevel(i, tour){
   if(!G.tour){ save.current = i; persist(); }   // the tour never advances/saves progression
 
   const dept = DEPTS[Math.min(DEPTS.length - 1, G.def.chapter)];
+  SFX.setDept(Math.min(DEPTS.length - 1, G.def.chapter));   // shift the ambient bed to this aisle
   levelLabel.textContent = G.tour
     ? `Tour ${G.tourStep + 1} of ${TOUR.length} · ${dept.name}`
     : `Level ${i + 1} · ${dept.name}`;
   blurbEl.textContent = G.def.blurb;
+  clearNudge();
   hintEl.textContent = "Drag a grocery onto a shelf with room — match three to clear it.";
   lastTileSig = null;            // fresh board → let every tile deal in
   render();
@@ -2526,18 +2703,37 @@ function render(){
 }
 
 /* ---------- juice: celebrate real clears ---------- */
+/* Cascade choreography: when one drop clears a chain of shelves, we don't fire
+   them all at once — each shelf lands ~70ms after the last, matching the rising
+   musical run in SFX.clear(), so a combo reads as a phrase resolving rather than
+   a single flash. `cleared` is the clear ORDER (primary shelf first, cascades
+   after); `cleared.keys` maps each index to the grocery it cleared as, so the
+   item itself gives a little "poof" of relief. */
 function juiceClears(cleared){
+  const order = [...new Set(cleared)];
   const big = cleared.length >= 2;
-  [...new Set(cleared)].forEach(i => burstShelf(i, big));
+  order.forEach((i, k) =>
+    setTimeout(() => burstShelf(i, big, cleared.keys ? cleared.keys[i] : null), k * 70));
   if(cleared.length >= 2) showCombo(cleared.length);
 }
-function burstShelf(i, big){
+function burstShelf(i, big, key){
   const el = boardEl.querySelector('.shelf[data-shelf="' + i + '"]');
   if(!el) return;
-  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
-  setTimeout(() => el.classList.remove("flash"), 520);
+  el.classList.remove("flash", "sigh"); void el.offsetWidth; el.classList.add("flash", "sigh");
+  setTimeout(() => el.classList.remove("flash", "sigh"), 640);
   const r = el.getBoundingClientRect();
   const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  // the three groceries merge and give a happy little "poof" up out of the shelf
+  if(key){
+    for(let p = 0; p < 3; p++){
+      const g = document.createElement("div");
+      g.className = "poof"; g.innerHTML = glyphHTML(key);
+      g.style.left = (cx + (p - 1) * r.width * 0.24) + "px"; g.style.top = cy + "px";
+      g.style.setProperty("--pr", ((p - 1) * 12) + "deg");
+      document.body.appendChild(g);
+      setTimeout(() => g.remove(), 620);
+    }
+  }
   const n = big ? 12 : 7;
   for(let k = 0; k < n; k++){
     const s = document.createElement("div");
@@ -2549,6 +2745,58 @@ function burstShelf(i, big){
     document.body.appendChild(s);
     setTimeout(() => s.remove(), 700);
   }
+}
+/* a soft receiving pulse on the shelf a tile just landed on (non-clearing move) */
+function pulseShelf(i){
+  const el = boardEl.querySelector('.shelf[data-shelf="' + i + '"]');
+  if(!el) return;
+  el.classList.remove("recv"); void el.offsetWidth; el.classList.add("recv");
+  setTimeout(() => el.classList.remove("recv"), 340);
+}
+
+/* ---------- gentle nudge: an opt-in, unlimited, free hint ----------
+   Picks a genuinely useful next move and GLOWS its shelf — it never plays the
+   move, so the "aha" is preserved (§3 puzzle craft: point at the key shelf, don't
+   solve it). No resource, no pay-gate: it's pure competence support (green-list
+   §5). Prefers a move that clears now, else the first move that keeps the board
+   solvable, so a nudge never steers you into a dead end. */
+let nudgeTimer = null;
+function clearNudge(){
+  if(nudgeTimer){ clearTimeout(nudgeTimer); nudgeTimer = null; }
+  boardEl.querySelectorAll(".shelf.nudge, .shelf.nudge-to")
+    .forEach(el => el.classList.remove("nudge", "nudge-to"));
+}
+function hintMove(){
+  if(G.ended || G.over || !G.board) return;
+  const moves = legalMoves(G.board);
+  if(!moves.length){ hintEl.textContent = "No moves left — reset for a fresh run at this board."; return; }
+  const wild = G.def.feature === "wildcard";   // wildcard's state space is too big to verify cheaply
+  const CAP = 40000;
+  let best = null;
+  // 1) a move that clears a shelf right now (and doesn't strand the rest)
+  for(const mv of moves){
+    const out = [];
+    const nb = applyMove(G.board, mv, out);
+    if(out.length && (wild || solve(nb, CAP, G.cleared + out.length).solvable)){ best = mv; break; }
+  }
+  // 2) else the first move that keeps a win reachable
+  if(!best && !wild){
+    for(const mv of moves){
+      if(solve(applyMove(G.board, mv), CAP, G.cleared).solvable){ best = mv; break; }
+    }
+  }
+  if(!best) best = moves[0];                    // wildcard fallback: any legal move
+  showNudge(best.fs, best.ts);
+}
+function showNudge(fs, ts){
+  clearNudge();
+  const from = boardEl.querySelector('.shelf[data-shelf="' + fs + '"]');
+  const to   = boardEl.querySelector('.shelf[data-shelf="' + ts + '"]');
+  if(from) from.classList.add("nudge");
+  if(to)   to.classList.add("nudge-to");
+  hintEl.textContent = "Try lifting from the glowing shelf.";
+  SFX.pickup();
+  nudgeTimer = setTimeout(clearNudge, 3200);    // fades on its own; also cleared on your next move
 }
 function showCombo(n){
   const el = document.createElement("div");
@@ -2562,6 +2810,7 @@ function showCombo(n){
 /* Apply a validated move descriptor, then resolve win / deadlock / shutters. */
 function commitMove(mv){
   const cleared = [];                         // shelf indices that cleared this move (cascades included)
+  cleared.keys = {};                          // index -> grocery key, for the cascade "poof" juice
   G.board = applyMove(G.board, mv, cleared);
   G.cleared += cleared.length;                // exact shelves cleared
   G.moves++;                                  // one committed relocation (cascades = one move)
@@ -2570,8 +2819,11 @@ function commitMove(mv){
   G.moveToken++;
   render();
   updateTimerUI();                            // refresh the Tidy move-vs-par tracker
-  if(cleared.length){ juiceClears(cleared); SFX.clear(cleared.length); }
-  else { SFX.place(); }
+  if(cleared.length){
+    juiceClears(cleared); SFX.clear(cleared.length);
+    SFX.haptic(cleared.length >= 2 ? [0, 14, 55, 20, 55, 28] : 18);   // richer buzz for a cascade
+  }
+  else { SFX.place(); if(mv.ts != null) pulseShelf(mv.ts); clearNudge(); }
 
   if(!hasItems(G.board)){ finishWin(); return true; }                 // win
   if(legalMoves(G.board).length === 0){ finishDead("hard"); return true; }  // hard deadlock
@@ -2635,10 +2887,13 @@ function finishWin(){
   // self-record personal best (fewest moves) for this level — never comparative
   const par = G.def.par, moves = G.moves;
   if(!save.best) save.best = {};
+  const chapter = G.def.chapter;
+  const wasDeptDone = deptDone(chapter);       // stocked before this win?
   const prev = save.best[G.index];
   const best = (prev == null) ? moves : Math.min(prev, moves);
   save.best[G.index] = best;
   persist();
+  const justCompletedDept = !wasDeptDone && deptDone(chapter);   // this win stocked the whole aisle
 
   const underPar = par && moves <= par;
   let movesLine;
@@ -2646,16 +2901,20 @@ function finishWin(){
   else    movesLine = ` Solved in ${moves} ${moves === 1 ? "move" : "moves"}.`;
   if(best < moves) movesLine += ` Your best here: ${best}.`;
 
+  let body = (last
+    ? "You've cleared every level. Thanks for keeping the store tidy — come back and re-sort any time."
+    : "Every shelf is monochrome.") + movesLine;
+  if(justCompletedDept)
+    body += ` You finished ${DEPTS[Math.min(DEPTS.length - 1, chapter)].name} — its aisle is now stocked in your shop.`;
+
   showCard({
     emoji: last ? "card-trophy" : "card-win",
-    title: last ? "All shelves stocked!" : (underPar ? "Tidy!" : "Nicely sorted!"),
-    body: (last
-      ? "You've cleared every level. Thanks for keeping the store tidy — come back and re-sort any time."
-      : "Every shelf is monochrome.") + movesLine,
+    title: last ? "All shelves stocked!" : (justCompletedDept ? "Aisle stocked!" : (underPar ? "Tidy!" : "Nicely sorted!")),
+    body,
     primary: last ? "Play again" : "Next level",
     onPrimary: () => { hideCard(); startLevel(last ? 0 : G.index + 1); },
-    secondary: "Replay this level",
-    onSecondary: () => { hideCard(); resetBoard(); },
+    secondary: justCompletedDept ? "See your shop" : "Replay this level",
+    onSecondary: justCompletedDept ? () => openShop(chapter) : () => { hideCard(); resetBoard(); },
   });
 }
 
@@ -3026,8 +3285,59 @@ function buildLevelGrid(){
   });
 }
 
+/* ---------- Your Shop: cosmetic "the store wakes up" meta ----------
+   A department counts as stocked once every one of its 10 levels has a personal
+   best recorded (i.e. you've solved it at least once — save.best is written on
+   every win, so this covers the final level too). Derived purely from existing
+   save data: no new stars/coins/streak fields (extrinsic hoards undermine
+   coziness — level-design §4). It's abundance & peak-end, nothing to chase. */
+function deptDone(c){
+  const start = c * 10;
+  for(let i = start; i < start + 10; i++) if(!save.best || save.best[i] == null) return false;
+  return true;
+}
+const shopScrim   = document.getElementById("shopScrim");
+const shopScene   = document.getElementById("shopScene");
+const shopCubbies = document.getElementById("shopCubbies");
+const shopCat     = document.getElementById("shopCat");
+const shopPlant   = document.getElementById("shopPlant");
+const shopCaption = document.getElementById("shopCaption");
+
+function buildShop(justC){
+  shopCubbies.innerHTML = "";
+  let done = 0;
+  DEPTS.forEach((dept, c) => {
+    const ok = deptDone(c);
+    if(ok) done++;
+    const cell = document.createElement("div");
+    cell.className = "cubby" + (ok ? " done" : "") + (ok && c === justC ? " just" : "");
+    cell.innerHTML =
+      `<div class="cico">${glyphHTML(dept.pal[0])}</div>` +
+      `<div class="clbl">${dept.name}</div>` +
+      (ok ? "" : `<div class="clock">🔒</div>`);
+    shopCubbies.appendChild(cell);
+  });
+  const total = DEPTS.length;
+  shopScene.classList.toggle("allopen", done === total);
+  shopPlant.classList.toggle("show", done >= 3);
+  shopCat.classList.toggle("show", done >= 6);
+  shopCaption.textContent =
+    done === 0     ? "Your shop is just opening up. Finish a department to stock its first aisle." :
+    done === total ? "Every aisle stocked and the sign lit — your shop is wide awake. Thanks for tending it." :
+    `${done} of ${total} aisles stocked.` +
+      (done >= 6 ? " The shop cat has made itself at home." : done >= 3 ? " A little green on the counter now." : "");
+}
+function openShop(justC){ buildShop(justC); G.over = true; shopScrim.classList.add("show"); }
+function closeShop(){ shopScrim.classList.remove("show"); if(!scrim.classList.contains("show")) G.over = false; }
+
+document.getElementById("shopBtn").onclick   = () => { closeMenu(); openShop(); };
+document.getElementById("shopClose").onclick = closeShop;
+document.getElementById("shopDone").onclick  = closeShop;
+shopScrim.addEventListener("click", e => { if(e.target === shopScrim) closeShop(); });
+
 document.getElementById("menuBtn").onclick = openMenu;
 document.getElementById("tourBtn").onclick = startTour;
+document.getElementById("hintBtn").onclick = () => { if(!G.over && !G.ended) hintMove(); };
 document.getElementById("resetBtn").onclick = () => { if(!G.over) resetBoard(); };
 sheet.addEventListener("click", e => { if(e.target === sheet) closeMenu(); });
 

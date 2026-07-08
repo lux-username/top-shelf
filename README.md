@@ -5,8 +5,10 @@ installs to your phone home screen, plays fully offline.
 
 A cozy grocery-sorting puzzle. **No ads, no purchases, no lives — ever.** Sort each
 shelf so all three slots hold the same grocery; cleared shelves become breathing room.
-100 hand-tuned levels across ten departments, a generous (optional) timer, and unlimited
-retries with stable boards so a good plan always pays off.
+110 hand-tuned levels across eleven departments; your pick of a gentle timer, a
+tidy-solve (beat-par) challenge, or neither; a free hint whenever you want one; and a
+little shop that stocks itself as you finish each aisle. Unlimited retries with stable
+boards, so a good plan always pays off.
 
 Built as a single, dependency-free web app that installs to a phone home screen (PWA) and
 plays fully offline.
@@ -69,7 +71,7 @@ the folder (or connect a Git repo). Both give an HTTPS URL on a free tier.
 ## Verify the levels
 
 ```sh
-node tests/harness.js          # all 100 levels
+node tests/harness.js          # all levels
 node tests/harness.js 51 60    # a range (1-based, inclusive)
 ```
 
