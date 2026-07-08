@@ -2,7 +2,48 @@
 
 **Read `top-shelf-handoff.md` first** for the original design intent, anti-design rules, and the three sacred principles. This document is the *current state* after several build sessions and supersedes the "Current prototype state / Open work" sections of that original doc.
 
-The whole game lives in one file: **`index.html`** (~1490 lines, single self-contained file, no build step, no dependencies beyond two Google Fonts). Open it in any browser.
+The whole game lives in one file: **`index.html`** (~3470 lines, single self-contained file, no build step, no dependencies beyond two Google Fonts). Open it in any browser.
+
+---
+
+## CURRENT STATE — 2026-07-07 (v34, read me FIRST) 🔝
+
+> This banner is the authoritative snapshot. The dated session logs below are **history** — accurate
+> for their day but superseded on the points here. The "more challenge / more features" work since
+> 2026-06-23 is tracked in **`top-shelf-depth-spec.md`** (Phases 1–5) and the auto-memory
+> `depth-features-work.md`; this banner summarizes where that landed.
+
+- **Arc is now 110 levels across 11 departments.** A **"Paired Aisles"** chapter (linked shelves)
+  was inserted before Rush Hour, so: …CH8 Freezer → **CH_LINKED Paired Aisles (81–90)** → Rush Hour
+  (91–100) → Closing Time (101–110). `LEVELS = concat(CH1…CH8, CH_LINKED, CH9, CH10)`; `DEPTS` has 11
+  entries. **The "100 levels / 10 departments" phrasing and the chapter table further down are stale
+  by one chapter.**
+- **8 gimmicks** now (was 7): core · sealed layers · reserved 🪧 · wildcard 🛍️ · dispenser 📦 ·
+  shutter 🔒 · frozen ❄️ · **linked 🔗** (two ring-tethered shelves that must clear with the SAME
+  grocery, together; `resolveClears` clears the group, `canonical` encodes `.link`, `buildLinkedLevel`
+  reverse-scrambles).
+- **Challenge selector replaced the timer toggle.** `save.timer` (casual/easy/hard) → **`save.mode`
+  ∈ {zen, timed, tidy}** (Hard timing retired; old saves migrate). **Tidy** mode is a no-clock
+  **move-vs-par** tracker (green→orange→red), par baked as `PARS[]` (offline `tests/gen-pars.js`).
+  Per-level personal best in **`save.best`** (also powers the shop, below).
+- **Save shape is now** `topshelf.save.v1` = **`{ unlocked, current, mode, best, sfx, music }`** (was
+  `{unlocked,current,easy,sfx,music}`). `best` = `{ [levelIndex]: fewestMoves }`.
+- **New player-facing features:** a **Tour** (menu → 3 showcase levels, progression untouched); a
+  **gentle nudge** (header 💡 → `hintMove`/`showNudge`, glows a useful source shelf, opt-in, free,
+  never plays the move); and **Your Shop** (`#shopScrim`/`buildShop`/`deptDone`) — a cosmetic
+  storefront whose 11 cubbies light up as you finish each department (plant ≥3, cat ≥6, OPEN sign at
+  11/11), reachable from the menu and a dept-completion win card.
+- **Feel/juice pass (Phase 5):** clears now **cascade** (staggered ~70ms + grocery "poof" + shelf
+  "sigh"), placement pulses the receiving shelf, ambient music has **per-department beds**
+  (`SFX.setDept`/`DEPT_BEDS`), and clears fire **haptics** (`SFX.haptic`).
+- **Conveyor mode ("The Belt") was built then CUT** after playtest (2026-06-24) — user didn't like the
+  real-time mode; module fully removed (design in git history `168f13c`).
+- **Multipack is GONE** (frozen ❄️ replaced it, 2026-06-18). **Ignore every `pack`/`isPack`/
+  `doPackMove`/`{t,p}` reference in the Code-map / Gotchas below — those functions no longer exist.**
+- **SW cache is `topshelf-v34`.** **`PLAYTEST` is still `true`** (all levels open, for testing) at
+  `index.html:3249` — **flip to `false` to ship** progression locks. Art is 100% bespoke inline SVG
+  (no emoji on screen). Verified: `node tests/harness.js` = all **110** OK (default now covers every
+  level); iPhone-viewport browser check, 0 console errors.
 
 ---
 
@@ -105,6 +146,9 @@ A shelf **clears** when all 3 active slots are filled and their fronts match (`f
 | Dispenser 📦 | "UNLOAD" tag, cool tint | take-only; never accepts | shrinks working space over time |
 | Shutter 🔒 | translucent gate, "opens in N clears" | a **stocked** back-room shelf, inert until N shelves cleared | **redesigned** (see below) |
 | Frozen ❄️ | frosty glaze + snowflake tag | an item **iced to its shelf** — can never be lifted, but its shelf still clears in place when its three fronts match | item = `{t,fz:1}`; **flat only**; `isFrozen()`/`buildFrozenLevel`; **replaced multipack** |
+| Linked 🔗 | coloured ring + chain badge | two ring-tethered shelves must clear with the **same** grocery, **together** (neither clears alone) | *(added v34, CH_LINKED "Paired Aisles")* `.link`; `resolveClears` clears the group; `canonical` encodes the link; `buildLinkedLevel` |
+
+*(Modes, not gimmicks:* the menu **Challenge** selector — Zen · Timed · Tidy — plus the opt-in **💡 nudge**, the **Tour**, and **Your Shop** are UI/meta, covered in the top banner.)*
 
 ---
 
@@ -120,8 +164,8 @@ A shelf **clears** when all 3 active slots are filled and their fronts match (`f
   - **SEALED-LAYERS levels:** `genLayered(def, i)` = random-fill + solver-gate + greedy-gate (validated in `tests/proto-layers.js`). Used for **plain layered levels only** (`def.layers && !feature && !reserved`); cap **K≤4**.
   - Feature builders `injectWildcards`, `buildDispenserLevel`, `buildShutterLevel`, `buildMultipackLevel` (all flat in the current curve); router `buildLevel(def, i)` → `{board, emojis}`. `paletteFor` keys a stable emoji set off the chapter.
 - **Levels (data-first):** `DEPTS` (10 departments: name + palette), `L(kinds, empty, opts)` constructor, `mkTime`, ten chapter arrays `CH1…CH10` (10 defs each) concatenated into `LEVELS` (each gets `easy` from role intro/breather/finale, `time`, `chapter`). **No more `levelDef`/`PALETTE`/`BLURBS`/append-blocks — that was the old 47-level build.** Def fields: `kinds, empty, layers, depth(2|3), reserved, feature, wildcards, packs, shutterAfter, role, blurb`.
-- **Persistence:** `localStorage['topshelf.save.v1']` = `{unlocked, current, easy, sfx, music}`.
-- **Game state `G`:** `{index, def, board, emojis, remaining, total, selected, drag, over, ended, moveToken, cleared}`. `G.cleared` drives shutter opening.
+- **Persistence:** `localStorage['topshelf.save.v1']` = `{unlocked, current, mode, best, sfx, music}` *(updated v34; was `{…, easy, …}`)*. `mode ∈ {zen,timed,tidy}`; `best = {[levelIndex]: fewestMoves}`.
+- **Game state `G`:** `{index, def, board, emojis, remaining, total, selected, drag, over, ended, moveToken, cleared, moves, tour, tourStep}`. `G.cleared` drives shutter opening; `G.moves` feeds the Tidy par tracker.
 - **Lifecycle/UI:** `startLevel`, **`buildLevelCached`** (build-once-per-session + clone-on-use), `resetBoard` (same seed → identical board), `fitBoard` (sizes slots to fit; min 44px), `render` (active tile + greyed `.buried[0]` peek + `.depthtag`), `updateShutters`, `commitMove`, `doMove`/`doPackMove`, juice (`juiceClears`/`burstShelf`/`showCombo`), win/fail (`finishWin`, `finishDead('hard'|'soft')`, `finishTimeUp`), `showCard`/`hideCard`.
 - **Sound:** `SFX` module (Web Audio, synthesized — no asset files): pickup/place/invalid/clear-chime/win + optional ambient `music`; gated by `save.sfx`/`save.music`; unlocks on first gesture.
 - **Timer:** rAF loop; Easy mode = ∞ (global toggle, persisted); pauses on overlay/hidden tab.
@@ -148,8 +192,9 @@ looks distinct.
 | 6  | 51–60  | Mixed Bags        | wildcard 🛍️ (flat, kinds≤5) |
 | 7  | 61–70  | The Stockroom     | shutter 🔒 (reskinned off "The Cold Room" so the Freezer Aisle owns cold) |
 | 8  | 71–80  | The Freezer Aisle | frozen ❄️ (flat) — immovable items, match-in-place |
-| 9  | 81–90  | Rush Hour         | combinations (feature + reserved signs); global peak ~L90 |
-| 10 | 91–100 | Closing Time      | wind-down to calm finale |
+| 9  | 81–90  | **Paired Aisles** | **linked 🔗 shelves** *(chapter added v34 — see banner; shifts everything below down by 10)* |
+| 10 | 91–100 | Rush Hour         | combinations (feature + reserved signs); global peak ~L90 |
+| 11 | 101–110| Closing Time      | wind-down to calm finale |
 
 Teaching order (confirmed with user): reserved → dispenser → back-rows(deepen) →
 wildcard → shutter → multipack. Gimmicks combine **only** from Ch9 on (one new thing at a
@@ -252,11 +297,11 @@ The hidden-layer mechanic was redesigned per user request. **Old:** a slot held 
 - **Icon set backup/working-copy workflow** lives in **`icons/`** (`set-A.svg` = frozen backup, `set-B.svg` = working copy, `iconset.mjs` = export/apply tool, `README.md` = how-to). The game keeps its sprite **inline**; `node icons/iconset.mjs apply B` pushes `set-B.svg` into `index.html` (lossless round-trip), `apply A` restores the backup. **Edit set-B, never set-A.** Applying doesn't bump the SW cache — do that + deploy separately.
 - **2026-06-20 icon revisions:** cake-slice cherry removed (cleaner 3D wedge), shipped **v21**. **`pretzel` was replaced by `pancakes`** (the knot never read cleanly at icon size after many passes) — item key renamed `pretzel → pancakes` in the **Mixed Bags** palette and the `ICON_KEYS` list, `gPretzel` gradient swapped for `gPancake` + `gSyrup`, new `ic-pancakes` symbol; shipped **v22**. If adding bakery items, note already-used: bread, cookie, pie, croissant, baguette, bagel, cupcake, cakeslice, donut, pancakes.
 - Game file is **`index.html`** (was `top-shelf.html`). `sw.js`, `manifest.webmanifest`, `tests/harness.js` reference it.
-- **`tests/harness.js`** evals the engine slice and times `buildLevel`+`solve` for every level: `node tests/harness.js [lo] [hi]` (1-based). It reports solvable/greedy-easy/shelf-count/gen-time per level. **Run after any change to defs, generation, or the engine.** All 100 currently: solvable, **≤6 shelves**, greedy-hard except breathers/finale/intro.
+- **`tests/harness.js`** evals the engine slice and times `buildLevel`+`solve` for every level: `node tests/harness.js [lo] [hi]` (1-based; **default now covers all 110** — the default `hi` was previously capped at 100 and silently skipped the last chapter, fixed 2026-07-07). It reports solvable/greedy-easy/shelf-count/gen-time per level. **Run after any change to defs, generation, or the engine.** All 110 currently: solvable, **≤6 shelves**, greedy-hard except breathers/finale/intro.
 - **`tests/proto-layers.js`** — standalone prototype that validated the sealed-layers generation (keep as reference if revisiting that mechanic).
 - **`tests/gen-icon.js`** — regenerates the app icons (dependency-free PNG rasterizer).
 - **In-memory board cache** (`buildLevelCached` + `_boardCache`): boards build once per session, cloned per use. Clone is essential — `updateShutters` mutates `.locked` in place; sharing the cached board would corrupt replays (tested). If you precompute/bake boards later, preserve clone-on-use.
-- **SW cache** is at **`topshelf-v23`** — bump it on every HTML/asset change or returning players get the stale copy.
+- **SW cache** is at **`topshelf-v34`** — bump it on every HTML/asset change or returning players get the stale copy.
 - **Headless eval gotcha:** append test code to the *same* `eval` string as the engine slice (strict-mode `const`/`let` don't leak out of `eval`). Engine slice = from `"use strict";` to the `Persistence` comment.
 
 ---
