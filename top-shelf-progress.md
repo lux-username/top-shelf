@@ -6,12 +6,25 @@ The whole game lives in one file: **`index.html`** (~3470 lines, single self-con
 
 ---
 
-## CURRENT STATE — 2026-07-07 (v34, read me FIRST) 🔝
+## CURRENT STATE — 2026-07-08 (v35, read me FIRST) 🔝
 
 > This banner is the authoritative snapshot. The dated session logs below are **history** — accurate
 > for their day but superseded on the points here. The "more challenge / more features" work since
-> 2026-06-23 is tracked in **`top-shelf-depth-spec.md`** (Phases 1–5) and the auto-memory
+> 2026-06-23 is tracked in **`top-shelf-depth-spec.md`** (Phases 1–6) and the auto-memory
 > `depth-features-work.md`; this banner summarizes where that landed.
+
+- **NO TIMER — the game is now untimed (Timed mode retired 2026-07-08).** Playtest signal was
+  "too easy"; the fix is harder *puzzles*, not a clock, and the clock read as "arcade" not "cozy."
+  The Challenge selector is now just **Zen (calm, no clock) · Tidy (no clock + move-vs-par tracker)**;
+  **`save.mode ∈ {zen, tidy}`, default `zen`** (legacy `timed`/`casual`/`easy`/`hard` all migrate → zen).
+  All clock machinery removed (`durationFor`/`mkTime`/`tickTimer`/`startTimer`/`finishTimeUp`/the timer
+  bar). `updateHUD()` replaced `updateTimerUI()`; the HUD slot is occupied only in Tidy.
+- **Harder boards — the difficulty FLOOR was strengthened (2026-07-08).** `greedySolvable` gained a
+  1-move **lookahead (2-ply)** and generation now picks the hardest board it can (`hardnessTier`:
+  tier-2 defeats the lookahead planner, tier-1 = old quality) — **never shipping below old quality**,
+  so no level got easier. Result: **54 of 89 non-breather levels are now genuinely harder**, 0 easier,
+  0 trivial. Applies across `generateBoard`, `genLayered`, `buildLinkedLevel`, and the dispenser/frozen
+  builders. **PARS rebaked** (`tests/gen-pars.js`, now defaults to all levels) for the new boards.
 
 - **Arc is now 110 levels across 11 departments.** A **"Paired Aisles"** chapter (linked shelves)
   was inserted before Rush Hour, so: …CH8 Freezer → **CH_LINKED Paired Aisles (81–90)** → Rush Hour
@@ -23,7 +36,8 @@ The whole game lives in one file: **`index.html`** (~3470 lines, single self-con
   grocery, together; `resolveClears` clears the group, `canonical` encodes `.link`, `buildLinkedLevel`
   reverse-scrambles).
 - **Challenge selector replaced the timer toggle.** `save.timer` (casual/easy/hard) → **`save.mode`
-  ∈ {zen, timed, tidy}** (Hard timing retired; old saves migrate). **Tidy** mode is a no-clock
+  ∈ {zen, timed, tidy}** (Hard timing retired; old saves migrate). *(Timed itself was later retired
+  2026-07-08 → the selector is now just **Zen · Tidy**; see the top banner.)* **Tidy** mode is a no-clock
   **move-vs-par** tracker (green→orange→red), par baked as `PARS[]` (offline `tests/gen-pars.js`).
   Per-level personal best in **`save.best`** (also powers the shop, below).
 - **Save shape is now** `topshelf.save.v1` = **`{ unlocked, current, mode, best, sfx, music }`** (was
@@ -40,7 +54,7 @@ The whole game lives in one file: **`index.html`** (~3470 lines, single self-con
   real-time mode; module fully removed (design in git history `168f13c`).
 - **Multipack is GONE** (frozen ❄️ replaced it, 2026-06-18). **Ignore every `pack`/`isPack`/
   `doPackMove`/`{t,p}` reference in the Code-map / Gotchas below — those functions no longer exist.**
-- **SW cache is `topshelf-v34`.** **`PLAYTEST` is still `true`** (all levels open, for testing) at
+- **SW cache is `topshelf-v35`.** **`PLAYTEST` is still `true`** (all levels open, for testing) at
   `index.html:3249` — **flip to `false` to ship** progression locks. Art is 100% bespoke inline SVG
   (no emoji on screen). Verified: `node tests/harness.js` = all **110** OK (default now covers every
   level); iPhone-viewport browser check, 0 console errors.
@@ -148,7 +162,7 @@ A shelf **clears** when all 3 active slots are filled and their fronts match (`f
 | Frozen ❄️ | frosty glaze + snowflake tag | an item **iced to its shelf** — can never be lifted, but its shelf still clears in place when its three fronts match | item = `{t,fz:1}`; **flat only**; `isFrozen()`/`buildFrozenLevel`; **replaced multipack** |
 | Linked 🔗 | coloured ring + chain badge | two ring-tethered shelves must clear with the **same** grocery, **together** (neither clears alone) | *(added v34, CH_LINKED "Paired Aisles")* `.link`; `resolveClears` clears the group; `canonical` encodes the link; `buildLinkedLevel` |
 
-*(Modes, not gimmicks:* the menu **Challenge** selector — Zen · Timed · Tidy — plus the opt-in **💡 nudge**, the **Tour**, and **Your Shop** are UI/meta, covered in the top banner.)*
+*(Modes, not gimmicks:* the menu **Challenge** selector — **Zen · Tidy** (untimed; Timed retired) — plus the opt-in **💡 nudge**, the **Tour**, and **Your Shop** are UI/meta, covered in the top banner.)*
 
 ---
 
@@ -164,7 +178,7 @@ A shelf **clears** when all 3 active slots are filled and their fronts match (`f
   - **SEALED-LAYERS levels:** `genLayered(def, i)` = random-fill + solver-gate + greedy-gate (validated in `tests/proto-layers.js`). Used for **plain layered levels only** (`def.layers && !feature && !reserved`); cap **K≤4**.
   - Feature builders `injectWildcards`, `buildDispenserLevel`, `buildShutterLevel`, `buildMultipackLevel` (all flat in the current curve); router `buildLevel(def, i)` → `{board, emojis}`. `paletteFor` keys a stable emoji set off the chapter.
 - **Levels (data-first):** `DEPTS` (10 departments: name + palette), `L(kinds, empty, opts)` constructor, `mkTime`, ten chapter arrays `CH1…CH10` (10 defs each) concatenated into `LEVELS` (each gets `easy` from role intro/breather/finale, `time`, `chapter`). **No more `levelDef`/`PALETTE`/`BLURBS`/append-blocks — that was the old 47-level build.** Def fields: `kinds, empty, layers, depth(2|3), reserved, feature, wildcards, packs, shutterAfter, role, blurb`.
-- **Persistence:** `localStorage['topshelf.save.v1']` = `{unlocked, current, mode, best, sfx, music}` *(updated v34; was `{…, easy, …}`)*. `mode ∈ {zen,timed,tidy}`; `best = {[levelIndex]: fewestMoves}`.
+- **Persistence:** `localStorage['topshelf.save.v1']` = `{unlocked, current, mode, best, sfx, music}` *(updated v34; was `{…, easy, …}`)*. `mode ∈ {zen,tidy}` *(Timed retired v35)*; `best = {[levelIndex]: fewestMoves}`.
 - **Game state `G`:** `{index, def, board, emojis, remaining, total, selected, drag, over, ended, moveToken, cleared, moves, tour, tourStep}`. `G.cleared` drives shutter opening; `G.moves` feeds the Tidy par tracker.
 - **Lifecycle/UI:** `startLevel`, **`buildLevelCached`** (build-once-per-session + clone-on-use), `resetBoard` (same seed → identical board), `fitBoard` (sizes slots to fit; min 44px), `render` (active tile + greyed `.buried[0]` peek + `.depthtag`), `updateShutters`, `commitMove`, `doMove`/`doPackMove`, juice (`juiceClears`/`burstShelf`/`showCombo`), win/fail (`finishWin`, `finishDead('hard'|'soft')`, `finishTimeUp`), `showCard`/`hideCard`.
 - **Sound:** `SFX` module (Web Audio, synthesized — no asset files): pickup/place/invalid/clear-chime/win + optional ambient `music`; gated by `save.sfx`/`save.music`; unlocks on first gesture.

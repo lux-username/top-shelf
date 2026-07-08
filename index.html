@@ -120,22 +120,7 @@
     color:var(--ink-soft); font-size:1rem; text-align:center;
     min-height:1.3em; padding:0 8px 8px;
   }
-  .timerwrap{ display:flex; align-items:center; gap:10px; padding:0 2px 10px; }
-  .timerbar{
-    flex:1; height:12px; border-radius:99px; overflow:hidden;
-    background:var(--cream-2);
-    box-shadow:inset 0 1px 3px rgba(74,58,42,.18);
-  }
-  .timerfill{
-    height:100%; width:100%;
-    background:linear-gradient(90deg,var(--good),#8cc4a0);
-    border-radius:99px;
-    transition:width .25s linear, background .4s ease;
-  }
-  .timerfill.warn{ background:linear-gradient(90deg,var(--warn),#e7b777); }
-  .timerfill.crit{ background:linear-gradient(90deg,var(--bad),#e29c8c); }
-  .timertxt{ font-weight:800; font-size:.82rem; color:var(--ink-soft); min-width:52px; text-align:right; font-variant-numeric:tabular-nums; }
-  .timertxt .inf{ font-size:1.2rem; line-height:1; }
+  .timerwrap{ display:flex; align-items:center; justify-content:center; gap:10px; padding:0 2px 10px; }
   /* Tidy-mode move-vs-par tracker (shown in place of the clock). Soft palette colors
      keep the red gentle — a tidiness cue, never an alarm. */
   .movestxt{ flex:1; font-weight:800; font-size:.98rem; color:var(--ink-soft); text-align:center; font-variant-numeric:tabular-nums; transition:color .3s ease; }
@@ -1343,10 +1328,8 @@
 
   <div class="blurb" id="blurb"></div>
 
-  <div class="timerwrap" id="timerwrap">
-    <div class="timerbar" id="timerbar"><div class="timerfill" id="timerfill"></div></div>
-    <div class="timertxt" id="timertxt">0:00</div>
-    <div class="movestxt" id="movestxt" style="display:none"></div>
+  <div class="timerwrap" id="timerwrap" style="display:none">
+    <div class="movestxt" id="movestxt"></div>
   </div>
 
   <div id="board"></div>
@@ -1369,10 +1352,9 @@
   <div class="panel">
     <div class="grab"></div>
     <div class="row col">
-      <div class="txt"><b>Challenge</b><span>Zen has no clock. Timed is a gentle clock. Tidy drops the clock and tracks your moves against par.</span></div>
+      <div class="txt"><b>Challenge</b><span>No clock, ever — take all the time you need. Zen is a calm sort. Tidy adds an optional move-vs-par tidiness cue.</span></div>
       <div class="seg" id="timerSeg">
         <button data-mode="zen">Zen</button>
-        <button data-mode="timed">Timed</button>
         <button data-mode="tidy">Tidy</button>
       </div>
     </div>
@@ -1548,15 +1530,17 @@ function linkGroupReady(b, id){
 /* Remove a shelf's three matched fronts; SEALED LAYERS: if the active layer is now
    empty and a buried row waits, raise that whole row (may itself match → cascade). */
 function clearShelf(sh, idx, out){
-  // capture the cleared grocery ONLY when a UI collector wants it (out.keys); the
-  // solver passes no `out`, so its hot path skips this entirely.
+  // capture the cleared grocery's TYPE ONLY when a UI collector wants it (out.keys);
+  // the solver passes no `out`, so its hot path skips this. Store the raw type id
+  // (or WILD) — the renderer maps it to a glyph where G.emojis is available — so this
+  // stays free of game-state globals and works in the offline harness/par tools.
   const col = (out && out.keys) ? shelfColor(sh) : WILD;
   for(const sl of sh) sl.shift();
   if(sh.buried && sh.buried.length && sh.every(sl => sl.length === 0)){
     const row = sh.buried.shift();
     for(let s = 0; s < 3; s++) sh[s].push(row[s]);
   }
-  if(out){ out.push(idx); if(out.keys) out.keys[idx] = (col === WILD ? "wild" : G.emojis[col]); }
+  if(out){ out.push(idx); if(out.keys) out.keys[idx] = col; }
 }
 
 /* Collect every clearable monochrome shelf, cascading as back rows advance. If `out`
@@ -1776,40 +1760,68 @@ function tryBuild(K, emptyShelves, layers, extraClears, reserved, rand, depth){
   return board;
 }
 
-/* DIFFICULTY FLOOR — a myopic "greedy" player. It always grabs an immediate
-   clear, else builds toward a match (front onto a shelf already holding that
-   type), else gives up. If greedy can finish a board, the board needs no
-   foresight — it's trivially easy (the "boring" failure mode). We reject
-   greedy-solvable boards during generation so every shipped board genuinely
-   requires planning. Deterministic, so boards stay stable across retries. */
-function greedySolvable(board){
+/* DIFFICULTY FLOOR — a shallow-lookahead "greedy" player (2-ply). It always grabs
+   an immediate clear; otherwise it looks ONE move ahead and takes the move that
+   best sets up a clear next turn (or, failing that, best stacks a match). If this
+   shallow planner can finish a board, the board needs little real foresight — it's
+   too easy (the "boring" failure mode). We reject such boards during generation so
+   every shipped board genuinely requires a multi-step insight. **Strengthened
+   2026-07-08 from 1-ply to 2-ply** (playtest: too easy) — the 2-ply player solves
+   strictly more boards, so generation now keeps searching until it finds one even
+   this planner can't crack, reseeding each level to a harder board of the same
+   size. Deterministic, so boards stay stable across retries. The extra lookahead is
+   cheap next to the full `solve()` that already gates each candidate. */
+function greedySolvable(board, ply){
+  const look = ply || 1;                           // 1 = myopic (old floor); 2 = one-move lookahead
   let b = cloneBoard(board);
   const seen = new Set();
   const count = bd => bd.reduce((n, sh) => n + sh.reduce((m, sl) => m + sl.length, 0) + (sh.buried ? sh.buried.length * 3 : 0), 0);
+  const stackScore = (bd, mv) => {                 // how many of the same type the destination already holds
+    const t = TYPE(bd[mv.fs][mv.ss][0]);
+    let same = 0;
+    for(const sl of bd[mv.ts]) if(sl.length && TYPE(sl[0]) === t) same++;
+    return same;
+  };
   while(hasItems(b)){
     const k = canonical(b);
-    if(seen.has(k)) return false;                 // looping without finishing → not greedy-trivial
+    if(seen.has(k)) return false;                  // looping without finishing → needs planning
     seen.add(k);
     const moves = legalMoves(b);
-    if(!moves.length) return false;               // greedy stuck → needs planning
+    if(!moves.length) return false;                // stuck → needs planning
     const before = count(b);
     let advanced = false;
-    for(const mv of moves){                       // 1) any move that clears a shelf now
+    for(const mv of moves){                        // 1) any move that clears a shelf NOW
       const nb = applyMove(b, mv);
       if(count(nb) < before){ b = nb; advanced = true; break; }
     }
     if(advanced) continue;
-    let best = null, bestScore = 0;               // 2) best move that builds a match
+    // 2) pick the best constructive move. At ply≥2 a move that ENABLES a clear next
+    //    turn is strongly preferred (one-move lookahead); at ply 1, just stacking.
+    let best = null, bestScore = 0;
     for(const mv of moves){
-      const t = TYPE(b[mv.fs][mv.ss][0]);
-      let same = 0;
-      for(const sl of b[mv.ts]) if(sl.length && TYPE(sl[0]) === t) same++;
-      if(same > bestScore){ bestScore = same; best = mv; }
+      let score = stackScore(b, mv);               // baseline: 1-ply constructive value
+      if(look >= 2){
+        const nb = applyMove(b, mv);
+        const nbCount = count(nb);
+        for(const mv2 of legalMoves(nb)){          // any follow-up that clears? → this move is a setup
+          if(count(applyMove(nb, mv2)) < nbCount){ score += 10; break; }
+        }
+      }
+      if(score > bestScore){ bestScore = score; best = mv; }
     }
-    if(best){ b = applyMove(b, best); continue; }  // bestScore>=1 → a constructive move exists
-    return false;                                  // no constructive move → needs planning
+    if(best && bestScore > 0){ b = applyMove(b, best); continue; }
+    return false;                                  // no constructive/setup move → needs planning
   }
   return true;
+}
+
+/* Difficulty tier of a solvable board: 2 = defeats the 1-move-lookahead planner
+   (the hardest we select for), 1 = defeats the myopic planner only (old-game
+   quality), 0 = even the myopic planner finishes it (trivial). Generation prefers
+   the highest tier it can find and NEVER ships below tier 1 for a hard level, so
+   the strengthened floor can only make boards harder, never easier. */
+function hardnessTier(board){
+  return !greedySolvable(board, 2) ? 2 : !greedySolvable(board, 1) ? 1 : 0;
 }
 
 /* Build, validate, enforce the difficulty floor, and fall back to gentler params
@@ -1832,8 +1844,12 @@ function generateBoard(def, levelIndex){
     { K: Math.max(3, def.kinds - 1), empty: def.empty, layers: def.layers, extra: Math.max(1, def.extra - 1), reserved: 0,                 depth: Math.min(depth, 2) },
     { K: Math.max(3, def.kinds - 1), empty: def.empty + 1, layers: false,    extra: 0,                          reserved: 0,                 depth: 1 },
   ];
+  // Tiered selection: prefer a tier-2 board (defeats the 1-move-lookahead planner);
+  // keep the hardest board seen as the fallback so we NEVER ship below tier 1 (old
+  // quality) for a hard level. Once a tier-1 board is in hand we hunt only a short
+  // extra window for a tier-2 (they're rarer), which bounds generation cost.
+  let best = null, bestTier = -1;
   for(const cfg of ladders){
-    let ladderSolvable = null;
     for(let attempt = 0; attempt < 40; attempt++){
       const seed = (levelIndex + 1) * 1_000_003 + attempt * 7919 + (cfg.layers ? 11 : 0) + cfg.depth * 101 + cfg.reserved * 31;
       const rand = mulberry32(seed);
@@ -1844,14 +1860,16 @@ function generateBoard(def, levelIndex){
       const emptySlots = board.reduce((n, sh) => n + emptyCount(sh), 0);
       if(emptySlots < 2) continue;
       if(legalMoves(board).length === 0) continue;
-      const v = solve(board, 250_000);
-      if(!v.solvable) continue;
-      if(!ladderSolvable) ladderSolvable = board;          // safety net for this rung
-      if(!wantHard || !greedySolvable(board)) return board; // needs planning (or easy level) → ship it
-      // else: greedy-trivial and we want hard → keep searching this rung
+      if(!solve(board, 250_000).solvable) continue;
+      if(!wantHard) return board;                          // breather/intro/finale → first solvable, stays gentle
+      const tier = hardnessTier(board);
+      if(tier === 2) return board;                         // hardest available → ship immediately
+      if(tier > bestTier){ bestTier = tier; best = board; }
+      if(bestTier >= 1 && attempt >= 10) break;            // a solid (≥old-quality) board in hand; stop hunting
     }
-    if(ladderSolvable) return ladderSolvable;              // rung only made easy boards → still hardest available here
+    if(best && bestTier >= 1) return best;                 // ≥ old-game quality on this rung → don't relax further
   }
+  if(best) return best;                                    // only trivial boards existed — hardest of them
   // Should never happen; degrade to a trivially solvable starter.
   return tryBuild(3, 3, false, 0, 0, mulberry32(levelIndex + 1), 1) ||
          [[[0],[0],[]], [[0],[],[]], [[],[],[]]];
@@ -1869,6 +1887,7 @@ function genLayered(def, levelIndex){
   const K = def.kinds, E = def.empty, depth = def.depth || 2;
   const wantHard = !def.easy;
   const rows = K * depth;
+  let best = null, bestTier = -1;
   for(let attempt = 0; attempt < 80; attempt++){
     const rand = mulberry32((levelIndex + 1) * 1_000_003 + attempt * 7919 + depth * 101 + K * 31);
     const rowTypes = []; for(let r = 0; r < rows; r++) rowTypes.push(r % K);
@@ -1888,12 +1907,15 @@ function genLayered(def, levelIndex){
     for(let e = 0; e < E; e++) board.push([[], [], []]);
     if(hasMonochromeFull(board)) continue;                            // no frame-one clears
     if(legalMoves(board).length === 0) continue;                      // must be playable (needs E>=1)
-    const v = solve(board, 100000);
-    if(!v.solvable) continue;
-    if(wantHard && greedySolvable(board)) continue;                   // require planning
-    return board;
+    if(!solve(board, 100000).solvable) continue;
+    if(!wantHard) return board;                                       // breather/intro → first solvable
+    const tier = hardnessTier(board);                                 // prefer tier-2; keep best as fallback
+    if(tier === 2) return board;
+    if(tier > bestTier){ bestTier = tier; best = board; }
+    if(bestTier >= 1 && attempt >= 14) break;
   }
-  return generateBoard({ ...def, layers: false, depth: 1 }, levelIndex);  // gentle flat fallback (rare)
+  if(best) return best;                                               // keep the LAYERED board (≥ old quality)
+  return generateBoard({ ...def, layers: false, depth: 1 }, levelIndex);  // only if nothing solvable — gentle flat fallback (rare)
 }
 
 /* ---------- per-level emoji assignment ----------
@@ -1928,6 +1950,8 @@ function injectWildcards(board, count, rand){
    so we solver-gate each candidate and keep the first that stays winnable
    (trying several shelves/seeds), falling back to no dispenser if none fit. */
 function buildDispenserLevel(def, levelIndex){
+  const wantHard = !def.easy;
+  let fallback = null;                                    // first solvable, if none also needs planning
   for(let attempt = 0; attempt < 40; attempt++){
     const board = generateBoard(def, levelIndex + attempt * 1000);
     const cands = board.map((_, idx) => idx)
@@ -1935,12 +1959,15 @@ function buildDispenserLevel(def, levelIndex){
     shuffle(cands, mulberry32(levelIndex * 131 + attempt + 1));
     for(const idx of cands.slice(0, 4)){
       board[idx].dispenser = true;
-      if(legalMoves(board).length > 0 && solve(board, 250000).solvable)
-        return { board, emojis: paletteFor(levelIndex, def.kinds) };
+      if(legalMoves(board).length > 0 && solve(board, 250000).solvable){
+        if(!wantHard || hardnessTier(board) >= 1)         // solvable AND needs planning → ship
+          return { board, emojis: paletteFor(levelIndex, def.kinds) };
+        if(!fallback) fallback = { board: cloneBoard(board), emojis: paletteFor(levelIndex, def.kinds) };
+      }
       delete board[idx].dispenser;
     }
   }
-  return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+  return fallback || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
 }
 
 /* SHUTTER: designate a STOCKED shelf as a locked back room — its groceries are
@@ -1983,6 +2010,8 @@ function buildShutterLevel(def, levelIndex){
    shelf that's already monochrome-full (it would auto-clear). */
 function buildFrozenLevel(def, levelIndex){
   const want = def.frozen || 1;
+  const wantHard = !def.easy;
+  let fallback = null;
   for(let attempt = 0; attempt < 60; attempt++){
     const board = generateBoard(def, levelIndex + attempt * 1000);
     const order = shuffle(board.map((_, i) => i), mulberry32(levelIndex * 911 + attempt + 1));
@@ -2001,10 +2030,13 @@ function buildFrozenLevel(def, levelIndex){
     // modest cap verifies winners cheaply AND rejects the (common) unsolvable
     // freezes fast — keeping first-load generation snappy even when freezing is
     // tight. (Frozen only removes moves from an already-verified base board.)
-    if(!hasMonochromeFull(board) && legalMoves(board).length > 0 && solve(board, 120000).solvable)
-      return { board, emojis: paletteFor(levelIndex, def.kinds) };
+    if(!hasMonochromeFull(board) && legalMoves(board).length > 0 && solve(board, 120000).solvable){
+      if(!wantHard || hardnessTier(board) >= 1)           // solvable AND needs planning → ship
+        return { board, emojis: paletteFor(levelIndex, def.kinds) };
+      if(!fallback) fallback = { board: cloneBoard(board), emojis: paletteFor(levelIndex, def.kinds) };
+    }
   }
-  return { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
+  return fallback || { board: generateBoard(def, levelIndex), emojis: paletteFor(levelIndex, def.kinds) };
 }
 
 /* LINKED shelves: N pairs of shelves that must each be cleared with the SAME grocery
@@ -2054,16 +2086,19 @@ function buildLinkedLevel(def, levelIndex){
     for(let g = 0; g < 30 && hasMonochromeFull(board); g++) linkedScatter(board, rand, true);  // no frame-one clears
     return board;
   };
-  let fallback = null;
+  let best = null, bestTier = -1, fallback = null;
   for(let attempt = 0; attempt < 100; attempt++){
     const rand = mulberry32((levelIndex + 1) * 7333 + attempt * 17 + 1);
     const board = build(rand);
     if(hasMonochromeFull(board) || legalMoves(board).length === 0) continue;
     if(!solve(board, 200000).solvable) continue;          // link-aware (resolveClears) verification
     if(!fallback) fallback = board;                        // first solvable = safety net
-    if(!greedySolvable(board)) return { board, emojis: paletteFor(levelIndex, K) };   // hard + solvable
+    const tier = hardnessTier(board);                      // prefer tier-2; never regress below tier-1
+    if(tier === 2) return { board, emojis: paletteFor(levelIndex, K) };
+    if(tier > bestTier){ bestTier = tier; best = board; }
+    if(bestTier >= 1 && attempt >= 16) break;
   }
-  return { board: fallback || build(mulberry32((levelIndex + 1) * 99991)), emojis: paletteFor(levelIndex, K) };
+  return { board: best || fallback || build(mulberry32((levelIndex + 1) * 99991)), emojis: paletteFor(levelIndex, K) };
 }
 
 /* Single entry point: produce {board, emojis} for a level. Routes by feature. */
@@ -2120,17 +2155,6 @@ const DEPTS = [
    count), an optional feature, and a one-line blurb. */
 const L = (kinds, empty, o = {}) =>
   ({ kinds, empty, layers: false, extra: 0, reserved: 0, ...o });
-
-/* Base (Easy-mode) timer: thinking room scales with the work (layered levels hold
-   far more items in their buried rows), but kept tighter than before so even the
-   gentle clock has a little pulse. `time` is the Timed-mode duration; Zen and Tidy
-   ignore it (no clock). */
-const mkTime = d => {
-  const items = d.layers ? d.kinds * (d.depth || 2) * 3 : d.kinds * 3;
-  let t = items * 6.5;
-  if (d.feature) t += 25;
-  return Math.min(240, Math.max(60, Math.round(t)));
-};
 
 /* Difficulty now comes from TIGHT space (empty 0-1), DEEP back rows (depth 2-3),
    and constraints + the greedy difficulty floor — NOT from type count. Boards are
@@ -2317,35 +2341,32 @@ const CH10 = [
    "move" = one commitMove (cascades bundled), matching the in-game counter. Slot
    placement is irrelevant to par (canonical sorts slots). Re-run gen-pars.js if
    level defs or generation change. */
-const PARS = [4,7,6,8,8,9,4,7,9,8,10,8,15,10,12,14,9,13,11,13,4,6,6,7,8,6,4,7,6,6,4,7,7,7,10,7,5,9,10,6,12,28,26,20,20,22,8,22,27,27,5,6,6,7,8,8,4,8,9,9,4,6,6,7,9,5,4,9,7,9,4,6,5,9,7,8,5,9,10,8,3,5,3,6,4,6,4,7,7,7,8,5,9,9,8,7,4,9,6,7,6,8,14,5,9,8,5,6,8,6];
+const PARS = [4,7,6,8,8,9,4,7,9,8,10,8,15,10,12,14,9,15,11,13,4,8,6,7,8,6,4,7,6,6,4,7,7,7,10,7,5,9,10,6,12,28,26,28,20,22,8,22,27,25,5,6,6,7,8,8,4,8,9,9,4,6,6,7,9,5,4,9,7,9,4,6,5,9,7,8,5,9,10,8,4,5,4,5,4,5,4,7,7,7,8,5,9,9,8,7,4,7,6,8,6,8,14,5,12,8,5,6,8,6];
 
 const LEVELS = [].concat(CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8, CH_LINKED, CH9, CH10)
   .map((d, i) => ({ ...d,
     easy: d.role === "breather" || d.role === "finale" || d.role === "intro",
-    time: mkTime(d), chapter: Math.floor(i / 10), par: PARS[i] }));
+    chapter: Math.floor(i / 10), par: PARS[i] }));
 
 /* =======================================================================
    Persistence (localStorage only — nothing depleting lives here)
    ======================================================================= */
 const SAVE_KEY = "topshelf.save.v1";
-const MODES = ["zen", "timed", "tidy"];   // challenge axes: no-clock · clock · move-vs-par
+const MODES = ["zen", "tidy"];   // challenge axes: calm untimed sort · move-vs-par (Timed retired 2026-07-08)
 function loadSave(){
   try{
     const s = JSON.parse(localStorage.getItem(SAVE_KEY));
     if(s && typeof s === "object"){
-      // migrate older saves: the three-way timer (casual/easy/hard) and the even
-      // older boolean `easy` (timer off) → the new mode. casual → zen; easy/hard → timed.
-      let mode = s.mode;
-      if(!MODES.includes(mode)){
-        const t = ["casual","easy","hard"].includes(s.timer) ? s.timer : (s.easy ? "casual" : "easy");
-        mode = t === "casual" ? "zen" : "timed";
-      }
+      // migrate older saves: the retired Timed mode and the even older timer
+      // (casual/easy/hard) / boolean `easy` all collapse to the untimed default
+      // (Zen); a saved Tidy preference is kept. Timed was removed 2026-07-08.
+      const mode = MODES.includes(s.mode) ? s.mode : "zen";
       return { unlocked: s.unlocked|0 || 1, current: s.current|0 || 0, mode,
                best: (s.best && typeof s.best === "object") ? s.best : {},
                sfx: s.sfx !== false, music: !!s.music };
     }
   }catch(e){}
-  return { unlocked: 1, current: 0, mode: "timed", best: {}, sfx: true, music: false };
+  return { unlocked: 1, current: 0, mode: "zen", best: {}, sfx: true, music: false };
 }
 function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
 let save = loadSave();
@@ -2480,10 +2501,7 @@ const boardEl   = document.getElementById("board");
 const blurbEl   = document.getElementById("blurb");
 const levelLabel= document.getElementById("levelLabel");
 const hintEl    = document.getElementById("hint");
-const timerWrap = document.getElementById("timerwrap");
-const timerBar  = document.getElementById("timerbar");
-const timerFill = document.getElementById("timerfill");
-const timerTxt  = document.getElementById("timertxt");
+const timerWrap = document.getElementById("timerwrap");   // HUD container (Tidy move tracker only)
 const movesTxt  = document.getElementById("movestxt");
 
 const G = {
@@ -2547,8 +2565,6 @@ function startLevel(i, tour){
   G.cleared = 0;
   G.moves = 0;
   G.moveToken++;             // invalidate any pending (delayed) soft-deadlock check from the last level
-  G.total = durationFor(G.def);
-  G.remaining = G.total;
   updateShutters();
 
   if(!G.tour){ save.current = i; persist(); }   // the tour never advances/saves progression
@@ -2563,8 +2579,7 @@ function startLevel(i, tour){
   hintEl.textContent = "Drag a grocery onto a shelf with room — match three to clear it.";
   lastTileSig = null;            // fresh board → let every tile deal in
   render();
-  updateTimerUI();
-  startTimer();                  // (re)start the clock — stopped by the previous level's end card
+  updateHUD();                   // Tidy shows the move-vs-par tracker; Zen shows nothing
 }
 
 function resetBoard(){ startLevel(G.index, G.tour); }  // same seed → identical board; keep tour context
@@ -2716,18 +2731,20 @@ function juiceClears(cleared){
     setTimeout(() => burstShelf(i, big, cleared.keys ? cleared.keys[i] : null), k * 70));
   if(cleared.length >= 2) showCombo(cleared.length);
 }
-function burstShelf(i, big, key){
+function burstShelf(i, big, col){
   const el = boardEl.querySelector('.shelf[data-shelf="' + i + '"]');
   if(!el) return;
   el.classList.remove("flash", "sigh"); void el.offsetWidth; el.classList.add("flash", "sigh");
   setTimeout(() => el.classList.remove("flash", "sigh"), 640);
   const r = el.getBoundingClientRect();
   const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  // the three groceries merge and give a happy little "poof" up out of the shelf
-  if(key){
+  // the three groceries merge and give a happy little "poof" up out of the shelf.
+  // `col` is a cleared TYPE id (or WILD) — map it to a glyph here, where G.emojis exists.
+  if(col != null){
+    const gkey = col === WILD ? "wild" : G.emojis[col];
     for(let p = 0; p < 3; p++){
       const g = document.createElement("div");
-      g.className = "poof"; g.innerHTML = glyphHTML(key);
+      g.className = "poof"; g.innerHTML = glyphHTML(gkey);
       g.style.left = (cx + (p - 1) * r.width * 0.24) + "px"; g.style.top = cy + "px";
       g.style.setProperty("--pr", ((p - 1) * 12) + "deg");
       document.body.appendChild(g);
@@ -2818,7 +2835,7 @@ function commitMove(mv){
   G.selected = null;
   G.moveToken++;
   render();
-  updateTimerUI();                            // refresh the Tidy move-vs-par tracker
+  updateHUD();                                // refresh the Tidy move-vs-par tracker
   if(cleared.length){
     juiceClears(cleared); SFX.clear(cleared.length);
     SFX.haptic(cleared.length >= 2 ? [0, 14, 55, 20, 55, 28] : 18);   // richer buzz for a cascade
@@ -2879,7 +2896,6 @@ function slideWithinShelf(fs, ss, ts2){
 function finishWin(){
   if(G.tour) return finishTourWin();
   G.ended = true;
-  stopTimer();
   SFX.win();
   const last = G.index >= LEVELS.length - 1;
   if(!last) save.unlocked = Math.max(save.unlocked, G.index + 2);
@@ -2922,7 +2938,6 @@ function finishWin(){
    progression, and ends by handing the player off to the real Level 1. */
 function finishTourWin(){
   G.ended = true;
-  stopTimer();
   SFX.win();
   const step = G.tourStep;
   const lastStep = step >= TOUR.length - 1;
@@ -2951,7 +2966,6 @@ function finishTourWin(){
 
 function finishDead(kind){
   G.ended = true;
-  stopTimer();
   if(kind === "hard"){
     showCard({
       emoji: "card-stuck",
@@ -2971,62 +2985,14 @@ function finishDead(kind){
   }
 }
 
-function finishTimeUp(){
-  G.ended = true;
-  stopTimer();
-  showCard({
-    emoji: "card-time",
-    title: "Time's up",
-    body: "No worries — nothing lost. The same board is right here for another try. (Prefer no clock? Switch the Timer to Casual in the menu.)",
-    primary: "Try again",
-    onPrimary: () => { hideCard(); resetBoard(); },
-  });
-}
-
-/* ---------- challenge HUD: clock (Timed) or move-vs-par (Tidy) ---------- */
-function durationFor(def){ return def.time; }        // only Timed reads it; Zen/Tidy ignore
-/* The clock runs only in Timed mode (never in Zen, Tidy, or the tour). */
-function clockActive(){ return save.mode === "timed" && !G.tour; }
-
-let timerHandle = null, lastTick = 0;
-function tickTimer(now){
-  if(G.over || G.ended || !clockActive()){ lastTick = now; timerHandle = requestAnimationFrame(tickTimer); return; }
-  if(!lastTick) lastTick = now;
-  const dt = (now - lastTick) / 1000;
-  lastTick = now;
-  G.remaining = Math.max(0, G.remaining - dt);
-  updateTimerUI();
-  if(G.remaining <= 0){ finishTimeUp(); return; }
-  timerHandle = requestAnimationFrame(tickTimer);
-}
-function startTimer(){
-  stopTimer();
-  lastTick = 0;
-  timerHandle = requestAnimationFrame(tickTimer);
-}
-function stopTimer(){ if(timerHandle){ cancelAnimationFrame(timerHandle); timerHandle = null; } }
-
-/* One HUD readout at a time. Tidy → move-vs-par tracker; Timed → clock; Zen/tour → ∞. */
-function updateTimerUI(){
+/* ---------- challenge HUD: the move-vs-par tracker (Tidy), or nothing (Zen) ----------
+   The clock is gone (Timed retired 2026-07-08) — the game is now purely
+   take-all-the-time-you-need. The HUD slot is only occupied in Tidy mode. */
+function updateHUD(){
   const tidy = save.mode === "tidy" && !G.tour;
+  timerWrap.style.display = tidy ? "" : "none";
   movesTxt.style.display = tidy ? "" : "none";
-  timerBar.style.display = tidy ? "none" : "";
-  timerTxt.style.display = tidy ? "none" : "";
-  if(tidy){ renderMoves(); return; }
-
-  if(G.tour || save.mode === "zen"){
-    timerWrap.style.opacity = ".7";
-    timerFill.style.width = "100%";
-    timerFill.className = "timerfill";
-    timerTxt.innerHTML = '<span class="inf">∞</span>';
-    return;
-  }
-  timerWrap.style.opacity = "1";
-  const frac = G.total ? G.remaining / G.total : 0;
-  timerFill.style.width = (frac * 100).toFixed(1) + "%";
-  timerFill.className = "timerfill" + (frac < 0.15 ? " crit" : frac < 0.35 ? " warn" : "");
-  const s = Math.ceil(G.remaining);
-  timerTxt.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  if(tidy) renderMoves();
 }
 
 /* Tidy-mode tracker: moves so far vs the level's par, green→orange→red as you cross
@@ -3347,11 +3313,7 @@ timerSeg.addEventListener("click", e => {
   save.mode = btn.dataset.mode;
   syncTimerSeg();
   persist();
-  // re-base the HUD for this level under the new mode (clock ↔ move tracker ↔ ∞)
-  G.total = durationFor(G.def);
-  G.remaining = Math.min(G.remaining, G.total);
-  updateTimerUI();
-  if(!G.ended && !G.over) startTimer();
+  updateHUD();                          // swap the HUD: move-vs-par tracker (Tidy) ↔ nothing (Zen)
 });
 
 sfxToggle.onclick = () => {

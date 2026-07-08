@@ -5,10 +5,10 @@ installs to your phone home screen, plays fully offline.
 
 A cozy grocery-sorting puzzle. **No ads, no purchases, no lives — ever.** Sort each
 shelf so all three slots hold the same grocery; cleared shelves become breathing room.
-110 hand-tuned levels across eleven departments; your pick of a gentle timer, a
-tidy-solve (beat-par) challenge, or neither; a free hint whenever you want one; and a
-little shop that stocks itself as you finish each aisle. Unlimited retries with stable
-boards, so a good plan always pays off.
+110 hand-tuned levels across eleven departments — **no clock, ever**, so you can take
+all the time you need; an optional tidy-solve (beat-par) challenge; a free hint whenever
+you want one; and a little shop that stocks itself as you finish each aisle. Unlimited
+retries with stable boards, so a good plan always pays off.
 
 Built as a single, dependency-free web app that installs to a phone home screen (PWA) and
 plays fully offline.

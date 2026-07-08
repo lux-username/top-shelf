@@ -46,7 +46,10 @@ Applied to Top Shelf:
 3. **Back-row depth** — adds *planning uncertainty* (can't fully pre-plan). Use sparingly in cozy
    stretches; it's the lever most likely to tip into "I can't see a path" frustration.
 4. **Gimmicks** — each is a difficulty event in itself (see §2). Treat introducing one as a spike.
-5. **Timer** — keep it the soft/optional lever it already is. Never the source of a spike.
+5. ~~**Timer** — keep it the soft/optional lever it already is. Never the source of a spike.~~
+   **RETIRED 2026-07-08:** the timer was removed entirely (playtest read it as "arcade," and it's the
+   weakest difficulty lever anyway). The game is now purely untimed; difficulty comes from levers 1–4 +
+   the strengthened greedy floor. The principle stands — a clock was never the right spike source.
 
 ---
 
@@ -128,8 +131,9 @@ verification 0-3.** Cozy is **not** the same as easy. A cozy game can be genuine
 
 **Confirmed, what coziness actually requires:**
 - **Player agency / opt-in pressure.** The player controls their own pace and exposure. Our
-  optional timer + unlimited retries + stable boards are textbook-correct: *the player chooses how
-  much pressure to feel.* Keep Easy mode (timer off) prominent.
+  untimed play + unlimited retries + stable boards are textbook-correct: *the player chooses how
+  much pressure to feel.* (As of 2026-07-08 the game is **fully untimed** — the only optional pressure
+  is the self-referential **Tidy** move-vs-par tracker, which never blocks or fails.)
 - **Don't lean on extrinsic rewards.** Confirmed: extrinsic reward systems (coins, streak meters,
   star-greed) *undermine* coziness by reframing intrinsic play as a chore. This is the same insight
   as our "no depleting resources, ever" rule — research independently confirms it's not just

@@ -225,6 +225,28 @@ thing," and the biggest build.
 | **3 ✅ DONE** | One new gimmick (Linked shelves) | larger | **Built + browser-verified (2026-06-24).** Two shelves tethered by a coloured ring must clear with the SAME grocery, together. Engine: clear-together `resolveClears` + link-encoded `canonical` (fuzz-verified vs brute force). `buildLinkedLevel` (reverse-scramble). New "Paired Aisles" chapter (10 levels) **before Rush Hour → arc is now 110 levels** (Rush Hour 91–100, Closing Time 101–110). Pars rebaked (110). SW cache → v27. Conveyor (Phase 4) still pending. |
 | **4 ❌ CUT** | Conveyor mode ("The Belt") | largest | Built + verified, then **REMOVED after playtest (2026-06-24)** — the user didn't like the real-time mode. Entire self-contained module deleted (own `CV` state, feed loop, render, pointer handling, the screen + CSS, the menu entry, `save.bestBelt`). The puzzle game was untouched by it, so removal was clean (−244 lines). The `ic-ui-*`/shelf helpers it reused remain. If ever revisited, the design is in git history (commit `168f13c`). |
 | **5 ✅ DONE** | Feel/juice pass + "Your Shop" meta | medium | **Built + browser-verified (2026-07-07). From the "more fun/engaging" brainstorm (Tier 1 minus undo, + Tier 2 #8).** SW cache → **v34**. See below. |
+| **6 ✅ DONE** | Harder puzzles + drop the clock | medium | **Built + browser-verified (2026-07-08). Playtest signal: "too easy."** SW cache → **v35**. See below. |
+
+### Phase 6 detail — harder boards + untimed (2026-07-08)
+Playtesters (all but one) found the game too easy. Two separable changes (the timer is the *least*
+cozy-relevant difficulty lever per `top-shelf-level-design.md`, so dropping it is a coziness win but
+NOT the difficulty fix):
+- **Difficulty floor strengthened (the fix for "too easy").** `greedySolvable` gained a **1-move
+  lookahead (2-ply)**; a new `hardnessTier(board)` grades boards (tier-2 = defeats the lookahead
+  planner, tier-1 = old myopic-floor quality, tier-0 = trivial). Every generator (`generateBoard`,
+  `genLayered`, `buildLinkedLevel`, `buildDispenserLevel`, `buildFrozenLevel`) now prefers the highest
+  tier it can find and **never ships below tier-1**, so the change can only make boards harder, never
+  easier. Boards reseed automatically (deterministic per index). **Result: 54 of 89 non-breather levels
+  are now genuinely harder, 0 easier, 0 trivial;** generation stays fast (no slow levels). **PARS
+  rebaked** via `tests/gen-pars.js` (now defaults to all levels; the harness default was likewise
+  fixed to cover 101–110). Breathers/intros/finales still skip the floor — the sawtooth's rest beats
+  are preserved.
+- **Timer removed — the game is now untimed (supersedes Feature 2's Timed mode).** The Challenge
+  selector is now **Zen · Tidy** only; `save.mode ∈ {zen, tidy}`, default **zen** (legacy
+  `timed`/`casual`/`easy`/`hard` migrate → zen). All clock code deleted (`durationFor`, `mkTime`,
+  `tickTimer`/`startTimer`/`stopTimer`, `finishTimeUp`, the timer bar); `updateTimerUI` → `updateHUD`
+  (HUD occupied only in Tidy). **Feature 2's par/Tidy tracker and per-level best are unchanged** —
+  only the clock axis is gone.
 
 ### Phase 5 detail — feel & the shop-wakes-up meta (2026-07-07)
 The brainstorm's diagnosis: *"that's it?" is mostly a spectacle + first-impression gap, not a

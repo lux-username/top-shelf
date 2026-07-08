@@ -25,7 +25,7 @@ if (start < 0 || end < 0) { console.error("Could not locate engine slice boundar
 const ENGINE = HTML.slice(start, end);
 
 const lo  = process.argv[2] ? Number(process.argv[2]) : 1;
-const hi  = process.argv[3] ? Number(process.argv[3]) : 100;
+const hi  = process.argv[3] ? Number(process.argv[3]) : 1e9;   // default = all levels (clamped to N)
 const CAP = process.argv[4] ? Number(process.argv[4]) : 80000;
 const BW  = process.argv[5] ? Number(process.argv[5]) : 6000;   // beam width
 const BD  = process.argv[6] ? Number(process.argv[6]) : 400;    // beam max depth
