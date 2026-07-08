@@ -1,7 +1,7 @@
 /* Top Shelf service worker — makes the game installable and fully offline.
    App shell is cached on install; Google Fonts are runtime-cached on first
    online load. Bump CACHE to ship an update. */
-const CACHE = "topshelf-v32";
+const CACHE = "topshelf-v33";
 const SHELL = [
   "./",
   "./index.html",

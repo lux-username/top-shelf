@@ -2600,10 +2600,27 @@ function commitMove(mv){
 
 /* Move one front item to another shelf. Frozen items can't be moved. */
 function doMove(fs, ss, ts, ts2){
-  if(G.ended || fs === ts) return false;
+  if(G.ended) return false;
   if(!G.board[fs][ss].length || isFrozen(G.board[fs][ss][0])) return false;
+  if(fs === ts) return slideWithinShelf(fs, ss, ts2);   // rearrange on the same shelf (cosmetic)
   if(!canAccept(G.board[ts], TYPE(G.board[fs][ss][0]))) return false;
   return commitMove({ fs, ss, ts, ts2 });
+}
+
+/* Slide a front item to a different EMPTY slot on the SAME shelf. Purely
+   cosmetic: canonical() sorts slots, so this changes nothing the solver, par
+   tracker, or clear/deadlock checks can see — it costs no move and can't clear.
+   Playtesters kept reaching for it, so we let the gesture land instead of
+   rejecting it as invalid. */
+function slideWithinShelf(fs, ss, ts2){
+  const sh = G.board[fs];
+  if(sh.dispenser || sh.locked) return false;                                // take-only / inert shelves don't rearrange
+  if(ts2 == null || ts2 === ss || !sh[ts2] || sh[ts2].length) return false;  // need a real, empty, different slot
+  sh[ts2].push(sh[ss].shift());                                              // hop the front item into the open slot
+  G.selected = null;
+  render();
+  SFX.place();
+  return true;
 }
 
 /* ---------- win / fail flows ---------- */
@@ -2791,9 +2808,13 @@ function slotIndexFromPoint(x, y){
   return sl && sl.dataset.slot != null ? +sl.dataset.slot : null;
 }
 
-/* can shelf `idx` receive the currently-dragged item? */
+/* can shelf `idx` receive the currently-dragged item? On the item's OWN shelf
+   that means an empty slot to slide into (a cosmetic rearrange); on any other
+   shelf, the usual accept rule. */
 function dragAccepts(d, idx){
-  return idx !== d.fs && canAccept(G.board[idx], d.type);
+  if(idx === d.fs)
+    return !G.board[idx].dispenser && !G.board[idx].locked && G.board[idx].some(sl => sl.length === 0);
+  return canAccept(G.board[idx], d.type);
 }
 /* route the current tap-selection onto shelf ts (optionally a specific slot) */
 function moveSelectedTo(ts, ts2){
@@ -2878,9 +2899,9 @@ function onPointerUp(e){
     if(d.ghost) d.ghost.remove();
     [...boardEl.querySelectorAll(".shelf")].forEach(sh => sh.classList.remove("droppable","hover"));
     const ts = shelfIndexFromPoint(e.clientX, e.clientY);
-    if(ts >= 0 && dragAccepts(d, ts)){
-      doMove(d.fs, d.ss, ts, slotIndexFromPoint(e.clientX, e.clientY));
-    }else{
+    const landed = ts >= 0 && dragAccepts(d, ts) &&
+                   doMove(d.fs, d.ss, ts, slotIndexFromPoint(e.clientX, e.clientY));
+    if(!landed){
       SFX.invalid();
       render();                                         // snap back (restores lifted tiles)
     }
